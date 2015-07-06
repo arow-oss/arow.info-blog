@@ -1,7 +1,7 @@
 
 # Blog for [ARoW.info](http://arow.info)
 
-This is the blog for ARoW.info.  It is built with
+This is the blog for [ARoW.info](http://arow.info).  It is built with
 [Hakyll](http://jaspervdj.be/hakyll/index.html).  The `Makefile` contains some
 simple targets for building the site.  In order to use the targets in the
 Makefile, it is assumed that the `stack` build tool is installed.
