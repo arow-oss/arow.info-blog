@@ -1,0 +1,19 @@
+dist
+cabal-dev
+*.o
+*.hi
+*.chi
+*.chs.h
+.virtualenv
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+cabal.config
+
+# hakyll generated files
+/_cache
+/_site
+/site
+
+# stack
+.stack-work/
