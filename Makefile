@@ -43,10 +43,10 @@ deploy:
 
 # Generate the .html files for our blog.
 site: $(SITE_PROG_PATH) 
-	# We don't actually need to use rebuild here, we could just use build.
-	# If this blog becomes really big and produces tons of pages, then switching
-	# to 'build' here (and adding an additional site-rebuild target) would be a
-	# good idea.
+	@# We don't actually need to use rebuild here, we could just use build.
+	@# If this blog becomes really big and produces tons of pages, then switching
+	@# to 'build' here (and adding an additional site-rebuild target) would be a
+	@# good idea.
 	stack exec -- site rebuild
 
 # Run a test webserver on http://0.0.0.0:8000 serving up the content of our
