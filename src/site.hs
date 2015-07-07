@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.Default (def)
+import qualified Hakyll
 import Hakyll
-    ( Configuration(..), Context, Rules, applyAsTemplate, compile
+    ( Configuration(..), Context, applyAsTemplate, compile
     , compressCssCompiler, constField, copyFileCompiler, create, dateField
-    , defaultContext, fromList, getResourceBody, hakyllWith, idRoute
+    , fromList, getResourceBody, hakyllWith, idRoute
     , listField, loadAll, loadAndApplyTemplate, makeItem, match
     , pandocCompiler, recentFirst, relativizeUrls, route, setExtension
     , templateCompiler
@@ -20,13 +21,41 @@ hakyllConfig = def { providerDirectory = "preprocessed-site"
 
 main :: IO ()
 main = hakyllWith hakyllConfig $ do
-    match "images/*" $ do
+    -- match "images/*" $ do
+    --     route idRoute
+    --     compile copyFileCompiler
+
+    -- match "css/*" $ do
+    --     route idRoute
+    --     compile compressCssCompiler
+
+    match "startbootstrap-clean-blog/img/*" $ do
         route idRoute
         compile copyFileCompiler
 
-    match "css/*" $ do
+    match "startbootstrap-clean-blog/css/*" $ do
         route idRoute
         compile compressCssCompiler
+
+    match "startbootstrap-clean-blog/js/*" $ do
+        route idRoute
+        compile copyFileCompiler
+
+    match "startbootstrap-clean-blog/fonts/*" $ do
+        route idRoute
+        compile copyFileCompiler
+
+    match "startbootstrap-clean-blog/templates/*" $ compile templateCompiler
+
+    match "startbootstrap-clean-blog/index.html" $ do
+        route idRoute
+        compile $ do
+            let indexCtx = defaultContext
+            indexBody <- getResourceBody
+            indexWithContext <- applyAsTemplate indexCtx indexBody
+            indexWithDefaultTemplate <-
+                loadAndApplyTemplate "startbootstrap-clean-blog/templates/default.html" indexCtx indexWithContext
+            relativizeUrls indexWithDefaultTemplate
 
     match (fromList ["about.rst", "contact.markdown"]) $ do
         route $ setExtension "html"
@@ -72,3 +101,10 @@ postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
+
+defaultContext :: Context String
+defaultContext = Hakyll.defaultContext
+
+defaultContextWithTitle :: String -> Context String
+defaultContextWithTitle title = constField "title" title `mappend`
+                                defaultContext
