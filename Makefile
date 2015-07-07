@@ -17,7 +17,7 @@ SITE_PROG_PATH = $(STACK_LOCAL_INSTALL_PATH)/site
 
 # target for the `site` binary.  This binary is used to actually create the
 # html files.
-$(SITE_PROG_PATH): site.hs
+$(SITE_PROG_PATH): src/site.hs
 	@echo "Building..."
 	@stack build
 	@echo "Built."
