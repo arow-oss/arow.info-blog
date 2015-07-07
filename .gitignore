@@ -11,9 +11,8 @@ cabal.sandbox.config
 cabal.config
 
 # hakyll generated files
-/_cache
-/_site
-/site
+/.hakyll-cache
+/generated-site
 
 # stack
 .stack-work/
