@@ -1,12 +1,24 @@
---------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
-import           Data.Monoid (mappend)
-import           Hakyll
 
+import Data.Default (def)
+import Hakyll
+    ( Configuration(..), Context, Rules, applyAsTemplate, compile
+    , compressCssCompiler, constField, copyFileCompiler, create, dateField
+    , defaultContext, fromList, getResourceBody, hakyllWith, idRoute
+    , listField, loadAll, loadAndApplyTemplate, makeItem, match
+    , pandocCompiler, recentFirst, relativizeUrls, route, setExtension
+    , templateCompiler
+    )
+
+hakyllConfig :: Configuration
+hakyllConfig = def { providerDirectory = "preprocessed" }
+
+hakyllWithConfig :: Rules a -> IO ()
+hakyllWithConfig = hakyllWith hakyllConfig
 
 --------------------------------------------------------------------------------
 main :: IO ()
-main = hakyll $ do
+main = hakyllWithConfig $ do
     match "images/*" $ do
         route   idRoute
         compile copyFileCompiler
