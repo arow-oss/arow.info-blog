@@ -24,33 +24,33 @@ main :: IO ()
 main = hakyllWith hakyllConfig $ do
 
     -- templates for other routes
-    match "startbootstrap-clean-blog/templates/*" $ compile templateCompiler
+    match "templates/*" $ compile templateCompiler
 
     -- images
-    match "startbootstrap-clean-blog/img/*" $ do
+    match "img/*" $ do
         route idRoute
         compile copyFileCompiler
 
     -- CSS
-    match "startbootstrap-clean-blog/css/*" $ do
+    match "css/*" $ do
         route idRoute
         compile compressCssCompiler
 
     -- Javascript
-    match "startbootstrap-clean-blog/js/*" $ do
+    match "js/*" $ do
         route idRoute
         compile copyFileCompiler
 
     -- web fonts
-    match "startbootstrap-clean-blog/fonts/*" $ do
+    match "fonts/*" $ do
         route idRoute
         compile copyFileCompiler
 
     -- index.html
-    match "startbootstrap-clean-blog/index.html" $ do
+    match "index.html" $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "startbootstrap-clean-blog/posts/*"
+            posts <- recentFirst =<< loadAll "posts/*"
             let indexCtx = listField "posts" postCtx (return posts) `mappend`
                            defaultContext
             indexBody <- getResourceBody
@@ -58,14 +58,14 @@ main = hakyllWith hakyllConfig $ do
             applyDefaultTemplate indexCtx indexWithContext
 
     -- blog posts
-    match "startbootstrap-clean-blog/posts/*" $ do
+    match "posts/*" $ do
         route $ setExtension "html"
         compile $ do
             let subHeadingCtx =
                     field "subHeadingContent" createSubHeadingContentForPost `mappend`
                     postCtx
             pandocOut <- pandocCompiler
-            postTemplateOut <- loadAndApplyTemplate "startbootstrap-clean-blog/templates/post.html" subHeadingCtx pandocOut
+            postTemplateOut <- loadAndApplyTemplate postTemplate subHeadingCtx pandocOut
             applyDefaultTemplate subHeadingCtx postTemplateOut
 
 defaultContext :: Context String
@@ -81,7 +81,10 @@ applyDefaultTemplate context preTemplateItem = do
     relativizeUrls postTemplateItem
 
 defaultTemplate :: Identifier
-defaultTemplate = "startbootstrap-clean-blog/templates/default.html"
+defaultTemplate = "templates/default.html"
+
+postTemplate :: Identifier
+postTemplate = "templates/post.html"
 
 createSubHeadingContentForPost :: Item a -> Compiler String
 createSubHeadingContentForPost item = do
