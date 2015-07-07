@@ -68,29 +68,6 @@ main = hakyllWith hakyllConfig $ do
             postTemplateOut <- loadAndApplyTemplate "startbootstrap-clean-blog/templates/post.html" subHeadingCtx pandocOut
             applyDefaultTemplate subHeadingCtx postTemplateOut
 
-    ---------------------------------------
-    --           Stock routes            --
-    -- Left for documentational purposes --
-    ---------------------------------------
-
-    -- match (fromList ["about.rst", "contact.markdown"]) $ do
-    --     route $ setExtension "html"
-    --     compile $ pandocCompiler
-    --         >>= loadAndApplyTemplate "templates/default.html" defaultContext
-    --         >>= relativizeUrls
-
-    -- create ["archive.html"] $ do
-    --     route idRoute
-    --     compile $ do
-    --         posts <- recentFirst =<< loadAll "posts/*"
-    --         let archiveCtx = listField "posts" postCtx (return posts) `mappend`
-    --                          constField "title" "Archives"            `mappend`
-    --                          defaultContext
-    --         makeItem ""
-    --             >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
-    --             >>= loadAndApplyTemplate "templates/default.html" archiveCtx
-    --             >>= relativizeUrls
-
 defaultContext :: Context String
 defaultContext = Hakyll.defaultContext
 
