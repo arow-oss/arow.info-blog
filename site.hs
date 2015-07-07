@@ -10,13 +10,18 @@ import Hakyll
     , templateCompiler
     )
 
+
 hakyllConfig :: Configuration
-hakyllConfig = def { providerDirectory = "preprocessed" }
+hakyllConfig = def { providerDirectory = "preprocessed-site"
+                   , storeDirectory = ".hakyll-cache"
+                   , tmpDirectory = ".hakyll-cache/tmp"
+                   , destinationDirectory = "generated-site"
+                   }
 
 hakyllWithConfig :: Rules a -> IO ()
 hakyllWithConfig = hakyllWith hakyllConfig
 
---------------------------------------------------------------------------------
+
 main :: IO ()
 main = hakyllWithConfig $ do
     match "images/*" $ do
@@ -72,7 +77,6 @@ main = hakyllWithConfig $ do
     match "templates/*" $ compile templateCompiler
 
 
---------------------------------------------------------------------------------
 postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
