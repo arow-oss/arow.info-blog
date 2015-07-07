@@ -1,5 +1,5 @@
 ---
-title: ARoW.info Blog -- Servant Intro -- $headingBackgroundImage$
+title: ARoW.info Blog -- Servant Intro
 headingBackgroundImage: img/post-bg.jpg
 headingDivClass: post-heading
 heading: Here is a title
