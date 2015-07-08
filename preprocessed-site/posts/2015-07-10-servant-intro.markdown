@@ -160,8 +160,7 @@ type MyAPI = "dogs" :> Get '[JSON] [Int]
 look at some servant-server code and confirm that it is using `symbolVal` to get
 the value of the type-level strings.
 
-Type-Level Lists
-----------------
+## Type-Level Lists
 
 Just like type-level strings, type-level lists can also be defined.
 
@@ -246,8 +245,7 @@ post](https://ocharles.org.uk/blog/posts/2014-08-07-postgresql-simple-generic-so
 on the generics-sop package where he talks a little about heterogeneous lists.
 
 
-Type-Level Operators
---------------------
+## Type-Level Operators
 
 In the servant example code above, there are two type-level operators being
 used: `(:>)` and `(:<|>)`.  Type-level operators are similar to normal data
@@ -306,8 +304,7 @@ actually used?  They just look like confusing data types!*"  Well, we'll get to
 that in a minute.  Before we can jump into the servant code, we need to get a
 basic understanding of type families.
 
-Type Families
--------------
+## Type Families
 
 Type families are a relatively simple addition to Haskell that allow the user
 to do some computation at the type level.  However, if you google for [type
@@ -344,8 +341,7 @@ room in the [functional programming slack community](http://fpchat.com/).  If
 you aren't sure about type families, please read that presentation and then
 proceed to the next section.
 
-Servant
--------
+## Servant
 
 Now we come to the interesting section.  How does servant actually uses these things?  Let's go back to the
 example code at the top of this blog post:
@@ -517,8 +513,7 @@ serve p = toApplication . runRouter . route p . return . RR . Right
 Understanding `serve` isn't actually necessary to understanding the rest of
 this article, but it is interesting.
 
-HasServer, one more time
-------------------------
+## `HasServer`, one more time
 
 Let's go back to the HasServer typeclass.  Here it is again:
 
@@ -662,8 +657,7 @@ myAPI = dogNums :<|> cats
 
 It still compiles!  That's great!
 
-One Level Deeper
-----------------
+## One Level Deeper
 
 Going back to the HasServer instance for (:<|>), we see that the route function
 basically calls itself recursively on both arguments to (:<|>).  So, which
@@ -768,8 +762,7 @@ dogNums :: EitherT ServantErr IO [Int]
 dogNums = return [1,2,3,4]
 ```
 
-Red Pill, Blue Pill, Bottom of the Rabit Hole
----------------------------------------------
+## Red Pill, Blue Pill, Bottom of the Rabit Hole
 
 What route function will be called in this case?  The one defined for the Get
 instance of HasServer!
@@ -804,8 +797,7 @@ welcome to look at the implementation of
 [methodRouter](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123)
 if you're interested.
 
-Conclusion
-----------
+## Conclusion
 
 At a very high-level, the HasServer typeclass, ServerT type family, and route function are used to peal away levels of MyAPI:
 
