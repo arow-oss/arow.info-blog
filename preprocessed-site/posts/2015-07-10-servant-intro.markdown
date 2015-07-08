@@ -1,9 +1,9 @@
 ---
-title: ARoW.info Blog -- Servant Intro
+title: ARoW.info Blog -- Type-level Things, Type Families, and Servant
 headingBackgroundImage: ../img/post-bg.jpg
 headingDivClass: post-heading
-heading: Here is a title
-subHeading: Problems look mighty small from 150 miles up
+heading: Type-level Things, Type Families, and Servant
+subHeading: A look at advanced GHC features used in Servant
 postedBy: Dennis Gosnell
 ---
 
@@ -13,13 +13,12 @@ programmers.  In this article, I explain type-level strings, type-level lists,
 type-level operators, and type families.  Finally, I use code from
 servant-server to explain how these features are used in practice.
 
-Servant Example
----------------
+## Servant Example
 
 Here is a simple example of using servant-server.  We will refer to this code
-throughout this article.
+throughout the article.
 
-```
+```haskell
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 
@@ -32,32 +31,47 @@ import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Servant
     ( (:>), (:<|>)((:<|>)), Get, JSON, Proxy(..), ServantErr, ServerT, serve )
 
+-- | A representation of our REST API at the type level.
+--
+-- This defines two routes:
+--   * /dogs -- Responds to HTTP GET with a list of integers in JSON format.
+--   * /cats -- Responds to HTTP GET with a list of Strings in JSON format.
 type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 
+-- | A Warp 'Application' that will serve our API.
 app :: Application
 app = serve (Proxy :: Proxy MyAPI) myAPI
 
+-- | Our entire API.  You can see that it is a combination of the 'dogNums'
+-- handler and the 'cats' handler.
 myAPI :: ServerT MyAPI (EitherT ServantErr IO)
 myAPI = dogNums :<|> cats
 
+-- | A handler for the /dogs route.  It just returns a list of the integers
+-- one to four.
 dogNums :: EitherT ServantErr IO [Int]
 dogNums = return [1,2,3,4]
 
+-- | A handler for the /cats route.
 cats :: EitherT ServantErr IO [String]
 cats = return ["long-haired", "short-haired"]
 
+-- | Run our 'app' as a Warp 'Application'.
 main :: IO ()
 main = run 32323 $ logStdoutDev app
 ```
 
-This example project can be found at the gist
-https://gist.github.com/cdepillabout/c2b8b1807e1f571fdb45#file-example-hs
+The example project can be found [on
+Github](https://gist.github.com/cdepillabout/c2b8b1807e1f571fdb45#file-example-hs).
+The comments in the code should give you a good idea of what is going on, but
+if you would like a better introduction, the [Servant
+tutorial](http://haskell-servant.github.io/tutorial/) is very good.
 
-The following steps can be used to download and run the code.  The stack build
-tool is used.
+The following steps can be used to download and run the code.  The
+[stack](https://github.com/commercialhaskell/stack) build tool is used.
 
-```
+```bash
 $ git clone https://gist.github.com/c2b8b1807e1f571fdb45.git
 $ mv c2b8b1807e1f571fdb45 small-servant-example
 $ cd small-servant-example
@@ -86,8 +100,7 @@ app :: Application      -- Defined at example.hs:17:1
 ghci>
 ```
 
-Type-Level Strings
-------------------
+## Type-Level Strings
 
 Recent versions of GHC support [type-level
 strings](https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/type-level-literals.html).
