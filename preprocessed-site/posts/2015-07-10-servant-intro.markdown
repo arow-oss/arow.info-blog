@@ -427,26 +427,33 @@ ghci> :info Server
 type Server layout = ServerT layout (EitherT ServantErr IO)
 ```
 
-Server looks like it is a specialization of ServerT around the EitherT monad
-transformer.  This similar to how the Reader monad is a specialization of the
-ReaderT monad:
+`Server` looks like it is a specialization of
+[ServerT](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT)
+around the
+[`EitherT`](https://hackage.haskell.org/package/either-4.4.1/docs/Control-Monad-Trans-Either.html#t:EitherT)
+monad transformer.  This similar to how the
+[`Reader`](https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:Reader)
+monad is a specialization of the
+[`ReaderT`](https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:ReaderT)
+monad:
 
 ```haskell
 newtype ReaderT r m a = ...
 type Reader r a = ReaderT r Identity a
 ```
 
-Okay, so Server is just a specialization of ServerT.  So then what is ServerT?
+Okay, so `Server` is just a specialization of `ServerT`.  So then what is `ServerT`?
 
 ```haskell
-ghci> :info! Server
+ghci> :info! ServerT
 class HasServer (layout :: k) where                                                                                                              type family ServerT (layout :: k) (m :: * -> *) :: *
 ...
 ```
 
-...a type family!  This is what we've been waiting for!  ServerT is a type
+...a type family!  This is what we've been waiting for!  `ServerT` is a type
 family.  It's a function that computes a type.  Let's take a look at the
-HasServer typeclass before really diving into ServerT.
+[`HasServer`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:HasServer)
+typeclass before really diving into `ServerT`.
 
 ```haskell
 class HasServer layout where
@@ -455,34 +462,34 @@ class HasServer layout where
   route :: Proxy layout -> IO (RouteResult (ServerT layout (EitherT ServantErr IO))) -> Router
 ```
 
-We see that HasServer takes one parameter, layout.  We also see that ServerT is
-a typeclass that takes two parameters, layout and m.  There is one function in
-this typeclass, route.  It takes a Proxy layout and an IO of a RouteResult of a
-ServerT with the m parameter specialized to EitherT ServantErr IO.  Quite a
-mouthful.  Let's abbreviate part of the type to make it easier to diget:
+`HasServer` takes one type parameter, `layout`.  ServerT is
+a type family that takes two parameters, `layout` and `m`.  There is one function in
+this typeclass, `route`.  It takes a `Proxy layout` and an `IO` of a `RouteResult` of a
+`ServerT` with the `m` parameter specialized to `EitherT ServantErr IO`.  Quite a
+mouthful.  Let's abbreviate part of the type to make it easier to digest:
 
 ```haskell
 route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
 ```
 
-Basically route takes an IO of a RouteResult of a ServerT and returns a Router.
-Let's go back real quick and look at the implementation of the serve function:
+Basically route takes an `IO` of a `RouteResult` of a `ServerT` and returns a `Router`.
+Let's go back real quick and look at the implementation of the `serve` function:
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr IO) -> Application
 serve p server = toApplication (runRouter (route p (return (RR (Right server)))))
 ```
 
-First off, the type of the function looks pretty similar to the route funtion:
+First off, the type of the `serve` function looks pretty similar to the `route` function:
 
 ```haskell
 serve :: HasServer layout => Proxy layout ->                 (ServerT ...)  -> Application
 route ::                     Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
 ```
 
-So how does the serve function work?  It's basically taking our server
-argument, wrapping it in a default RouteResult and IO, then passing it to the
-route function.
+So how does the `serve` function work?  It's basically taking our `myAPI`
+argument, wrapping it in a base `RouteResult` and `IO`, then passing it to the
+`route` function.
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
