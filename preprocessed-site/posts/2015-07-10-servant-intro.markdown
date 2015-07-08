@@ -281,8 +281,8 @@ data Bar a b = Bar a b
 You can see that `(:>)` and `(:<|>)` are just normal datatype definitions. They
 only look weird because they are made of symbols and written infix.
 
-Type operators help us write long type definitions that are easy to understand.
-Take the following API definition:
+Type operators help when writing long type definitions.  They keep the long
+type definition easy to understand.  Take the following API definition:
 
 ```haskell
 type MyAPI = "foo" :> "bar" >: Get '[JSON] [Int]
@@ -296,13 +296,13 @@ type MyAPI = (:>) "foo" ((>:) "bar" (Get '[JSON] [Int]))
 
 You can see how much easier the infix style is to read!
 
-NOTE:  The `TypeOperators` language extension is needed to use the above code.
+**NOTE**: The `TypeOperators` language extension is needed to use the above code.
 
 The GHC manual has a section about
 [type-operators](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/data-type-extensions.html#type-operators).
 
-You may be thinking, "These type operators are pretty neat, but how are they
-actually used?  They just look like confusing data types!"  Well, we'll get to
+You may be thinking, "*These type operators are pretty neat, but how are they
+actually used?  They just look like confusing data types!*"  Well, we'll get to
 that in a minute.  Before we can jump into the servant code, we need to get a
 basic understanding of type families.
 
