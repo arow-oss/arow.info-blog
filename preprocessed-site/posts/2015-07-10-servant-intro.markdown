@@ -15,7 +15,7 @@ servant-server to explain how these features are used in practice.
 
 This article is aimed at people who have a basic familiarity with Haskell.
 This includes understanding things like typeclasses, applicatives, monads,
-monad transformers, etc.
+monad transformers, pointfree style, etc.
 
 ## Servant Example
 
@@ -442,11 +442,12 @@ newtype ReaderT r m a = ...
 type Reader r a = ReaderT r Identity a
 ```
 
-Okay, so `Server` is just a specialization of `ServerT`.  So then what is `ServerT`?
+Okay, so `Server` is just a specialization of `ServerT`.  Then what is `ServerT`?
 
 ```haskell
 ghci> :info! ServerT
-class HasServer (layout :: k) where                                                                                                              type family ServerT (layout :: k) (m :: * -> *) :: *
+class HasServer (layout :: k) where
+  type family ServerT (layout :: k) (m :: * -> *) :: *
 ...
 ```
 
@@ -462,11 +463,14 @@ class HasServer layout where
   route :: Proxy layout -> IO (RouteResult (ServerT layout (EitherT ServantErr IO))) -> Router
 ```
 
-`HasServer` takes one type parameter, `layout`.  ServerT is
-a type family that takes two parameters, `layout` and `m`.  There is one function in
-this typeclass, `route`.  It takes a `Proxy layout` and an `IO` of a `RouteResult` of a
-`ServerT` with the `m` parameter specialized to `EitherT ServantErr IO`.  Quite a
-mouthful.  Let's abbreviate part of the type to make it easier to digest:
+`HasServer` takes one type parameter, `layout`.  `ServerT` is
+a type family that takes two parameters, `layout` and `m`.
+
+There is one function in this typeclass,
+[`route`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:route).
+It takes a `Proxy layout` and an `IO` of a `RouteResult` of a `ServerT` with
+the `m` parameter specialized to `EitherT ServantErr IO`.  Quite a mouthful.
+Let's abbreviate part of the type to make it easier to digest:
 
 ```haskell
 route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
@@ -487,8 +491,8 @@ serve :: HasServer layout => Proxy layout ->                 (ServerT ...)  -> A
 route ::                     Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
 ```
 
-So how does the `serve` function work?  It's basically taking our `myAPI`
-argument, wrapping it in a base `RouteResult` and `IO`, then passing it to the
+So how does the `serve` function work?  It's basically taking our `myAPI` (the `server` argument below)
+argument (which is of type `ServerT`), wrapping it in a base `RouteResult` and `IO`, then passing it to the
 `route` function.
 
 ```haskell
@@ -498,9 +502,20 @@ serve p server = toApplication (runRouter (route p (return (RR (Right server))))
                                                    look at all this wrapping!!!
 ```
 
-It takes the resulting Router from the route function, passes it to runRouter,
-and then passes that to toApplication to get our Wai application.  Pretty easy!
+It takes the resulting `Router` from the `route` function, passes it to
+`runRouter`, and then passes that to
+[`toApplication`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:toApplication)
+to get the Wai application.  Pretty easy!  Let's see it point free!
 
+```haskell
+serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
+serve p = toApplication . runRouter . route p . return . RR . Right
+                                                ^^^^^^^^^^^^^^^^^^^
+                                           look at this pointfree wrapping!!!
+```
+
+Understanding `serve` isn't actually necessary to understanding the rest of
+this article, but it is interesting.
 
 HasServer, one more time
 ------------------------
