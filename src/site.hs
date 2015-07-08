@@ -4,12 +4,12 @@ import Data.Default (def)
 import Data.Maybe (fromMaybe)
 import qualified Hakyll
 import Hakyll
-    ( Compiler, Configuration(..), Context, Identifier, Item, applyAsTemplate
-    , compile, compressCssCompiler, constField, copyFileCompiler, create
-    , dateField, debugCompiler, field, fromList, getMetadata, getMetadataField, getMetadataField'
-    , getResourceBody, hakyllWith, idRoute, itemIdentifier, listField
-    , loadAll, loadAndApplyTemplate, makeItem, match, pandocCompiler
-    , recentFirst, relativizeUrls, route, setExtension, templateCompiler
+    ( Compiler, Configuration(..), Context, Identifier, Item
+    , applyAsTemplate, compile, compressCssCompiler, copyFileCompiler
+    , dateField, field, getMetadataField, getResourceBody, hakyllWith
+    , idRoute, itemIdentifier, listField, loadAll, loadAndApplyTemplate
+    , match, pandocCompiler, recentFirst, relativizeUrls, route
+    , setExtension, templateCompiler
     )
 
 
