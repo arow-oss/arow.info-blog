@@ -159,9 +159,9 @@ the value of the type-level strings.
 Type-Level Lists
 ----------------
 
-Just like we can have type-level strings, we can also have type-level lists.
+Just like type-level strings, type-level lists can also be defined.
 
-We need to enable the DataKinds language extension.
+First, the `DataKinds` language extension needs to be enabled.
 
 ```haskell
 ghci> :set -XDataKinds
@@ -185,11 +185,11 @@ The first section is pretty interesting, as is the section on the [promoted
 list and tuple
 types](https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/promotion.html#promoted-lists-and-tuples).
 There is a short example of a heterogeneous list (or HList).  A heterogeneous
-list is a list that has elements of different types.  In the example, you can
-see that foo2 represents a heterogeneous list with two elements, Int and Bool.
+list is a list that has elements of different types.  In the example, `foo2`
+represents a heterogeneous list with two elements, `Int` and `Bool`.
 
-Looking at the example, we see that we can define type-level lists by putting a
-quote in front of the opening bracket in the list:
+From the example, you can see that type-level lists can be defined by
+putting a quote in front of the opening bracket:
 
 ```haskell
 ghci> :kind! '[]
@@ -197,7 +197,7 @@ ghci> :kind! '[]
 ghci>
 ```
 
-We can also define type-level lists with multiple elements:
+Type-level lists can also be defined with multiple elements:
 
 ```haskell
 ghci> :kind! '[Int, Bool, String]
@@ -205,26 +205,28 @@ ghci> :kind! '[Int, Bool, String]
 ghci>
 ```
 
-Going back to the MyAPI example from above, you can see that servant is using
+Going back to the `MyAPI` example from above, servant is using
 type-level lists to represent the available content-type encodings of the
 response.
 
 ```haskell
-type MyAPI = "dogs" :> Get <b>'[JSON]</b> [Int]
-        :<|> "cats" :> Get <b>'[JSON]</b> [String]
+type MyAPI = "dogs" :> Get '[JSON] [Int]
+        :<|> "cats" :> Get '[JSON] [String]
 ```
 
-Servant is only willing to send back responses in JSON.
+Servant is only willing to send back responses in JSON.  (Because JSON is the
+only type in the type-level list).
 
 Additional content types could also be specified:
 
 ```haskell
-type MyAPI = "dogs" :> Get <b>'[JSON, FormUrlEncoded]</b> [Int]
-        :<|> "cats" :> Get <b>'[JSON, PlainText]</b> Text
+type MyAPI = "dogs" :> Get '[JSON, FormUrlEncoded] [Int]
+        :<|> "cats" :> Get '[JSON, PlainText] Text
 ```
 
-(However, to get this to compile, we would need to have an instance of
-ToFormUrlEncoded [Int].)
+(However, to get this to compile, there would need to be an instance of
+ToFormUrlEncoded [Int].)  The `/dogs` route will return either JSON or
+form-encoded values.  The `/cats` route will return either JSON or plain text.
 
 I'm not going to go into how type-level lists are used in servant-server, but
 if you're interested you may want to start with reading the [Get instance for
