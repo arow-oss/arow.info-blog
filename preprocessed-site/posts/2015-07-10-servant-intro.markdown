@@ -13,10 +13,14 @@ programmers.  In this article, I explain type-level strings, type-level lists,
 type-level operators, and type families.  Finally, I use code from
 servant-server to explain how these features are used in practice.
 
+This article is aimed at people who have a basic familiarity with Haskell.
+This includes understanding things like typeclasses, applicatives, monads,
+monad transformers, etc.
+
 ## Servant Example
 
-Here is a simple example of using servant-server.  We will refer to this code
-throughout the article.
+Here is a simple example of using servant-server.  This code will be referred
+to throughout the article.
 
 ```haskell
 {-# LANGUAGE DataKinds #-}
@@ -64,7 +68,7 @@ main = run 32323 $ logStdoutDev app
 
 The example project can be found [on
 Github](https://gist.github.com/cdepillabout/c2b8b1807e1f571fdb45#file-example-hs).
-The comments in the code should give you a good idea of what is going on, but
+The comments in the code should give a good idea as to what is going on, but
 if you would like a better introduction, the [Servant
 tutorial](http://haskell-servant.github.io/tutorial/) is very good.
 
@@ -79,8 +83,8 @@ $ stack build
 $ stack exec servant-notes
 ```
 
-This runs a Warp server on port 32323.  With the server running, you can use
-curl to test the API.
+This runs a Warp server on port 32323.  With the server running, `curl` can be
+used to test the API.
 
 ```bash
 $ curl http://localhost:32323/dogs
@@ -90,7 +94,7 @@ $ curl http://localhost:32323/cats
 $
 ```
 
-You can also open the code in ghci.
+The code can also be opened in `ghci`.
 
 ```haskell
 $ stack ghci
@@ -106,7 +110,7 @@ Recent versions of GHC support [type-level
 strings](https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/type-level-literals.html).
 What's a type-level string?  Well, let's play around with it in the REPL.
 
-First, we need to enable the DataKinds language extension.
+First, the DataKinds language extension needs to be enabled.
 
 ```haskell
 ghci> :set -XDataKinds
@@ -121,17 +125,17 @@ ghci> :kind "hello"
 ghci>
 ```
 
-Hmm, our type-level string appears to be of kind
+Hmm, the type-level string appears to be of kind
 [GHC.TypeLits.Symbol](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#t:Symbol).
-So what can we do with this?
+What can be done with this?
 
 Looking at the GHC.TypeLits module, there appears to be a
 [symbolVal](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#v:symbolVal)
-function. We can use it to get back the **value** of our type-level string.
+function. It can be used to get back the **value** of the type-level string.
 
-Let's try this out in ghci.  We need to import `symbolVal` and
-[Data.Proxy.Proxy](https://hackage.haskell.org/package/base-4.8.0.0/docs/Data-Proxy.html#t:Proxy).
-We will be using `Proxy` to "proxy" the type-level literal.
+Let's try this out in ghci.  `symbolVal` and
+[Data.Proxy.Proxy](https://hackage.haskell.org/package/base-4.8.0.0/docs/Data-Proxy.html#t:Proxy)
+need to be imported.  `Proxy` is used to "proxy" the type-level literal.
 
 ```haskell
 ghci> import GHC.TypeLits
@@ -144,7 +148,7 @@ ghci>
 This is really cool!  We are able to get back the **concrete value** of
 something that only exists on the **type level**!
 
-How does servant use this?  Take a look at the `MyAPI` type we defined near the
+How does servant use this?  Recall the `MyAPI` type defined near the
 top of this article:
 
 ```haskell
@@ -184,7 +188,7 @@ promotion](https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/promo
 The first section is pretty interesting, as is the section on the [promoted
 list and tuple
 types](https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/promotion.html#promoted-lists-and-tuples).
-There is a short example of a heterogeneous list (or HList).  A heterogeneous
+There is a short example of a heterogeneous list (or `HList`).  A heterogeneous
 list is a list that has elements of different types.  In the example, `foo2`
 represents a heterogeneous list with two elements, `Int` and `Bool`.
 
@@ -225,7 +229,7 @@ type MyAPI = "dogs" :> Get '[JSON, FormUrlEncoded] [Int]
 ```
 
 (However, to get this to compile, there would need to be an instance of
-ToFormUrlEncoded [Int].)  The `/dogs` route will return either JSON or
+`ToFormUrlEncoded [Int]`.)  The `/dogs` route will return either JSON or
 form-encoded values.  The `/cats` route will return either JSON or plain text.
 
 I'm not going to go into how type-level lists are used in servant-server, but
@@ -245,11 +249,11 @@ on the generics-sop package where he talks a little about heterogeneous lists.
 Type-Level Operators
 --------------------
 
-In our servant example code above, there are two type-level operators being
-used: (:>) and (:<|>).  Type-level operators are similar to normal data types.
-They are just composed of symbols instead of letters.
+In the servant example code above, there are two type-level operators being
+used: `(:>)` and `(:<|>)`.  Type-level operators are similar to normal data
+types---they are just composed of symbols instead of letters.
 
-Let's look at how (:>) and (:<|>) are defined in servant:
+Let's look at how `(:>)` and `(:<|>)` are defined in servant:
 
 ```haskell
 data path :> a
@@ -257,7 +261,7 @@ data path :> a
 data a :<|> b = a :<|> b
 ```
 
-If we didn't want to write them infix, we could write them like this:
+If we didn't want to write them infix, they could be writen like this:
 
 ```haskell
 data (:>) path a
@@ -265,8 +269,8 @@ data (:>) path a
 data (:<|>) a b = (:<|>) a b
 ```
 
-In fact, if we were to write these data types with letters instead of symbols,
-it would look something like this:
+In fact, if these data types were writen with letters instead of symbols,
+they would look something like this:
 
 ```haskell
 data Foo path a
@@ -274,8 +278,8 @@ data Foo path a
 data Bar a b = Bar a b
 ```
 
-You can see that (:>) and (:<|>) are just normal datatype definitions. They
-look weird because they are made of symbols and written infix.
+You can see that `(:>)` and `(:<|>)` are just normal datatype definitions. They
+only look weird because they are made of symbols and written infix.
 
 Type operators help us write long type definitions that are easy to understand.
 Take the following API definition:
@@ -284,7 +288,7 @@ Take the following API definition:
 type MyAPI = "foo" :> "bar" >: Get '[JSON] [Int]
 ```
 
-Rewriting this prefix would look like this:
+This defines the route `/foo/bar`.  Rewriting this prefix would look like this:
 
 ```haskell
 type MyAPI = (:>) "foo" ((>:) "bar" (Get '[JSON] [Int]))
@@ -292,13 +296,15 @@ type MyAPI = (:>) "foo" ((>:) "bar" (Get '[JSON] [Int]))
 
 You can see how much easier the infix style is to read!
 
-NOTE:  You need the TypeOperators language extension enabled to use the above code.
+NOTE:  The `TypeOperators` language extension is needed to use the above code.
 
-https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/data-type-extensions.html#type-operators
+The GHC manual has a section about
+[type-operators](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/data-type-extensions.html#type-operators).
 
 You may be thinking, "These type operators are pretty neat, but how are they
 actually used?  They just look like confusing data types!"  Well, we'll get to
-that in a minute.  First  we need to take a look at type families.
+that in a minute.  Before we can jump into the servant code, we need to get a
+basic understanding of type families.
 
 Type Families
 -------------
