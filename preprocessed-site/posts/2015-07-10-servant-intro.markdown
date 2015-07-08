@@ -82,7 +82,7 @@ $ stack exec servant-notes
 This runs a Warp server on port 32323.  With the server running, you can use
 curl to test the API.
 
-```
+```bash
 $ curl http://localhost:32323/dogs
 [1,2,3,4]
 $ curl http://localhost:32323/cats
@@ -92,7 +92,7 @@ $
 
 You can also open the code in ghci.
 
-```
+```haskell
 $ stack ghci
 ghci> :load example.hs
 ghci> :info app
@@ -108,14 +108,14 @@ What's a type-level string?  Well, let's play around with it in the REPL.
 
 First, we need to enable the DataKinds language extension.
 
-```
+```haskell
 ghci> :set -XDataKinds
 ghci>
 ```
 
-Now, let's try to get the kind of a type-level string:
+Let's try to get the kind of a type-level string:
 
-```
+```haskell
 ghci> :kind "hello"
 "hello" :: GHC.TypeLits.Symbol
 ghci>
@@ -125,17 +125,15 @@ Hmm, our type-level string appears to be of kind
 [GHC.TypeLits.Symbol](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#t:Symbol).
 So what can we do with this?
 
-Looking at the
-[GHC.TypeLits](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html)
-module, there appears to be a
+Looking at the GHC.TypeLits module, there appears to be a
 [symbolVal](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#v:symbolVal)
-function. We can use it to get back the <i>value</i> of our type-level string.
+function. We can use it to get back the **value** of our type-level string.
 
-Let's take a look at this in ghci.  First we need to import
-GHC.TypeLits.symbolVal, and then import Data.Proxy.Proxy, We will be using
-Proxy to "proxy" the type-level literal.
+Let's try this out in ghci.  We need to import `symbolVal` and
+[Data.Proxy.Proxy](https://hackage.haskell.org/package/base-4.8.0.0/docs/Data-Proxy.html#t:Proxy).
+We will be using `Proxy` to "proxy" the type-level literal.
 
-```
+```haskell
 ghci> import GHC.TypeLits
 ghci> import Data.Proxy
 ghci> symbolVal (Proxy :: Proxy "hello")
@@ -143,19 +141,19 @@ ghci> symbolVal (Proxy :: Proxy "hello")
 ghci>
 ```
 
-This is really cool!  We are able to get back a <i>concrete value</i> of
-something that only exists on the <i>type-level</i>!
+This is really cool!  We are able to get back the **concrete value** of
+something that only exists on the **type level**!
 
-How does servant use this?  Take a look at the MyAPI type we defined near the
+How does servant use this?  Take a look at the `MyAPI` type we defined near the
 top of this article:
 
-```
-type MyAPI = <b>"dogs"</b> :> Get '[JSON] [Int]
-        :<|> <b>"cats"</b> :> Get '[JSON] [String]
+```haskell
+type MyAPI = "dogs" :> Get '[JSON] [Int]
+        :<|> "cats" :> Get '[JSON] [String]
 ```
 
-"dogs" and "cats" are type-level strings.  At the end of this article we will
-look at some servant-server code and confirm that it is using symbolVal to get
+`"dogs"` and `"cats"` are type-level strings.  At the end of this article we will
+look at some servant-server code and confirm that it is using `symbolVal` to get
 the value of the type-level strings.
 
 Type-Level Lists
@@ -165,14 +163,14 @@ Just like we can have type-level strings, we can also have type-level lists.
 
 We need to enable the DataKinds language extension.
 
-```
+```haskell
 ghci> :set -XDataKinds
 ghci>
 ```
 
 Let's look at the kind of a type-level empty list:
 
-```
+```haskell
 ghci> :kind! []
 [] :: * -> *
 ghci>
@@ -193,7 +191,7 @@ see that foo2 represents a heterogeneous list with two elements, Int and Bool.
 Looking at the example, we see that we can define type-level lists by putting a
 quote in front of the opening bracket in the list:
 
-```
+```haskell
 ghci> :kind! '[]
 '[] :: [k]
 ghci>
@@ -201,7 +199,7 @@ ghci>
 
 We can also define type-level lists with multiple elements:
 
-```
+```haskell
 ghci> :kind! '[Int, Bool, String]
 '[Int, Bool, String] :: [*]
 ghci>
@@ -211,7 +209,7 @@ Going back to the MyAPI example from above, you can see that servant is using
 type-level lists to represent the available content-type encodings of the
 response.
 
-```
+```haskell
 type MyAPI = "dogs" :> Get <b>'[JSON]</b> [Int]
         :<|> "cats" :> Get <b>'[JSON]</b> [String]
 ```
@@ -220,7 +218,7 @@ Servant is only willing to send back responses in JSON.
 
 Additional content types could also be specified:
 
-```
+```haskell
 type MyAPI = "dogs" :> Get <b>'[JSON, FormUrlEncoded]</b> [Int]
         :<|> "cats" :> Get <b>'[JSON, PlainText]</b> Text
 ```
@@ -251,7 +249,7 @@ They are just composed of symbols instead of letters.
 
 Let's look at how (:>) and (:<|>) are defined in servant:
 
-```
+```haskell
 data path :> a
 
 data a :<|> b = a :<|> b
@@ -259,7 +257,7 @@ data a :<|> b = a :<|> b
 
 If we didn't want to write them infix, we could write them like this:
 
-```
+```haskell
 data (:>) path a
 
 data (:<|>) a b = (:<|>) a b
@@ -268,7 +266,7 @@ data (:<|>) a b = (:<|>) a b
 In fact, if we were to write these data types with letters instead of symbols,
 it would look something like this:
 
-```
+```haskell
 data Foo path a
 
 data Bar a b = Bar a b
@@ -280,13 +278,13 @@ look weird because they are made of symbols and written infix.
 Type operators help us write long type definitions that are easy to understand.
 Take the following API definition:
 
-```
+```haskell
 type MyAPI = "foo" :> "bar" >: Get '[JSON] [Int]
 ```
 
 Rewriting this prefix would look like this:
 
-```
+```haskell
 type MyAPI = (:>) "foo" ((>:) "bar" (Get '[JSON] [Int]))
 ```
 
@@ -344,7 +342,7 @@ Servant
 So now we come to how servant actually uses these things.  Let's go back to the
 example code at the top of this blog post:
 
-```
+```haskell
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 
@@ -381,7 +379,7 @@ servant-server, while myAPI is written by us.
 
 Let's look at the type of serve:
 
-```
+```haskell
 ghci> import Servant.Server
 ghci> :type serve
 serve :: HasServer layout => Proxy layout
@@ -402,7 +400,7 @@ covered later.
 
 (If you don't understand this, look at the type of the serve function again:
 
-```
+```haskell
 serve :: HasServer layout => Proxy <b>layout</b>
                           -> Server </b>layout</b>
                           -> Network.Wai.Application 
@@ -413,7 +411,7 @@ right?)
 
 Now look at the second argument, Server layout.  What is Server?
 
-```
+```haskell
 ghci> :info Server
 type Server layout =
     ServerT layout (EitherT ServantErr IO)
@@ -423,14 +421,14 @@ Server looks like it is a specialization of ServerT around the EitherT monad
 transformer.  This similar to how the Reader monad is a specialization of the
 ReaderT monad:
 
-```
+```haskell
 newtype ReaderT r m a = ...
 type Reader r a = ReaderT r Identity a
 ```
 
 Okay, so Server is just a specialization of ServerT.  So then what is ServerT?
 
-```
+```haskell
 ghci> :info! Server
 class HasServer (layout :: k) where                                                                                                              type family ServerT (layout :: k) (m :: * -> *) :: *
 ...
@@ -440,7 +438,7 @@ class HasServer (layout :: k) where                                             
 family.  It's a function that computes a type.  Let's take a look at the
 HasServer typeclass before really diving into ServerT.
 
-```
+```haskell
 class HasServer layout where
   type ServerT layout (m :: * -> *) :: *
 
@@ -453,21 +451,21 @@ this typeclass, route.  It takes a Proxy layout and an IO of a RouteResult of a
 ServerT with the m parameter specialized to EitherT ServantErr IO.  Quite a
 mouthful.  Let's abbreviate part of the type to make it easier to diget:
 
-```
+```haskell
 route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
 ```
 
 Basically route takes an IO of a RouteResult of a ServerT and returns a Router.
 Let's go back real quick and look at the implementation of the serve function:
 
-```
+```haskell
 serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr IO) -> Application
 serve p server = toApplication (runRouter (route p (return (RR (Right server)))))
 ```
 
 First off, the type of the function looks pretty similar to the route funtion:
 
-```
+```haskell
 serve :: HasServer layout => Proxy layout ->                 (ServerT ...)  -> Application
 route ::                     Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
 ```
@@ -476,7 +474,7 @@ So how does the serve function work?  It's basically taking our server
 argument, wrapping it in a default RouteResult and IO, then passing it to the
 route function.
 
-```
+```haskell
 serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
 serve p server = toApplication (runRouter (route p (return (RR (Right server)))))
                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -492,7 +490,7 @@ HasServer, one more time
 
 Let's go back to the HasServer typeclass.  Here it is again:
 
-```
+```haskell
 class HasServer layout where
   type ServerT layout (m :: * -> *) :: *
 
@@ -504,10 +502,10 @@ can then turn these routers into a Wai application.
 
 So what instances are available for the HasServer typeclass?  Let's ask ghci.
 
-```
+```haskell
 ghci> :info! HasServer
 ...
-instance AllCTRender ctypes a => HasServer (Get ctypes a) 
+instance AllCTRender ctypes a => HasServer (Get ctypes a)
 ...
 instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout)
 instance (HasServer a, HasServer b) => HasServer (a :<|> b)
@@ -518,26 +516,26 @@ It looks like there are instances for Get, (:>), (:<|>).  I know where we've see
 
 Let's take a look at the MyAPI type we defined earlier as our example code:
 
-```
+```haskell
 type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
 Remember how we can rewrite type-level operators to prefix form?  Well, if we do that for (:<|>), our MyAPI will look like this:
 
-```
+```haskell
 type MyAPI = (:<|>) ("dogs" :> Get '[JSON] [Int]) ("cats" :> Get '[JSON] [String])
 ```
 
 We could do it again for (:>) and it will get even uglier:
 
-```
+```haskell
 type MyAPI = (:<|>) ((:>) "dogs" (Get '[JSON] [Int])) ((:>) "cats" (Get '[JSON] [String]))
 ```
 
 Okay, so here's where the explanation starts to get a little difficult.  Remember our app function?
 
-```
+```haskell
 app :: Application
 app = serve (Proxy :: Proxy MyAPI) myAPI
 
@@ -555,7 +553,7 @@ It's basically just calling serve and passing it two things.  1) a Proxy with
 the MyAPI type.  2) the myAPI function, which is the actual implementation of
 our API.  You remember what serve does, right?
 
-```
+```haskell
 serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr IO) -> Application
 serve p server = toApplication (runRouter (route p (return (RR (Right server)))))
 ```
@@ -567,7 +565,7 @@ function actually gets called?  If we look at the HasServer typeclass once
 again, we can see that it depends on the type of layout (which gets pass to
 route as Proxy layout).
 
-```
+```haskell
 class HasServer <b>layout</b> where
   type ServerT <b>layout</b> (m :: * -> *) :: *
 
@@ -576,20 +574,20 @@ class HasServer <b>layout</b> where
 
 layout originally comes from our app function.
 
-```
+```haskell
 app :: Application
 app = serve (Proxy :: Proxy MyAPI) myAPI
 ```
 
 Here it's MyAPI.  What's the prefix form of MyAPI?
 
-```
+```haskell
 type MyAPI = (:<|>) ((:>) "dogs" (Get '[JSON] [Int])) ((:>) "cats" (Get '[JSON] [String]))
 ```
 
 Okay, great!  So we need the HasServer instance for (:<|>)!  What does that look like?
 
-```
+```haskell
 instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
   type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 
@@ -602,13 +600,13 @@ instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
 So what's going on here?  Well, first you notice that the value the ServerT
 type family becomes ServerT a m :<|> ServerT b m.
 
-```
+```haskell
 type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 ```
 
 So what's the significance of this?  Two things.  One, we can figure out the specialized type of route:
 
-```
+```haskell
 route :: Proxy layout -> IO (RouteResult (ServerT layout ...)) -> Router
 -- becomes
 route :: Proxy layout -> IO (RouteResult (<b>ServerT a ... :<|> ServerT b ...</b>)) -> Router
@@ -617,14 +615,14 @@ route :: Proxy layout -> IO (RouteResult (<b>ServerT a ... :<|> ServerT b ...</b
 And two, we can change the type of our myAPI function to this, and our example
 program will still compile.  Before, we had this:
 
-```
+```haskell
 myAPI :: ServerT MyAPI (EitherT ServantErr IO)
 myAPI = dogNums :<|> cats
 ```
 
 But we could change it to this:
 
-```
+```haskell
 myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)
     :<|> ServerT ("cats" :> Get '[JSON] [String]) (EitherT ServantErr IO)
 myAPI = dogNums :<|> cats
@@ -639,7 +637,7 @@ Going back to the HasServer instance for (:<|>), we see that the route function
 basically calls itself recursively on both arguments to (:<|>).  So, which
 route function will be called?
 
-```
+```haskell
 instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
   type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 
@@ -651,7 +649,7 @@ instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
 
 Lets take a look at the first argument to (:<|>).
 
-```
+```haskell
 type MyAPI = <b>"dogs" :> Get '[JSON] [Int]</b>
         :<|> "cats" :> Get '[JSON] [String]
 
@@ -667,14 +665,14 @@ You can probaby see where this is going.  The route function for the (:>)
 instance of HasServer will be called.  This corresponds to the ("dogs" :> Get
 '[JSON] [Int]) portion of MyAPI:
 
-```
+```haskell
 type MyAPI = <b>"dogs" :> Get '[JSON] [Int]</b>
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
 Here is the HasServer instance for (:>):
 
-```
+```haskell
 instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout) where
 
   type ServerT (path :> sublayout) m = ServerT sublayout m
@@ -689,9 +687,9 @@ Similarly to (:<|>), you can see that the value of the ServerT type family
 becomes ServerT sublayout m.  The path portion is basically ignored.
 
 Just like above, we can change the type of myAPI to match this.  After our last
-change, we had this:  
+change, we had this:
 
-```
+```haskell
 myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)
     :<|> ServerT ("cats" :> Get '[JSON] [String]) (EitherT ServantErr IO)
 myAPI = dogNums :<|> cats
@@ -699,7 +697,7 @@ myAPI = dogNums :<|> cats
 
 Because the path portion is ignored, we can change it to this:
 
-```
+```haskell
 myAPI :: ServerT (Get '[JSON] [Int]) (EitherT ServantErr IO)
     :<|> ServerT (Get '[JSON] [String]) (EitherT ServantErr IO)
 myAPI = dogNums :<|> cats
@@ -711,7 +709,7 @@ If path is ignored in the type family, what is it actually used for?
 
 symbolVal is called to get the value of path at the value level!  It's using the value of path to do the routing.
 
-```
+```haskell
 route Proxy subserver = StaticRouter $
     M.singleton (cs (<b>symbolVal proxyPath</b>))
                 (route (Proxy :: Proxy sublayout) subserver)
@@ -720,7 +718,7 @@ route Proxy subserver = StaticRouter $
 
 route is then called recursively on the subsever (which has type sublayout).
 
-```
+```haskell
 route Proxy subserver = StaticRouter $
     M.singleton (cs (symbolVal proxyPath))
                 (<b>route (Proxy :: Proxy sublayout) subserver</b>)
@@ -730,7 +728,7 @@ route Proxy subserver = StaticRouter $
 In this case, subserver will be our dogNums function, and the sublayout type
 will be Get '[JSON] [Int].
 
-```
+```haskell
 type MyAPI = "dogs" :> <b>Get '[JSON] [Int]</b>
         :<|> "cats" :> Get '[JSON] [String]
 
@@ -744,7 +742,7 @@ Red Pill, Blue Pill, Bottom of the Rabit Hole
 What route function will be called in this case?  The one defined for the Get
 instance of HasServer!
 
-```
+```haskell
 instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
   type ServerT (Get ctypes a) m = m a
 
@@ -755,7 +753,7 @@ You can see that the ServerT type family becomes m a.  For us, m is EitherT
 ServantErr IO, and a is [Int].  So it becomes EitherT ServantErr IO [Int].
 That's why dogNums type is EitherT ServantErr IO [Int].
 
-```
+```haskell
 dogNums :: EitherT ServantErr IO [Int]
 dogNums = return [1,2,3,4]
 ```
@@ -763,7 +761,7 @@ dogNums = return [1,2,3,4]
 Just like we did above, we can manually rewrite the type of myAPI and it will
 still compile:
 
-```
+```haskell
 myAPI :: EitherT ServantErr IO [Int]
     :<|> EitherT ServantErr IO [String]
 myAPI = dogNums :<|> cats
@@ -779,7 +777,7 @@ Conclusion
 
 At a very high-level, the HasServer typeclass, ServerT type family, and route function are used to peal away levels of MyAPI:
 
-```
+```haskell
 type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
@@ -788,7 +786,7 @@ First, (:<|>) is pealed away and we are left with "dogs" :> Get '[JSON] [Int].
 Then (:>) is pealed away and we are left with Get '[JSON] [Int].  This gets
 turned into the actual type of the function we will be calling (dogNums).
 
-```
+```haskell
 dogNums :: <b>EitherT ServantErr IO [Int]</b>
 dogNums = return [1,2,3,4]
 ```
