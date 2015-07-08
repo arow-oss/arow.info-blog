@@ -314,40 +314,40 @@ to do some computation at the type level.  However, if you google for [type
 families](https://www.google.co.jp/search?q=haskell+type+families&ie=utf-8&oe=utf-8&gws_rd=cr&ei=OzuSVZSMA6S-mAX044aoCQ),
 it's easy to get scared.
 
-The first result is the GHC/Type families article on the Haskell wiki
-(https://wiki.haskell.org/GHC/Type_families).  This is written with an advanced
-Haskeller in mind.  Don't worry if it's too hard.  (The other problem is that
-most of their examples use data families instead of type families--which I
-introduce below.  Most of the realworld Haskell code I've seen uses type
-families much more than data families).
+The first result is the [GHC/Type
+families](https://wiki.haskell.org/GHC/Type_families) article on the Haskell
+Wiki.  This is written with an advanced Haskeller in mind.  Don't worry if it's
+too hard.  (The other problem is that most of their examples use data families
+instead of type synonym families--which I introduce below.  Most of the real world
+Haskell code I've seen uses type synonym families much more than data families).
 
-The second link is to the GHC manual.  It's good if you already know about type
-families and just want a refresher, but it's not good as an introduction to
-type families.
-https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/type-families.html
+The second link is to the [type-families
+page](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/type-families.html)
+in the GHC manual.  It's good if you already know about type families and just
+a refresher, but it's not good as an introduction to type families.
 
-The third result is
-https://www.fpcomplete.com/school/to-infinity-and-beyond/pick-of-the-week/type-families-and-pokemon
-an article on fpcomplete.  It gets points for being about Pokemon, but the
+The third result is an
+[article](https://www.fpcomplete.com/school/to-infinity-and-beyond/pick-of-the-week/type-families-and-pokemon)
+on FP Complete.  It gets points for being about Pokemon, but the
 setup/motivation for using type families is way too long.
 
-The fourth result is an introduction to type families from O'Charles
-(https://ocharles.org.uk/blog/posts/2014-12-12-type-families.html).  It's the
-best of the bunch, but it is slightly hard to follow if you've never used
-MVars, IORefs, etc.
+The fourth result is an introduction to [type
+families](https://ocharles.org.uk/blog/posts/2014-12-12-type-families.html) by
+Oliver Charles.  It's the best of the bunch, but it is slightly hard to follow
+if you've never used MVars, IORefs, etc.
 
-I wrote a super simple tl;dr [presentation about type
+I wrote a super simple *tl;dr* [presentation about type
 families](https://cdepillabout.github.io/haskell-type-families-presentation).
 Originally I wrote it in Japanese for a Haskell Lightening Talk in Tokyo, but I
-recently translated it to English upon the request from someone in the #haskell
-room in the functional programming slack community (http://fpchat.com/).  If
+recently translated it to English upon the request from someone in the **#haskell**
+room in the [functional programming slack community](http://fpchat.com/).  If
 you aren't sure about type families, please read that presentation and then
-proceed to the next section.  We will be discussing the ServantT type familiy.
+proceed to the next section.
 
 Servant
 -------
 
-So now we come to how servant actually uses these things.  Let's go back to the
+Now we come to the interesting section.  How does servant actually uses these things?  Let's go back to the
 example code at the top of this blog post:
 
 ```haskell
@@ -382,8 +382,9 @@ main :: IO ()
 main = run 32323 $ logStdoutDev app
 ```
 
-The two interesting functions are serve and myAPI.  serve is provided by
-servant-server, while myAPI is written by us.
+The two interesting functions are `serve` and `myAPI`.  [`serve`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:serve) is provided by
+[servant-server](https://hackage.haskell.org/package/servant-server),
+while `myAPI` is written by us.
 
 Let's look at the type of serve:
 
@@ -395,34 +396,35 @@ serve :: HasServer layout => Proxy layout
                           -> Network.Wai.Application 
 ```
 
-Let's start with the easy things.  You can see that it returns a
-'Network.Wai.Application'.  This represents an application that can that can be
-served by Warp (i.e. something that can be passed to the 'run' function
-provided by Warp).
+Let's start with the easy things.  It returns a
+[`Network.Wai.Application`](https://hackage.haskell.org/package/wai-3.0.3.0/docs/Network-Wai.html#t:Application).
+This represents an application that can that can be served by Warp (i.e.
+something that can be passed to the [`run`](https://hackage.haskell.org/package/warp-3.0.13.1/docs/Network-Wai-Handler-Warp.html#v:run) function provided by Warp).
 
-The first argument is Proxy layout.  This is how we tell the serve function
-what our API type is.  You might be asking, "If we are also passing the layout
-type variable to the Server type constructor, why do we additionally need to
-pass a Proxy layout?  Surely, we don't need to pass it twice?".  That will be
-covered later.
+The first argument is `Proxy layout`.  The `serve` function uses this to figure
+out what the API type is.  You might be asking, "*If we are also passing the
+`layout` type variable to the
+[`Server`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:Server)
+type constructor, why do we additionally need to pass a `Proxy layout`?
+Surely, we don't need to pass `layout` twice?*".  That
+will be covered later.
 
-(If you don't understand this, look at the type of the serve function again:
+(If you don't understand this, look at the type of the `serve` function again:
 
 ```haskell
-serve :: HasServer layout => Proxy <b>layout</b>
-                          -> Server </b>layout</b>
+serve :: HasServer layout => Proxy layout
+                          -> Server layout
                           -> Network.Wai.Application 
 ```
 
-layout is specified twice, when it should only have to be specified once,
+`layout` is specified twice, when it should only have to be specified once,
 right?)
 
-Now look at the second argument, Server layout.  What is Server?
+Now look at the second argument, `Server layout`.  What is `Server`?
 
 ```haskell
 ghci> :info Server
-type Server layout =
-    ServerT layout (EitherT ServantErr IO)
+type Server layout = ServerT layout (EitherT ServantErr IO)
 ```
 
 Server looks like it is a specialization of ServerT around the EitherT monad
