@@ -12,14 +12,14 @@
     <title>ARoW.info Blog</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap.css" rel="stylesheet">
     <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"> -->
 
     <!-- Pandoc syntax highlighting CSS -->
     <link href="./css/syntax.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link href="./css/clean-blog.min.css" rel="stylesheet">
+    <link href="./css/clean-blog.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -48,24 +48,24 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="./index.html">Start Bootstrap</a>
+								<a class="navbar-brand" href="//www.arow.info"><img height="30px" src="//www.arow.info/img/logo.png"></a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="./index.html">Home</a>
+                        <a href="//www.arow.info">Home</a>
                     </li>
                     <li>
-                        <a href="./about.html">About</a>
+                        <a href="./index.html">Blog</a>
                     </li>
-                    <li>
-                        <a href="./post.html">Sample Post</a>
-                    </li>
-                    <li>
-                        <a href="./contact.html">Contact</a>
-                    </li>
+                    <!-- <li> -->
+                    <!--     <a href="/post.html">Sample Post</a> -->
+                    <!-- </li> -->
+                    <!-- <li> -->
+                    <!--     <a href="/contact.html">Contact</a> -->
+                    <!-- </li> -->
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -79,10 +79,8 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                   <div class="site-heading">
-                    <h1>Clean Blog</h1>
-                    <hr class="small"> <span class="subheading">A Clean Blog Theme by Start Bootstrap</span>
-                    <!-- <hr class="small"> -->
-                    <!-- <span class="subheading">A Clean Blog Theme by Start Bootstrap</span> -->
+                    <h1>ARoW Blog</h1>
+                    <hr class="small"> <span class="subheading">Don't work too hard.  Use Haskell.</span>
                   </div>
                 </div>
             </div>
@@ -105,15 +103,19 @@
       </a>
       <p class="post-meta">Posted by Dennis Gosnell on July 10, 2015</p>
   </div>
-  <hr>
+  <!-- Remove the hr for the time being because it looks weird.  We might have
+  to fix it if we ever have more than one post. -->
+  <!-- <hr> -->
 
 
             <!-- Pager -->
-            <ul class="pager">
-                <li class="next">
-                    <a href="#">Older Posts &rarr;</a>
-                </li>
-            </ul>
+            <!-- For the time being, we won't use a pager.  If we get a lot of -->
+            <!-- posts, we should probably use a pager. -->
+            <!-- <ul class="pager"> -->
+            <!--     <li class="next"> -->
+            <!--         <a href="#">Older Posts &rarr;</a> -->
+            <!--     </li> -->
+            <!-- </ul> -->
         </div>
     </div>
 </div>
@@ -144,7 +146,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#">
+                            <a href="https://github.com/arow-oss">
                                 <span class="fa-stack fa-lg">
                                     <i class="fa fa-circle fa-stack-2x"></i>
                                     <i class="fa fa-github fa-stack-1x fa-inverse"></i>
@@ -152,7 +154,7 @@
                             </a>
                         </li>
                     </ul>
-                    <p class="copyright text-muted">Copyright &copy; Your Website 2014</p>
+                    <p class="copyright text-muted">Copyright ARoW Co., Ltd. Your Website 2015</p>
                 </div>
             </div>
         </div>
