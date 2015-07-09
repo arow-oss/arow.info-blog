@@ -15,7 +15,7 @@ servant-server to explain how these features are used in practice.
 
 This article is aimed at people who have a basic familiarity with Haskell.
 This includes understanding things like typeclasses, applicatives, monads,
-monad transformers, pointfree style, etc.
+monad transformers, pointfree style, ghci, etc.
 
 ## Servant Example
 
@@ -248,8 +248,12 @@ on the generics-sop package where he talks a little about heterogeneous lists.
 ## Type-Level Operators
 
 In the servant example code above, there are two type-level operators being
-used: `(:>)` and `(:<|>)`.  Type-level operators are similar to normal data
-types---they are just composed of symbols instead of letters.
+used:
+[`(:>)`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant/src/Servant/API/Sub.hs#L17)
+and
+[`(:<|>)`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant/src/Servant/API/Alternative.hs#L19).
+Type-level operators are similar to normal data types---they are just composed
+of symbols instead of letters.
 
 Let's look at how `(:>)` and `(:<|>)` are defined in servant:
 
@@ -477,7 +481,7 @@ Let's go back real quick and look at the implementation of the `serve` function:
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr IO) -> Application
-serve p server = toApplication (runRouter (route p (return (RR (Right server)))))
+serve proxy server = toApplication (runRouter (route proxy (return (RR (Right server)))))
 ```
 
 First off, the type of the `serve` function looks pretty similar to the `route` function:
@@ -493,9 +497,9 @@ argument (which is of type `ServerT`), wrapping it in a base `RouteResult` and `
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
-serve p server = toApplication (runRouter (route p (return (RR (Right server)))))
-                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                                   look at all this wrapping!!!
+serve proxy server = toApplication (runRouter (route proxy (return (RR (Right server)))))
+                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                           look at all this wrapping!!!
 ```
 
 It takes the resulting `Router` from the `route` function, passes it to
@@ -505,17 +509,17 @@ to get the Wai application.  Pretty easy!  Let's see it point free!
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
-serve p = toApplication . runRouter . route p . return . RR . Right
-                                                ^^^^^^^^^^^^^^^^^^^
-                                           look at this pointfree wrapping!!!
+serve proxy = toApplication . runRouter . route proxy . return . RR . Right
+                                                        ^^^^^^^^^^^^^^^^^^^
+                                                  look at this pointfree wrapping!!!
 ```
 
-Understanding `serve` isn't actually necessary to understanding the rest of
+Understanding `serve` isn't strictly necessary to understanding the rest of
 this article, but it is interesting.
 
 ## `HasServer`, one more time
 
-Let's go back to the HasServer typeclass.  Here it is again:
+Let's go back to the `HasServer` typeclass.  Here it is again:
 
 ```haskell
 class HasServer layout where
@@ -524,10 +528,10 @@ class HasServer layout where
   route :: Proxy layout -> IO (RouteResult (ServerT layout (EitherT ServantErr IO))) -> Router
 ```
 
-This typeclass basically specifies things that we can create Router's for.  We
-can then turn these routers into a Wai application.
+This typeclass specifies things for which `Router`s can be created.  These
+`Router`s can then be turned into a Wai application.
 
-So what instances are available for the HasServer typeclass?  Let's ask ghci.
+So what instances are available for the `HasServer` typeclass?  Let's ask ghci.
 
 ```haskell
 ghci> :info! HasServer
@@ -539,28 +543,32 @@ instance (HasServer a, HasServer b) => HasServer (a :<|> b)
 ghci>
 ```
 
-It looks like there are instances for Get, (:>), (:<|>).  I know where we've seen those before!  The MyAPI type!
+there are instances defined for
+[`Get`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L230),
+[`(:>)`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L715),
+[`(:<|>)`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L79).
+I know where we've seen those before!  The `MyAPI` type!
 
-Let's take a look at the MyAPI type we defined earlier as our example code:
+Let's take a look at the `MyAPI` type defined earlier in the example code:
 
 ```haskell
 type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
-Remember how we can rewrite type-level operators to prefix form?  Well, if we do that for (:<|>), our MyAPI will look like this:
+Remember how type-level operators can be rewritten to prefix form?  Well, rewriting `(:<|>)` to prefix form becomes this:
 
 ```haskell
 type MyAPI = (:<|>) ("dogs" :> Get '[JSON] [Int]) ("cats" :> Get '[JSON] [String])
 ```
 
-We could do it again for (:>) and it will get even uglier:
+The inner `(:>)` could also be rewritten to prefix form and it will get *even uglier*:
 
 ```haskell
 type MyAPI = (:<|>) ((:>) "dogs" (Get '[JSON] [Int])) ((:>) "cats" (Get '[JSON] [String]))
 ```
 
-Okay, so here's where the explanation starts to get a little difficult.  Remember our app function?
+Okay, so here's where the explanation starts to get a little difficult.  Remember the `app` function?
 
 ```haskell
 app :: Application
@@ -577,15 +585,15 @@ cats = return ["long-haired", "short-haired"]
 ```
 
 It's basically just calling serve and passing it two things.  1) a Proxy with
-the MyAPI type.  2) the myAPI function, which is the actual implementation of
-our API.  You remember what serve does, right?
+the `MyAPI` type.  2) the `myAPI` function, which is the actual implementation of
+the API.  You remember what `serve` does, right?
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr IO) -> Application
 serve p server = toApplication (runRouter (route p (return (RR (Right server)))))
 ```
 
-It basically just calls route with our proxy and the implementation of our api.
+It basically calls `route` with our proxy and the implementation of our api.
 
 Now for the interesting part.  Since HasServer is a typeclass, what route
 function actually gets called?  If we look at the HasServer typeclass once
@@ -783,7 +791,7 @@ dogNums :: EitherT ServantErr IO [Int]
 dogNums = return [1,2,3,4]
 ```
 
-Just like we did above, we can manually rewrite the type of myAPI and it will
+Just like we did above, we can manually rewrite the type of `myAPI` and it will
 still compile:
 
 ```haskell
