@@ -51,6 +51,13 @@ main = hakyllWith hakyllConfig $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
+            -- Instead of just (return posts) here, I might want to take
+            -- each post Item and add a field about whether or not it is
+            -- the last Item.  Then, in templates/post-list.html, I can
+            -- look at whether or not it is last, and only add a <hr> if it
+            -- is not last.
+            -- The following post might help?
+            -- https://github.com/jaspervdj/hakyll/issues/263
             let indexCtx = listField "posts" postCtx (return posts) `mappend`
                            defaultContext
             indexBody <- getResourceBody
