@@ -1,8 +1,8 @@
 ---
-title: ARoW.info Blog -- Type-level Things, Type Families, and Servant
+title: ARoW.info Blog -- Servant, Type Families, and Type-level Everything
 headingBackgroundImage: ../img/post-bg.jpg
 headingDivClass: post-heading
-heading: Type-level Things, Type Families, and Servant
+heading: Servant, Type Families, and Type-level Everything
 subHeading: A look at advanced GHC features used in Servant
 postedBy: Dennis Gosnell
 ---
@@ -108,7 +108,7 @@ ghci>
 
 Recent versions of GHC support [type-level
 strings](https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/type-level-literals.html).
-What's a type-level string?  Well, let's play around with it in the REPL.
+What's a type-level string?  Well, let's play around with it in ghci.
 
 First, the DataKinds language extension needs to be enabled.
 
@@ -180,7 +180,7 @@ ghci>
 ```
 
 No, wait, that's not right.  That's just the kind of the normal list
-construtor.  How do we write a type-level list?
+constructor.  How do we write a type-level list?
 
 Take quick peek at the GHC page on [datatype
 promotion](https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/promotion.html).
@@ -232,13 +232,13 @@ type MyAPI = "dogs" :> Get '[JSON, FormUrlEncoded] [Int]
 form-encoded values.  The `/cats` route will return either JSON or plain text.
 
 I'm not going to go into how type-level lists are used in servant-server, but
-if you're interested you may want to start with reading the [Get instance for
-HasServer](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L230),
+if you're interested you may want to start with reading the [`Get` instance for
+`HasServer`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L230),
 which will take you to the
-[methodRouter](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123)
+[`methodRouter`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123)
 function, which will take you to the
-[AllCTRender](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant/src/Servant/API/ContentTypes.hs#L158)
-typeclass.  The AllCTRender typeclass/instance is where the real magic starts happening.
+[`AllCTRender]`(https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant/src/Servant/API/ContentTypes.hs#L158)
+typeclass.  The `AllCTRender` typeclass/instance is where the real magic starts happening.
 
 Oliver Charles has an [interesting
 post](https://ocharles.org.uk/blog/posts/2014-08-07-postgresql-simple-generic-sop.html)
@@ -263,7 +263,7 @@ data path :> a
 data a :<|> b = a :<|> b
 ```
 
-If we didn't want to write them infix, they could be writen like this:
+If we didn't want to write them infix, they could be written like this:
 
 ```haskell
 data (:>) path a
@@ -271,7 +271,7 @@ data (:>) path a
 data (:<|>) a b = (:<|>) a b
 ```
 
-In fact, if these data types were writen with letters instead of symbols,
+In fact, if these data types were written with letters instead of symbols,
 they would look something like this:
 
 ```haskell
@@ -428,7 +428,7 @@ type Server layout = ServerT layout (EitherT ServantErr IO)
 ```
 
 `Server` looks like it is a specialization of
-[ServerT](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT)
+[`ServerT`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT)
 around the
 [`EitherT`](https://hackage.haskell.org/package/either-4.4.1/docs/Control-Monad-Trans-Either.html#t:EitherT)
 monad transformer.  This similar to how the
@@ -528,8 +528,8 @@ class HasServer layout where
   route :: Proxy layout -> IO (RouteResult (ServerT layout (EitherT ServantErr IO))) -> Router
 ```
 
-This typeclass specifies things for which `Router`s can be created.  These
-`Router`s can then be turned into a Wai application.
+This typeclass specifies things which can create a `Router`.  A `Router` can
+then be turned into a Wai application.
 
 So what instances are available for the `HasServer` typeclass?  Let's ask ghci.
 
@@ -689,9 +689,8 @@ instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
 ```
 
 Let's take a look at the first argument to `(:<|>)`: `"dogs" :> Get '[JSON]
-[Int]`.  This corresponds to the first part of `myAPI`'s type, `ServerT ("dogs"
-:> Get '[JSON] [Int]) (EitherT ServantErr IO)`, and to the `dogNums` function
-in particular.
+[Int]`.  This corresponds to the first part of `myAPI`: `ServerT ("dogs" :> Get
+'[JSON] [Int]) (EitherT ServantErr IO)` (which is the `dogNums` function).
 
 ```haskell
 type MyAPI = "dogs" :> Get '[JSON] [Int]
@@ -727,8 +726,8 @@ instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout
     where proxyPath = Proxy :: Proxy path
 ```
 
-Similar to `(:<|>)`, the value of the `ServerT` type family becomes `ServerT
-sublayout m`.  The `path` argument is not used.
+Similar to `(:<|>)`, the value of the `ServerT (path >: sublayout)` type family
+becomes `ServerT sublayout m`.  The `path` argument is not used.
 
 Just like above, the type of `myAPI` can be changed to match this.  After the
 last change, it looked like this:
@@ -749,16 +748,18 @@ myAPI = dogNums :<|> cats
 
 Still compiles!  Great!
 
-If `path` is ignored in the value of the type family, what is it actually used
+If the `path` argument in `ServerT (path :> sublayout)` is ignored in the value of the type family, what is it actually used
 for?
 
-`symbolVal` is called to get the value of the `path` type at the value level!
-It's using the value of `path` to do the routing.
+`symbolVal` is used to get the value of the `path` type!  It's using the value
+of `path` to do the routing.  It's creating a
+[`Map`](https://hackage.haskell.org/package/containers-0.5.6.3/docs/Data-Map-Lazy.html#t:Map)
+that can later be used to lookup the path piece.
 
 ```haskell
 route Proxy subserver = StaticRouter $
-    M.singleton (cs (symbolVal proxyPath))
-                (route (Proxy :: Proxy sublayout) subserver)
+    Map.singleton (cs (symbolVal proxyPath))
+                  (route (Proxy :: Proxy sublayout) subserver)
   where proxyPath = Proxy :: Proxy path
 ```
 
@@ -787,10 +788,10 @@ instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
   route Proxy = methodRouter methodGet (Proxy :: Proxy ctypes) ok200
 ```
 
-In this instance, the `ServerT (Get ctypes a) m` type family becomes simply `m
-a`.  For us, `m` is `EitherT ServantErr IO`, and `a` is `[Int]`.  So `ServerT
-(Get ctypes a) m` becomes `EitherT ServantErr IO [Int]`.  That's why `dogNums`'
-type is `EitherT ServantErr IO [Int]`.
+In this instance, the `ServerT (Get ctypes a) m` type family simply becomes `m
+a`.  In our case, `m` is `EitherT ServantErr IO`, and `a` is `[Int]`.  So
+`ServerT (Get ctypes a) m` becomes `EitherT ServantErr IO [Int]`.  That's why
+the type of `dogNums` is `EitherT ServantErr IO [Int]`.
 
 ```haskell
 dogNums :: EitherT ServantErr IO [Int]
@@ -806,31 +807,33 @@ myAPI :: EitherT ServantErr IO [Int]
 myAPI = dogNums :<|> cats
 ```
 
-We won't go into how the `route` function is implemented here, but you are
-welcome to look at the implementation of
-[methodRouter](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123)
-if you're interested.
+We won't go into how the `route` function is implemented here, but if you are
+interested, you're welcome to look at the implementation of
+[`methodRouter`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123).
 
-## Conclusion
+## Wrap-Up
 
-At a very high-level, the HasServer typeclass, ServerT type family, and route function are used to peal away levels of MyAPI:
+At a very high-level, the `HasServer` typeclass, `ServerT` type family, and
+`route` function are used to peal away levels of the `MyAPI` type:
 
 ```haskell
 type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
-First, (:<|>) is pealed away and we are left with "dogs" :> Get '[JSON] [Int].
-Then (:>) is pealed away and we are left with Get '[JSON] [Int].  This gets
-turned into the actual type of the function we will be calling (dogNums).
+First, `(:<|>)` is pealed away leaving us with `"dogs" :> Get '[JSON] [Int]`.
+Then `(:>)` is pealed away leaving us with `Get '[JSON] [Int]`.  This gets
+turned into the actual type of `dogNums`: `EitherT ServantErr IO [Int]`.
 
 ```haskell
-dogNums :: <b>EitherT ServantErr IO [Int]</b>
+dogNums :: EitherT ServantErr IO [Int]
 dogNums = return [1,2,3,4]
 ```
 
-If you liked this tutorial, you may also like the servant tutorial itself
-(http://haskell-servant.github.io/tutorial/), or a tutorial about using servant
-with persistent
-(http://www.parsonsmatt.org/programming/2015/06/07/servant-persistent.html) by
-Matt Parsons (http://www.parsonsmatt.org/).
+## Conclusion
+
+If you liked this tutorial, you may also like the official [servant
+tutorial](http://haskell-servant.github.io/tutorial/), or a tutorial about
+using [servant with
+persistent](http://www.parsonsmatt.org/programming/2015/06/07/servant-persistent.html)
+by [Matt Parsons](http://www.parsonsmatt.org/).
