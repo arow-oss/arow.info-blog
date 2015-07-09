@@ -597,34 +597,35 @@ serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr 
 serve proxy server = toApplication (runRouter (route proxy (return (RR (Right server)))))
 ```
 
-It basically calls `route` with our proxy and the implementation of our api.
+It basically calls `route` with the proxy and the implementation of the API.
 
 Now for the interesting part.  Since `HasServer` is a typeclass, what `route`
 function actually gets called?  If we look at the `HasServer` typeclass once
-again, we can see that it depends on the type of `layout` (which gets pass to
-`route` as `Proxy layout`).
+again, we can see that the specific `route` function that gets called depends
+on the type of `layout` (which gets passed to `route` as `Proxy layout`).
 
 ```haskell
-class HasServer <b>layout</b> where
-  type ServerT <b>layout</b> (m :: * -> *) :: *
+class HasServer layout where
+  type ServerT layout (m :: * -> *) :: *
 
-  route :: <b>Proxy layout</b> -> IO (RouteResult (ServerT layout ...)) -> Router
+  route :: Proxy layout -> IO (RouteResult (ServerT layout ...)) -> Router
 ```
 
-layout originally comes from our app function.
+`layout` originally comes from the `app` function in the example code.
 
 ```haskell
 app :: Application
 app = serve (Proxy :: Proxy MyAPI) myAPI
 ```
 
-Here it's MyAPI.  What's the prefix form of MyAPI?
+Here it's `MyAPI`.  What's the prefix form of `MyAPI`?
 
 ```haskell
 type MyAPI = (:<|>) ((:>) "dogs" (Get '[JSON] [Int])) ((:>) "cats" (Get '[JSON] [String]))
 ```
 
-Okay, great!  So we need the HasServer instance for (:<|>)!  What does that look like?
+Okay, great!  So it looks like the `HasServer` instance for `(:<|>)` can be
+used!  What does it look like?
 
 ```haskell
 instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
@@ -636,30 +637,32 @@ instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
           pb = Proxy :: Proxy b
 ```
 
-So what's going on here?  Well, first you notice that the value the ServerT
-type family becomes ServerT a m :<|> ServerT b m.
+What's going on here?  The first thing to notice is that the value of the
+`ServerT (a :<|> b) m` type family becomes `ServerT a m :<|> ServerT b m`:
 
 ```haskell
 type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 ```
 
-So what's the significance of this?  Two things.  One, we can figure out the specialized type of route:
+What's the significance of this?  Two things.  One, the new, specialized type
+of route can be deduced:
 
 ```haskell
-route :: Proxy layout -> IO (RouteResult (ServerT layout ...)) -> Router
+route :: Proxy layout -> IO (RouteResult (ServerT layout ...)              ) -> Router
 -- becomes
-route :: Proxy layout -> IO (RouteResult (<b>ServerT a ... :<|> ServerT b ...</b>)) -> Router
+route :: Proxy layout -> IO (RouteResult (ServerT a ... :<|> ServerT b ...)) -> Router
 ```
 
-And two, we can change the type of our myAPI function to this, and our example
-program will still compile.  Before, we had this:
+And two, the type of the `myAPI` function from the example program can be
+changed to this specialized type, and the example program will still compile.
+Before, it looked like this:
 
 ```haskell
 myAPI :: ServerT MyAPI (EitherT ServantErr IO)
 myAPI = dogNums :<|> cats
 ```
 
-But we could change it to this:
+But it could be changed to this:
 
 ```haskell
 myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)
@@ -671,44 +674,47 @@ It still compiles!  That's great!
 
 ## One Level Deeper
 
-Going back to the HasServer instance for (:<|>), we see that the route function
-basically calls itself recursively on both arguments to (:<|>).  So, which
-route function will be called?
+Going back to the `HasServer` instance for `(:<|>)`, we see that the `route`
+function basically calls itself recursively on both arguments to `(:<|>)`.  For
+these recursive calls, which `route` function will be called?
 
 ```haskell
 instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
   type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 
-  route Proxy server = choice (<b>route pa (extractL <$> server)</b>)
-                              (<b>route pb (extractR <$> server)</b>)
+  route Proxy server = choice (route pa (extractL <$> server))
+                              (route pb (extractR <$> server))
     where pa = Proxy :: Proxy a
           pb = Proxy :: Proxy b
 ```
 
-Lets take a look at the first argument to (:<|>).
+Let's take a look at the first argument to `(:<|>)`: `"dogs" :> Get '[JSON]
+[Int]`.  This corresponds to the first part of `myAPI`'s type, `ServerT ("dogs"
+:> Get '[JSON] [Int]) (EitherT ServantErr IO)`, and to the `dogNums` function
+in particular.
 
 ```haskell
-type MyAPI = <b>"dogs" :> Get '[JSON] [Int]</b>
+type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 
-myAPI :: <b>ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)</b>
+myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)
     :<|> ServerT ("cats" :> Get '[JSON] [String]) (EitherT ServantErr IO)
-myAPI = <b>dogNums</b> :<|> cats
+myAPI = dogNums :<|> cats
 
-<b>dogNums :: EitherT ServantErr IO [Int]
-dogNums = return [1,2,3,4]</b>
+dogNums :: EitherT ServantErr IO [Int]
+dogNums = return [1,2,3,4]
 ```
 
-You can probaby see where this is going.  The route function for the (:>)
-instance of HasServer will be called.  This corresponds to the ("dogs" :> Get
-'[JSON] [Int]) portion of MyAPI:
+You can probably see where this is going.  The `route` function for the `(:>)`
+instance of `HasServer` will be called.  This corresponds to the `"dogs" :> Get
+'[JSON] [Int]` portion of `MyAPI`:
 
 ```haskell
-type MyAPI = <b>"dogs" :> Get '[JSON] [Int]</b>
+type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
-Here is the HasServer instance for (:>):
+Here is the `HasServer` instance for `(:>)`:
 
 ```haskell
 instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout) where
@@ -721,11 +727,11 @@ instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout
     where proxyPath = Proxy :: Proxy path
 ```
 
-Similarly to (:<|>), you can see that the value of the ServerT type family
-becomes ServerT sublayout m.  The path portion is basically ignored.
+Similar to `(:<|>)`, the value of the `ServerT` type family becomes `ServerT
+sublayout m`.  The `path` argument is not used.
 
-Just like above, we can change the type of myAPI to match this.  After our last
-change, we had this:
+Just like above, the type of `myAPI` can be changed to match this.  After the
+last change, it looked like this:
 
 ```haskell
 myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)
@@ -733,7 +739,7 @@ myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)
 myAPI = dogNums :<|> cats
 ```
 
-Because the path portion is ignored, we can change it to this:
+Because the `path` argument is ignored, it can be changed to this:
 
 ```haskell
 myAPI :: ServerT (Get '[JSON] [Int]) (EitherT ServantErr IO)
@@ -743,41 +749,36 @@ myAPI = dogNums :<|> cats
 
 Still compiles!  Great!
 
-If path is ignored in the type family, what is it actually used for?
+If `path` is ignored in the value of the type family, what is it actually used
+for?
 
-symbolVal is called to get the value of path at the value level!  It's using the value of path to do the routing.
-
-```haskell
-route Proxy subserver = StaticRouter $
-    M.singleton (cs (<b>symbolVal proxyPath</b>))
-                (route (Proxy :: Proxy sublayout) subserver)
-  where proxyPath = Proxy :: Proxy path
-```
-
-route is then called recursively on the subsever (which has type sublayout).
+`symbolVal` is called to get the value of the `path` type at the value level!
+It's using the value of `path` to do the routing.
 
 ```haskell
 route Proxy subserver = StaticRouter $
     M.singleton (cs (symbolVal proxyPath))
-                (<b>route (Proxy :: Proxy sublayout) subserver</b>)
+                (route (Proxy :: Proxy sublayout) subserver)
   where proxyPath = Proxy :: Proxy path
 ```
 
-In this case, subserver will be our dogNums function, and the sublayout type
-will be Get '[JSON] [Int].
+`route` is then called recursively on `subsever`, which has type `sublayout`.
+
+In the example code, `subserver` will be the `dogNums` function, and the
+`sublayout` type will be `Get '[JSON] [Int]`.
 
 ```haskell
-type MyAPI = "dogs" :> <b>Get '[JSON] [Int]</b>
+type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 
 dogNums :: EitherT ServantErr IO [Int]
 dogNums = return [1,2,3,4]
 ```
 
-## Red Pill, Blue Pill, Bottom of the Rabit Hole
+## Red Pill, Blue Pill, Bottom of the Rabbit Hole
 
-What route function will be called in this case?  The one defined for the Get
-instance of HasServer!
+What `route` function will be called in this case?  The one defined for the
+`Get` instance of `HasServer`!
 
 ```haskell
 instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
@@ -786,17 +787,18 @@ instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
   route Proxy = methodRouter methodGet (Proxy :: Proxy ctypes) ok200
 ```
 
-You can see that the ServerT type family becomes m a.  For us, m is EitherT
-ServantErr IO, and a is [Int].  So it becomes EitherT ServantErr IO [Int].
-That's why dogNums type is EitherT ServantErr IO [Int].
+In this instance, the `ServerT (Get ctypes a) m` type family becomes simply `m
+a`.  For us, `m` is `EitherT ServantErr IO`, and `a` is `[Int]`.  So `ServerT
+(Get ctypes a) m` becomes `EitherT ServantErr IO [Int]`.  That's why `dogNums`'
+type is `EitherT ServantErr IO [Int]`.
 
 ```haskell
 dogNums :: EitherT ServantErr IO [Int]
 dogNums = return [1,2,3,4]
 ```
 
-Just like we did above, we can manually rewrite the type of `myAPI` and it will
-still compile:
+Just like above, the type of `myAPI` can be rewritten and it will still
+compile:
 
 ```haskell
 myAPI :: EitherT ServantErr IO [Int]
@@ -804,7 +806,7 @@ myAPI :: EitherT ServantErr IO [Int]
 myAPI = dogNums :<|> cats
 ```
 
-We won't go into how the route function is implemented here, but you are
+We won't go into how the `route` function is implemented here, but you are
 welcome to look at the implementation of
 [methodRouter](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123)
 if you're interested.
