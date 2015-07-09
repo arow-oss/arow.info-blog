@@ -48,8 +48,8 @@ deploy: site
 	cp -r generated-site /tmp/arow.info-blog-deploy/
 	# Checkout the gh-pages branch.
 	git checkout gh-pages
-	# Remove the of the pages for the current site.
-	git rm -rf *
+	# Remove the pages for the current site.
+	git rm -r -f --ignore-unmatch *
 	git status
 	# Copy all of the generated site's files to the current directory.
 	cp -r /tmp/arow.info-blog-deploy/generated-site/* ./
