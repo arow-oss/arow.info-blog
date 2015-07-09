@@ -39,7 +39,30 @@ clean:
 	@echo "Clean."
 
 # Deploy the site.
-deploy:
+# Commit the generated-site directory to the gh-pages git branch.
+# The way this is done is pretty hacky, but it works.
+deploy: site
+	rm -rf /tmp/arow.info-blog-deploy/
+	mkdir /tmp/arow.info-blog-deploy/
+	# Copy the generated site to the temp directory.
+	cp -r generated-site /tmp/arow.info-blog-deploy/
+	# Checkout the gh-pages branch.
+	git checkout gh-pages
+	# Remove the of the pages for the current site.
+	git rm -rf *
+	# Copy all of the generated site's files to the current directory.
+	cp -r /tmp/arow.info-blog-deploy/generated-site/* ./
+	# Add everything back.  (A lot of files probably won't change, so, for
+	# instance, they won't show up on 'git status' even though we just did 'git
+	# rm -rf *'.  A 'git rm -rf FILE' followed by 'git add FILE' is a noop if
+	# the file hasn't changed.)
+	git add -A .
+	# Do the commit and push.
+	git commit -m "Release on `date`."
+	git push origin gh-pages
+	# Go back to master.
+	git checkout master
+	rm -rf /tmp/arow.info-blog-deploy
 
 # Generate the .html files for our blog.
 site: $(SITE_PROG_PATH) 
