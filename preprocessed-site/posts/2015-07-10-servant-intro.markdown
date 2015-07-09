@@ -584,21 +584,25 @@ cats :: EitherT ServantErr IO [Int]
 cats = return ["long-haired", "short-haired"]
 ```
 
-It's basically just calling serve and passing it two things.  1) a Proxy with
-the `MyAPI` type.  2) the `myAPI` function, which is the actual implementation of
-the API.  You remember what `serve` does, right?
+It's basically just calling serve and passing it two things.
+
+* a `Proxy` with the `MyAPI` type.
+
+* the `myAPI` function, which is the actual implementation of the API.
+
+You remember what `serve` does, right?
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr IO) -> Application
-serve p server = toApplication (runRouter (route p (return (RR (Right server)))))
+serve proxy server = toApplication (runRouter (route proxy (return (RR (Right server)))))
 ```
 
 It basically calls `route` with our proxy and the implementation of our api.
 
-Now for the interesting part.  Since HasServer is a typeclass, what route
-function actually gets called?  If we look at the HasServer typeclass once
-again, we can see that it depends on the type of layout (which gets pass to
-route as Proxy layout).
+Now for the interesting part.  Since `HasServer` is a typeclass, what `route`
+function actually gets called?  If we look at the `HasServer` typeclass once
+again, we can see that it depends on the type of `layout` (which gets pass to
+`route` as `Proxy layout`).
 
 ```haskell
 class HasServer <b>layout</b> where
