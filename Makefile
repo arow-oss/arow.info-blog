@@ -1,4 +1,4 @@
-.PHONY: build clean deploy site watch
+.PHONY: build clean deploy release site watch
 all: site
 
 #############
@@ -10,6 +10,9 @@ STACK_LOCAL_INSTALL_PATH = $(shell stack path --local-install-root)
 
 # Path to the `site` binary.
 SITE_PROG_PATH = $(STACK_LOCAL_INSTALL_PATH)/site
+
+# The current commit's git hash.
+GIT_HASH = $(shell git rev-parse --short HEAD)
 
 ################################
 ## Targets for specific files ##
@@ -60,11 +63,14 @@ deploy: site
 	git add -A .
 	git status
 	# Do the commit and push.
-	git commit -m "Release on `date`."
+	git commit -m "Release $(GIT_HASH) on `date`."
 	git push origin gh-pages
 	# Go back to master.
 	git checkout master
 	rm -rf /tmp/arow.info-blog-deploy
+
+# Alias for deploy.
+release: deploy
 
 # Generate the .html files for our blog.
 site: $(SITE_PROG_PATH) 
