@@ -14,6 +14,8 @@ import Hakyll
     )
 
 
+-- | Change some of the default configuration variables.  This makes our
+-- project working directory a little cleaner.
 hakyllConfig :: Configuration
 hakyllConfig = def { providerDirectory = "preprocessed-site"
                    , storeDirectory = ".hakyll-cache"
@@ -78,21 +80,32 @@ main = hakyllWith hakyllConfig $ do
             postTemplateOut <- loadAndApplyTemplate postTemplate subHeadingCtx pandocOut
             applyDefaultTemplate subHeadingCtx postTemplateOut
 
+-- | For posts, add a @date@ field to the default context.
 postCtx :: Context String
 postCtx = dateField "date" "%B %e, %Y" `mappend`
           defaultContext
 
+-- | Apply the default template and then relativize all the URLs in the
+-- resulting html file.
 applyDefaultTemplate :: Context a -> Item a -> Compiler (Item String)
 applyDefaultTemplate context preTemplateItem = do
     postTemplateItem <- loadAndApplyTemplate defaultTemplate context preTemplateItem
     relativizeUrls postTemplateItem
 
+-- | This is our default site template that all html files should go
+-- through.  This default template defines our site HTML \<head\> tag.
 defaultTemplate :: Identifier
 defaultTemplate = "templates/default.html"
 
+-- | This is the default template for posts.  It basically just defines an
+-- \<article\> wrapper for the post body.
 postTemplate :: Identifier
 postTemplate = "templates/post.html"
 
+-- | Create the HTML tags for the subheading and "Posted by" lines for
+-- a blog post.
+--
+-- This is kind of hacky.
 createSubHeadingContentForPost :: Item a -> Compiler String
 createSubHeadingContentForPost item = do
     let ident = itemIdentifier item
@@ -104,6 +117,8 @@ createSubHeadingContentForPost item = do
         postedByHtml = "<span class=\"meta\">Posted by " ++ postedBy ++ "</span>"
     return $ subHeadingHtml ++ postedByHtml
 
+-- | If posts have a "draft" metadata, then this changes their output
+-- location from "posts/" to "drafts/".
 postsAndDraftsRoutes :: Routes
 postsAndDraftsRoutes = metadataRoute $ \metadata ->
     case Map.lookup "draft" metadata of
