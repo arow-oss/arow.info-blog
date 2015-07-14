@@ -5,11 +5,12 @@ import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
 import Hakyll
     ( Compiler, Configuration(..), Context, Identifier, Item
-    , applyAsTemplate, compile, composeRoutes, compressCssCompiler, copyFileCompiler
-    , dateField, defaultContext, field, getMetadataField, getResourceBody
-    , gsubRoute, hakyllWith , idRoute, itemIdentifier, listField, loadAll
-    , loadAndApplyTemplate , match, metadataRoute, pandocCompiler
-    , recentFirst, relativizeUrls, route , setExtension, templateCompiler
+    , Routes, applyAsTemplate, compile, composeRoutes, compressCssCompiler
+    , copyFileCompiler , dateField, defaultContext, field, getMetadataField
+    , getResourceBody , gsubRoute, hakyllWith , idRoute, itemIdentifier
+    , listField, loadAll , loadAndApplyTemplate , match, metadataRoute
+    , pandocCompiler , recentFirst, relativizeUrls, route , setExtension
+    , templateCompiler
     )
 
 
@@ -55,7 +56,9 @@ main = hakyllWith hakyllConfig $ do
             -- each post Item and add a field about whether or not it is
             -- the last Item.  Then, in templates/post-list.html, I can
             -- look at whether or not it is last, and only add a <hr> if it
-            -- is not last.
+            -- is not last.  Also, it should be ignored if the "draft"
+            -- metadata is set, because it won't be shown.
+            --
             -- The following post might help?
             -- https://github.com/jaspervdj/hakyll/issues/263
             let indexCtx = listField "posts" postCtx (return posts) `mappend`
@@ -66,11 +69,7 @@ main = hakyllWith hakyllConfig $ do
 
     -- blog posts
     match "posts/*" $ do
-        -- route $ setExtension "html"
-        route $ metadataRoute $ \metadata ->
-            case Map.lookup "draft" metadata of
-                Just "yes" -> gsubRoute "posts/" (const "drafts/") `composeRoutes` setExtension "html"
-                _ -> setExtension "html"
+        route postsAndDraftsRoutes
         compile $ do
             let subHeadingCtx =
                     field "subHeadingContent" createSubHeadingContentForPost `mappend`
@@ -96,11 +95,20 @@ postTemplate = "templates/post.html"
 
 createSubHeadingContentForPost :: Item a -> Compiler String
 createSubHeadingContentForPost item = do
-        let ident = itemIdentifier item
-        maybeSubHeading <- getMetadataField ident "subHeading"
-        maybePostedBy <- getMetadataField ident "postedBy"
-        let subHeading = fromMaybe "" maybeSubHeading
-            subHeadingHtml = "<h2 class=\"subheading\">" ++ subHeading ++ "</h2>"
-            postedBy = fromMaybe "" maybePostedBy
-            postedByHtml = "<span class=\"meta\">Posted by " ++ postedBy ++ "</span>"
-        return $ subHeadingHtml ++ postedByHtml
+    let ident = itemIdentifier item
+    maybeSubHeading <- getMetadataField ident "subHeading"
+    maybePostedBy <- getMetadataField ident "postedBy"
+    let subHeading = fromMaybe "" maybeSubHeading
+        subHeadingHtml = "<h2 class=\"subheading\">" ++ subHeading ++ "</h2>"
+        postedBy = fromMaybe "" maybePostedBy
+        postedByHtml = "<span class=\"meta\">Posted by " ++ postedBy ++ "</span>"
+    return $ subHeadingHtml ++ postedByHtml
+
+postsAndDraftsRoutes :: Routes
+postsAndDraftsRoutes = metadataRoute $ \metadata ->
+    case Map.lookup "draft" metadata of
+        Just _ ->
+            gsubRoute "posts/" (const "drafts/") `composeRoutes`
+            setExtension "html"
+        Nothing -> setExtension "html"
+
