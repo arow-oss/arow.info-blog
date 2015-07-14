@@ -1,15 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.Default (def)
+import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
-import qualified Hakyll
 import Hakyll
     ( Compiler, Configuration(..), Context, Identifier, Item
-    , applyAsTemplate, compile, compressCssCompiler, copyFileCompiler
-    , dateField, field, getMetadataField, getResourceBody, hakyllWith
-    , idRoute, itemIdentifier, listField, loadAll, loadAndApplyTemplate
-    , match, pandocCompiler, recentFirst, relativizeUrls, route
-    , setExtension, templateCompiler
+    , applyAsTemplate, compile, composeRoutes, compressCssCompiler, copyFileCompiler
+    , dateField, defaultContext, field, getMetadataField, getResourceBody
+    , gsubRoute, hakyllWith , idRoute, itemIdentifier, listField, loadAll
+    , loadAndApplyTemplate , match, metadataRoute, pandocCompiler
+    , recentFirst, relativizeUrls, route , setExtension, templateCompiler
     )
 
 
@@ -66,7 +66,11 @@ main = hakyllWith hakyllConfig $ do
 
     -- blog posts
     match "posts/*" $ do
-        route $ setExtension "html"
+        -- route $ setExtension "html"
+        route $ metadataRoute $ \metadata ->
+            case Map.lookup "draft" metadata of
+                Just "yes" -> gsubRoute "posts/" (const "drafts/") `composeRoutes` setExtension "html"
+                _ -> setExtension "html"
         compile $ do
             let subHeadingCtx =
                     field "subHeadingContent" createSubHeadingContentForPost `mappend`
@@ -74,9 +78,6 @@ main = hakyllWith hakyllConfig $ do
             pandocOut <- pandocCompiler
             postTemplateOut <- loadAndApplyTemplate postTemplate subHeadingCtx pandocOut
             applyDefaultTemplate subHeadingCtx postTemplateOut
-
-defaultContext :: Context String
-defaultContext = Hakyll.defaultContext
 
 postCtx :: Context String
 postCtx = dateField "date" "%B %e, %Y" `mappend`
