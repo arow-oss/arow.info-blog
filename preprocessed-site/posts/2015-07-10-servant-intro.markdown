@@ -18,6 +18,9 @@ This article is aimed at people who have a basic familiarity with Haskell.
 This includes understanding things like typeclasses, applicatives, monads,
 monad transformers, pointfree style, ghci, etc.
 
+This article will give you insight to how Servant is using these advanced
+Haskell features, and hopefully make you more productive when using Servant.
+
 ## Servant Example
 
 Here is a simple example of using servant-server.  This code will be referred
