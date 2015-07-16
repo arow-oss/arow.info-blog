@@ -45,6 +45,9 @@ clean:
 # Commit the generated-site directory to the gh-pages git branch.
 # The way this is done is pretty hacky, but it works.
 deploy: site
+	# Make sure this temporary working directory is empty.
+	# (TODO: Really we should be using a directory with a random filename,
+	# generated with something like mktemp.)
 	rm -rf /tmp/arow.info-blog-deploy/
 	mkdir /tmp/arow.info-blog-deploy/
 	# Copy the generated site to the temp directory.

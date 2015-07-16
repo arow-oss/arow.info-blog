@@ -41,4 +41,9 @@ Cleans out all generated files (such as `_site/` and `_cache/`).  Also runs
 
 ### Deploying the Blog
 
-TODO
+```
+$ make deploy
+```
+
+First generates the site, then commits the generated files to the `gh-pages`
+branch.  This is kind of hacky, but it seems to mostly work.
