@@ -18,7 +18,7 @@ is installed on your `PATH`, the following Makefile targets can be used.
 $ make site
 ```
 
-Build the HTML for the actual site.  Generated HTML is placed under `_site/`.
+Build the HTML for the actual site.  Generated HTML is placed under `generated-site/`.
 
 ### Run Webserver to Serve Blog and Rebuild on Changes
 
@@ -36,7 +36,7 @@ changes live.
 $ make clean
 ```
 
-Cleans out all generated files (such as `_site/` and `_cache/`).  Also runs
+Cleans out all generated files (such as `generated-site/` and `.hakyll-cache/`).  Also runs
 `stack clean`.
 
 ### Deploying the Blog
