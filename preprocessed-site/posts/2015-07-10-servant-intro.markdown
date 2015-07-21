@@ -479,7 +479,7 @@ Let's abbreviate part of the type to make it easier to digest:
 route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
 ```
 
-Basically route takes an `IO` of a `RouteResult` of a `ServerT` and returns a `Router`.
+Basically `route` takes an `IO` of a `RouteResult` of a `ServerT` and returns a `Router`.
 Let's go back real quick and look at the implementation of the `serve` function:
 
 ```haskell
@@ -637,6 +637,12 @@ used!  What does it look like?
 instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
   type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 
+  route :: Proxy layout
+        -> IO (RouteResult ( ServerT a (EitherT ServantErr IO)
+                        :<|> ServerT b (Eithert ServantErr IO)
+                           )
+              )
+        -> Router
   route Proxy server = choice (route pa (extractL <$> server))
                               (route pb (extractR <$> server))
     where pa = Proxy :: Proxy a
@@ -688,15 +694,26 @@ these recursive calls, which `route` function will be called?
 instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
   type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 
+  route :: Proxy layout
+        -> IO (RouteResult ( ServerT a (EitherT ServantErr IO)
+                        :<|> ServerT b (Eithert ServantErr IO)
+                           )
+              )
+        -> Router
   route Proxy server = choice (route pa (extractL <$> server))
                               (route pb (extractR <$> server))
     where pa = Proxy :: Proxy a
           pb = Proxy :: Proxy b
 ```
 
-Let's take a look at the first argument to `(:<|>)`: `"dogs" :> Get '[JSON]
-[Int]`.  This corresponds to the first part of `myAPI`: `ServerT ("dogs" :> Get
-'[JSON] [Int]) (EitherT ServantErr IO)` (which is the `dogNums` function).
+Let's take a look at the first argument to `(:<|>)`:
+
+```haskell
+"dogs" :> Get '[JSON] [Int]`
+```
+
+(This corresponds to the first part of `myAPI`: `ServerT ("dogs" :> Get
+'[JSON] [Int]) (EitherT ServantErr IO)`. This is the `dogNums` function).)
 
 ```haskell
 type MyAPI = "dogs" :> Get '[JSON] [Int]
@@ -726,6 +743,9 @@ instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout
 
   type ServerT (path :> sublayout) m = ServerT sublayout m
 
+  route :: Proxy layout
+        -> IO (RouteResult (ServerT sublayout (EitherT ServantErr IO)))
+        -> Router
   route Proxy subserver = StaticRouter $
     M.singleton (cs (symbolVal proxyPath))
                 (route (Proxy :: Proxy sublayout) subserver)
@@ -734,6 +754,14 @@ instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout
 
 Similar to `(:<|>)`, the value of the `ServerT (path >: sublayout)` type family
 becomes `ServerT sublayout m`.  The `path` argument is not used.
+
+Here is the specialized type of the route function:
+
+```haskell
+route :: Proxy layout -> IO (RouteResult (ServerT layout    ...)) -> Router
+-- becomes
+route :: Proxy layout -> IO (RouteResult (ServerT sublayout ...)) -> Router
+```
 
 Just like above, the type of `myAPI` can be changed to match this.  After the
 last change, it looked like this:
@@ -763,6 +791,9 @@ of `path` to do the routing.  It's creating a
 that can later be used to lookup the path piece.
 
 ```haskell
+route :: Proxy layout
+      -> IO (RouteResult (ServerT sublayout (EitherT ServantErr IO)))
+      -> Router
 route Proxy subserver = StaticRouter $
     Map.singleton (cs (symbolVal proxyPath))
                   (route (Proxy :: Proxy sublayout) subserver)
@@ -791,13 +822,31 @@ What `route` function will be called in this case?  The one defined for the
 instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
   type ServerT (Get ctypes a) m = m a
 
+  route :: Proxy layout
+        -> IO (RouteResult (m a))
+        -> Router
   route Proxy = methodRouter methodGet (Proxy :: Proxy ctypes) ok200
 ```
 
+Here is the specialized type of the route function:
+
+```haskell
+route :: Proxy layout -> IO (RouteResult (ServerT layout m)) -> Router
+-- becomes
+route :: Proxy layout -> IO (RouteResult (m a)) -> Router
+```
+
 In this instance, the `ServerT (Get ctypes a) m` type family simply becomes `m
-a`.  In our case, `m` is `EitherT ServantErr IO`, and `a` is `[Int]`.  So
-`ServerT (Get ctypes a) m` becomes `EitherT ServantErr IO [Int]`.  That's why
-the type of `dogNums` is `EitherT ServantErr IO [Int]`.
+a`.
+
+In our case,
+
+- `m` is `EitherT ServantErr IO`
+- `a` is `[Int]`
+
+`ServerT (Get ctypes a) m` becomes `EitherT ServantErr IO [Int]`.
+
+That's why the type of `dogNums` is `EitherT ServantErr IO [Int]`.
 
 ```haskell
 dogNums :: EitherT ServantErr IO [Int]
