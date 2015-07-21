@@ -896,8 +896,8 @@ by [Matt Parsons](http://www.parsonsmatt.org/).
 ## Footnotes
 
 [^1]: The article [A Gentle Introduction to Monad
-	  Transformers](https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md)
-	  might be a good place to start if you're not too familiar with Monad
-	  transformers.  However, if you're not too familiar with Monad
-	  transformers, the rest of this article will probably be quite
-	  challenging.
+      Transformers](https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md)
+      might be a good place to start if you're not too familiar with Monad
+      transformers.  However, if you're not too familiar with Monad
+      transformers, the rest of this article will probably be quite
+      challenging.
