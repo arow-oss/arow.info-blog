@@ -238,7 +238,7 @@ if you're interested you may want to start with reading the [`Get` instance for
 which will take you to the
 [`methodRouter`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123)
 function, which will take you to the
-[`AllCTRender]`(https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant/src/Servant/API/ContentTypes.hs#L158)
+[`AllCTRender`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant/src/Servant/API/ContentTypes.hs#L158)
 typeclass.  The `AllCTRender` typeclass/instance is where the real magic starts happening.
 
 Oliver Charles has an [interesting
@@ -399,7 +399,7 @@ serve :: HasServer layout => Proxy layout
 
 Let's start with the easy things.  It returns a
 [`Network.Wai.Application`](https://hackage.haskell.org/package/wai-3.0.3.0/docs/Network-Wai.html#t:Application).
-This represents an application that can that can be served by Warp (i.e.
+This represents an application that can be served by Warp (i.e.
 something that can be passed to the [`run`](https://hackage.haskell.org/package/warp-3.0.13.1/docs/Network-Wai-Handler-Warp.html#v:run) function provided by Warp).
 
 The first argument is `Proxy layout`.  The `serve` function uses this to figure
