@@ -152,7 +152,7 @@ ghci>
 This is really cool!  We are able to get back the **concrete value** of
 something that only exists on the **type level**!
 
-How does servant use this?  Recall the `MyAPI` type defined near the
+How does Servant use this?  Recall the `MyAPI` type defined near the
 top of this article:
 
 ```haskell
@@ -212,7 +212,7 @@ ghci> :kind! '[Int, Bool, String]
 ghci>
 ```
 
-Going back to the `MyAPI` example from above, servant is using
+Going back to the `MyAPI` example from above, Servant is using
 type-level lists to represent the available content-type encodings of the
 response.
 
@@ -251,7 +251,7 @@ on the generics-sop package where he talks a little about heterogeneous lists.
 
 ## Type-Level Operators
 
-In the servant example code above, there are two type-level operators being
+In the Servant example code above, there are two type-level operators being
 used:
 [`(:>)`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant/src/Servant/API/Sub.hs#L17)
 and
@@ -259,7 +259,7 @@ and
 Type-level operators are similar to normal data types---they are just composed
 of symbols instead of letters.
 
-Let's look at how `(:>)` and `(:<|>)` are defined in servant:
+Let's look at how `(:>)` and `(:<|>)` are defined in Servant:
 
 ```haskell
 data path :> a
@@ -309,7 +309,7 @@ The GHC manual has a section about
 
 You may be thinking, "*These type operators are pretty neat, but how are they
 actually used?  They just look like confusing data types!*"  Well, we'll get to
-that in a minute.  Before we can jump into the servant code, we need to get a
+that in a minute.  Before we can jump into the Servant code, we need to get a
 basic understanding of type families.
 
 ## Type Families
@@ -351,7 +351,7 @@ proceed to the next section.
 
 ## Servant
 
-Now we come to the interesting section.  How does servant actually uses these things?  Let's go back to the
+Now we come to the interesting section.  How does Servant actually uses these things?  Let's go back to the
 example code at the top of this blog post:
 
 ```haskell
