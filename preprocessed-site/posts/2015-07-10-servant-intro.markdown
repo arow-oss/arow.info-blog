@@ -396,7 +396,7 @@ ghci> import Servant.Server
 ghci> :type serve
 serve :: HasServer layout => Proxy layout
                           -> Server layout
-                          -> Network.Wai.Application 
+                          -> Network.Wai.Application
 ```
 
 Let's start with the easy things.  It returns a
@@ -884,6 +884,46 @@ turned into the actual type of `dogNums`: `EitherT ServantErr IO [Int]`.
 dogNums :: EitherT ServantErr IO [Int]
 dogNums = return [1,2,3,4]
 ```
+
+## Why Pass `layout` Twice?
+
+In the beginning of the [Servant](#servant) section, a question was asked about
+the `route` function and the `HasServer` typeclass.
+
+```haskell
+class HasServer layout where
+  type ServerT layout (m :: * -> *) :: *
+
+  route :: Proxy layout
+        -> IO (RouteResult (ServerT layout ...))
+        -> Router
+```
+
+Here is the question that was asked:
+
+> In the `route` function, if we are passing the `layout` type variable to the
+> [`ServerT`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT)
+> type constructor, why do we additionally need to pass a `Proxy layout`?
+> Surely, we don't need to pass `layout` twice?
+
+Now that we have looked at the `HasServer` instance for `(:>)`, it should be
+apparent why we need to pass `layout` twice.
+
+Let's look at the `HasServer` instance for `(:>)`.
+
+```haskell
+instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout) where
+
+  type ServerT (path :> sublayout) m = ServerT sublayout m
+
+  route :: Proxy layout
+        -> IO (RouteResult (ServerT sublayout ...))
+        -> Router
+```
+
+The `ServerT` type family completely ignores the `path` argument!  In the
+implementation of the `route` function, if we didn't have the `Proxy layout`
+arguement, we wouldn't be able to use the `path` argument at all!
 
 ## Conclusion
 
