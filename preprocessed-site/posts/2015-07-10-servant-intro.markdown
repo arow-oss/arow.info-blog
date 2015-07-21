@@ -71,7 +71,7 @@ main = run 32323 $ logStdoutDev app
 ```
 
 The example project can be found [on
-Github](https://gist.github.com/cdepillabout/c2b8b1807e1f571fdb45#file-example-hs).
+Github](https://github.com/cdepillabout/servant-example/commits/master).
 The comments in the code should give a good idea as to what is going on, but
 if you would like a better introduction, the [Servant
 tutorial](http://haskell-servant.github.io/tutorial/) is very good.
@@ -80,9 +80,8 @@ The following steps can be used to download and run the code.  The
 [stack](https://github.com/commercialhaskell/stack) build tool is used.
 
 ```bash
-$ git clone https://gist.github.com/c2b8b1807e1f571fdb45.git
-$ mv c2b8b1807e1f571fdb45 small-servant-example
-$ cd small-servant-example
+$ git clone git@github.com:cdepillabout/servant-example.git
+$ cd servant-example
 $ stack build
 $ stack exec servant-notes
 ```
