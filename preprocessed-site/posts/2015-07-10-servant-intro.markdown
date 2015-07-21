@@ -177,7 +177,7 @@ ghci>
 Let's look at the kind of a type-level empty list:
 
 ```haskell
-ghci> :kind! []
+ghci> :kind []
 [] :: * -> *
 ghci>
 ```
@@ -198,7 +198,7 @@ From the example, you can see that type-level lists can be defined by
 putting a quote in front of the opening bracket:
 
 ```haskell
-ghci> :kind! '[]
+ghci> :kind '[]
 '[] :: [k]
 ghci>
 ```
@@ -206,7 +206,7 @@ ghci>
 Type-level lists can also be defined with multiple elements:
 
 ```haskell
-ghci> :kind! '[Int, Bool, String]
+ghci> :kind '[Int, Bool, String]
 '[Int, Bool, String] :: [*]
 ghci>
 ```
@@ -448,7 +448,7 @@ type Reader r a = ReaderT r Identity a
 Okay, so `Server` is just a specialization of `ServerT`.  Then what is `ServerT`?
 
 ```haskell
-ghci> :info! ServerT
+ghci> :info ServerT
 class HasServer (layout :: k) where
   type family ServerT (layout :: k) (m :: * -> *) :: *
 ...
@@ -487,7 +487,7 @@ serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr 
 serve proxy server = toApplication (runRouter (route proxy (return (RR (Right server)))))
 ```
 
-First off, the type of the `serve` function looks pretty similar to the `route` function:
+The type of the `serve` function looks pretty similar to the `route` function:
 
 ```haskell
 serve :: HasServer layout => Proxy layout ->                 (ServerT ...)  -> Application
@@ -546,7 +546,10 @@ instance (HasServer a, HasServer b) => HasServer (a :<|> b)
 ghci>
 ```
 
-there are instances defined for
+`:info!` shows us all the instances defined for a typeclass.  Look at the
+difference between `:info HasServer` and `:info! HasServer`.
+
+There are instances defined for
 [`Get`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L230),
 [`(:>)`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L715),
 [`(:<|>)`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L79).
@@ -559,7 +562,7 @@ type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
-Remember how type-level operators can be rewritten to prefix form?  Well, rewriting `(:<|>)` to prefix form becomes this:
+Remember how type-level operators can be rewritten to prefix form?  Rewriting `(:<|>)` to prefix form becomes this:
 
 ```haskell
 type MyAPI = (:<|>) ("dogs" :> Get '[JSON] [Int]) ("cats" :> Get '[JSON] [String])
