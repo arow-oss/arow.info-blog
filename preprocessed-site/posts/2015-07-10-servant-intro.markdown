@@ -438,7 +438,7 @@ monad transformer.  This similar to how the
 [`Reader`](https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:Reader)
 monad is a specialization of the
 [`ReaderT`](https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:ReaderT)
-monad:
+monad[^1]:
 
 ```haskell
 newtype ReaderT r m a = ...
@@ -840,3 +840,12 @@ tutorial](http://haskell-servant.github.io/tutorial/), or a tutorial about
 using [servant with
 persistent](http://www.parsonsmatt.org/programming/2015/06/07/servant-persistent.html)
 by [Matt Parsons](http://www.parsonsmatt.org/).
+
+## Footnotes
+
+[^1]: The article [A Gentle Introduction to Monad
+	  Transformers](https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md)
+	  might be a good place to start if you're not too familiar with Monad
+	  transformers.  However, if you're not too familiar with Monad
+	  transformers, the rest of this article will probably be quite
+	  challenging.
