@@ -111,7 +111,7 @@ ghci>
 
 Why does Servant exist?  What is the main problem it solves?
 
-Most web frameworks allow the user to encode a handler for a specific route as
+Most web frameworks allow the user to write a handler for a specific route as
 a function. Here is an example of a handler function for a theoretical
 framework returning a JSON list `[1,2,3,4]`:
 
@@ -175,7 +175,7 @@ type-level lists, type-level operators, and type families.
 
 Recent versions of GHC support [type-level
 strings](https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/type-level-literals.html).
-What's a type-level string?  Well, let's play around with it in ghci.
+What's a type-level string?  Let's play around with it in ghci.
 
 First, the DataKinds language extension needs to be enabled.
 
@@ -193,15 +193,15 @@ ghci>
 ```
 
 Hmm, the type-level string appears to be of kind
-[GHC.TypeLits.Symbol](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#t:Symbol).
+[`GHC.TypeLits.Symbol`](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#t:Symbol).
 What can be done with this?
 
-Looking at the GHC.TypeLits module, there appears to be a
-[symbolVal](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#v:symbolVal)
+Looking at the `GHC.TypeLits` module, there appears to be a
+[`symbolVal`](https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#v:symbolVal)
 function. It can be used to get back the **value** of the type-level string.
 
 Let's try this out in ghci.  `symbolVal` and
-[Data.Proxy.Proxy](https://hackage.haskell.org/package/base-4.8.0.0/docs/Data-Proxy.html#t:Proxy)
+[`Data.Proxy.Proxy`](https://hackage.haskell.org/package/base-4.8.0.0/docs/Data-Proxy.html#t:Proxy)
 need to be imported.  `Proxy` is used to "proxy" the type-level literal.
 
 ```haskell
@@ -393,12 +393,12 @@ families).
 The second link is to the [type-families
 page](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/type-families.html)
 in the GHC manual.  It's good if you already know about type families and just
-a refresher, but it's not good as an introduction to type families.
+want a refresher, but it's not good as an introduction to type families.
 
 The third result is an
 [article](https://www.fpcomplete.com/school/to-infinity-and-beyond/pick-of-the-week/type-families-and-pokemon)
 on FP Complete.  It gets points for being about Pokemon, but the
-setup/motivation for using type families is way too long.
+setup/motivation for using type families is way too long[^2].
 
 The fourth result is an introduction to [type
 families](https://ocharles.org.uk/blog/posts/2014-12-12-type-families.html) by
@@ -1014,3 +1014,6 @@ by [Matt Parsons](http://www.parsonsmatt.org/).
       transformers.  However, if you're not too familiar with Monad
       transformers, the rest of this article will probably be quite
       challenging.
+
+[^2]: This article is also super long, so I really shouldn't complain about
+      length.
