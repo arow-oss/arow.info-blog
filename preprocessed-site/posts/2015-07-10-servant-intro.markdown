@@ -107,6 +107,70 @@ app :: Application      -- Defined at example.hs:17:1
 ghci>
 ```
 
+## The Motivation for Servant
+
+Why does Servant exist?  What is the main problem it solves?
+
+Most web frameworks allow the user to encode a handler for a specific route as
+a function. Here is an example of a handler function for a theoretical
+framework returning a JSON list `[1,2,3,4]`:
+
+```haskell
+dogNums' :: SomeMonad Value
+dogNums' = return $ toJSON [1,2,3,4]
+```
+
+For instance, when a user makes a request to `/dogs`, this function would get
+called, and the framework would pass the generated JSON back to the user.
+The type of the handler function is `SomeMonad Value`.  This means it is
+running in `SomeMonad` and returning a JSON `Value`.
+
+This is not bad, but it's not type safe. All the type signature says is that
+some kind of JSON is returned.
+
+It would be nice to enforce that a list of `Int`s is returned.  Ideally we
+would like to write this function like this:
+
+```haskell
+dogNums'' :: SomeMonad [Int]
+dogNums'' = return [1,2,3,4]
+```
+
+The framework would be responsible for converting the list of `Int`s to JSON
+and returning it to the user.
+
+Servant does this for us.
+
+In our example, there are two handlers for two different routes.  Here is the
+handler for the `/dogs` route:
+
+```haskell
+dogNums :: EitherT ServantErr IO [Int]
+dogNums = return [1,2,3,4]
+```
+
+How does `dogNums` relate to `dogNums''`?
+
+`SomeMonad` would be `EitherT ServantErr IO`.  The list of `Int`s is the same.
+
+Servant is great because it gives us type safety in the return type of our
+handlers.
+
+However, one important thing is still missing. Servant needs to be told that
+the handler should be called when the user sends a GET request to `/dogs`.
+
+This information is encoded in the API type:
+
+```haskell
+type DogsAPI = "dogs" :> Get '[JSON] [Int]
+```
+
+This type says that Servant will respond to GET requests to `/dogs`, returning
+a JSON-encoded list of `Int`s.
+
+Before explaining how this works, we first need to look at type-level strings,
+type-level lists, type-level operators, and type families.
+
 ## Type-Level Strings
 
 Recent versions of GHC support [type-level
