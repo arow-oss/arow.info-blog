@@ -1145,7 +1145,7 @@ dogNums = return [1,2,3,4]
 
 ## Why Pass `layout` Twice?
 
-In the beginning of the [Servant](#servant) section, a question was asked about
+In the beginning of the [Serve!](#serve) section, a question was asked about
 the `route` function and the `HasServer` typeclass.
 
 ```haskell
