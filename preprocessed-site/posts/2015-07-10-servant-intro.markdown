@@ -415,8 +415,9 @@ read that presentation and then proceed to the next section.
 
 ## Servant
 
-Now we come to the interesting section.  How does Servant actually uses these
-things?  Let's go back to the example code at the top of this blog post:
+Now we come to the interesting section.  How does Servant actually use
+type-level strings, type-level lists, type-operators, and type families?  Let's
+go back to the example code at the top of this blog post:
 
 ```haskell
 {-# LANGUAGE DataKinds #-}
@@ -450,11 +451,49 @@ main :: IO ()
 main = run 32323 $ logStdoutDev app
 ```
 
-The two interesting functions are `serve` and `myAPI`.
+We have the `MyAPI` type and the two handlers for the `/dogs` and `/cats` routes.
+
+```haskell
+type MyAPI = "dogs" :> Get '[JSON] [Int]
+        :<|> "cats" :> Get '[JSON] [String]
+
+dogNums :: EitherT ServantErr IO [Int]
+dogNums = return [1,2,3,4]
+
+cats :: EitherT ServantErr IO [String]
+cats = return ["long-haired", "short-haired"]
+```
+
+Our goal is to figure out how we get from the `/dogs` API type, to the actual
+handler type.
+
+API type
+
+~ `"dogs" :> Get '[JSON] [Int]`
+
+handler type
+
+~ `EitherT ServantErr IO [Int]`
+
+## Serve!
+
+In the example code above, the two interesting functions are `serve` and
+`myAPI`.
 [`serve`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:serve)
 is provided by
 [servant-server](https://hackage.haskell.org/package/servant-server), while
 `myAPI` is written by us.
+
+```haskell
+type MyAPI = "dogs" :> Get '[JSON] [Int]
+        :<|> "cats" :> Get '[JSON] [String]
+
+app :: Application
+app = serve (Proxy :: Proxy MyAPI) myAPI
+
+myAPI :: ServerT MyAPI (EitherT ServantErr IO)
+myAPI = dogNums :<|> cats
+```
 
 Let's look at the type of serve:
 
@@ -565,8 +604,8 @@ route ::                     Proxy layout -> IO (RouteResult (ServerT ...)) -> R
 ```
 
 So how does the `serve` function work?  It's basically taking our `myAPI` (the
-`server` argument below) argument (which is of type `ServerT`), wrapping it in
-a base `RouteResult` and `IO`, then passing it to the `route` function.
+`server` argument below) argument, wrapping it in a `RouteResult` and `IO`,
+then passing it to the `route` function.
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
@@ -589,6 +628,58 @@ serve proxy = toApplication . runRouter . route proxy . return . RR . Right
 
 Understanding `serve` isn't strictly necessary to understanding the rest of
 this article, but it is interesting.
+
+## Our Progress so far
+
+Here's what we've learned so far, in convenient bullet-point form:
+
+  - We have a `MyAPI` type, and we want to figure out how that gets translated
+	to the `dogNums` and `cats` handler.
+
+    ```haskell
+    type MyAPI = "dogs" :> Get '[JSON] [Int]
+            :<|> "cats" :> Get '[JSON] [String]
+
+    dogNums :: EitherT ServantErr IO [Int]
+    dogNums = return [1,2,3,4]
+
+    cats :: EitherT ServantErr IO [String]
+    cats = return ["long-haired", "short-haired"]
+    ```
+
+  - It looks like the translation is basically happening in the
+	Servant-provided `serve` function:
+
+    ```haskell
+    type MyAPI = "dogs" :> Get '[JSON] [Int]
+            :<|> "cats" :> Get '[JSON] [String]
+
+    app :: Application
+    app = serve (Proxy :: Proxy MyAPI) myAPI
+
+    myAPI :: ServerT MyAPI (EitherT ServantErr IO)
+    myAPI = dogNums :<|> cats
+    ```
+
+  - The serve function is basically just calling `route`.
+
+    ```haskell
+    serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
+    serve proxy = toApplication . runRouter . route proxy . return . RR . Right
+    ```
+
+  - The `route` function is defined in the `HasServer` typeclass.
+
+    ```haskell
+    class HasServer layout where
+      type ServerT layout (m :: * -> *) :: *
+
+      route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
+    ```
+
+The next section will look at how the `HasServer` typeclass and `route`
+function interact to convert `"dogs" :> Get '[JSON] [Int]` to `EitherT
+ServantErr IO [Int]`.
 
 ## `HasServer`, one more time
 
