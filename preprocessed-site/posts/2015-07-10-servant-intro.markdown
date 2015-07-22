@@ -661,7 +661,7 @@ Here's what we've learned so far, in convenient bullet-point form:
     myAPI = dogNums :<|> cats
     ```
 
-  - The serve function is basically just calling `route`.
+  - The `serve` function is basically just calling `route`.
 
     ```haskell
     serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
@@ -692,8 +692,8 @@ class HasServer layout where
   route :: Proxy layout -> IO (RouteResult (ServerT layout (EitherT ServantErr IO))) -> Router
 ```
 
-This typeclass specifies things which can create a `Router`.  A `Router` can
-then be turned into a Wai application.
+This typeclass specifies things that can be used to create a `Router`.  A
+`Router` can then be turned into a Wai application.
 
 So what instances are available for the `HasServer` typeclass?  Let's ask ghci.
 
@@ -821,7 +821,7 @@ type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 ```
 
 What's the significance of this?  Two things.  One, the new, specialized type
-of route can be deduced:
+of `route` can be deduced:
 
 ```haskell
 route :: Proxy layout -> IO (RouteResult (ServerT layout ...)              ) -> Router
@@ -912,7 +912,7 @@ instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout
 The value of the `ServerT (path >: sublayout)` type family
 becomes `ServerT sublayout m`.  The `path` argument is not used.
 
-Here is the specialized type of the route function:
+Here is the specialized type of the `route` function:
 
 ```haskell
 route :: Proxy layout -> IO (RouteResult (ServerT layout    ...)) -> Router
@@ -1002,7 +1002,7 @@ Here's an update on what we've learned so far:
     myAPI = dogNums :<|> cats
     ```
 
-  - The serve function is basically just calling `route`.
+  - The `serve` function is basically just calling `route`.
 
     ```haskell
     serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
@@ -1034,12 +1034,14 @@ Here's an update on what we've learned so far:
               pb = Proxy :: Proxy b
     ```
 
-  - The type of the `myAPI` function can be changed to match the value of the `ServerT` type family:
+  - The type of the `myAPI` function can be changed to match the value of the
+    `ServerT` type family:
 
     ```haskell
     myAPI :: ServerT MyAPI (EitherT ...)
     -- becomes
-    myAPI :: ServerT ("dogs" :> Get ...) (EitherT ...) :<|> ServantT ("cats" :> Get ...) (EitherT ...)
+    myAPI :: ServerT ("dogs" :> Get ...) (EitherT ...)
+        :<|> ServerT ("cats" :> Get ...) (EitherT ...)
     ```
 
   - In the `HasServer` instance for `(:<|>)`, `route` is called recursively
@@ -1062,7 +1064,7 @@ Here's an update on what we've learned so far:
     This basically throws away the path argument, and does a similar transformation to above:
 
     ```haskell
-    ServerT ("dogs :> Get ...) (EitherT ...)
+    ServerT ("dogs" :> Get ...) (EitherT ...)
     -- becomes
     ServerT (Get ...) (EitherT ...)
     ```
@@ -1086,7 +1088,7 @@ instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
   route Proxy = methodRouter methodGet (Proxy :: Proxy ctypes) ok200
 ```
 
-Here is the specialized type of the route function:
+Here is the specialized type of the `route` function:
 
 ```haskell
 route :: Proxy layout -> IO (RouteResult (ServerT layout m)) -> Router
