@@ -223,9 +223,9 @@ type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
-`"dogs"` and `"cats"` are type-level strings.  At the end of this article we will
-look at some servant-server code and confirm that it is using `symbolVal` to get
-the value of the type-level strings.
+`"dogs"` and `"cats"` are type-level strings.  At the end of this article we
+will look at some servant-server code and confirm that it is using `symbolVal`
+to get the value of the type-level strings.
 
 ## Type-Level Lists
 
@@ -386,8 +386,9 @@ The first result is the [GHC/Type
 families](https://wiki.haskell.org/GHC/Type_families) article on the Haskell
 Wiki.  This is written with an advanced Haskeller in mind.  Don't worry if it's
 too hard.  (The other problem is that most of their examples use data families
-instead of type synonym families--which I introduce below.  Most of the real world
-Haskell code I've seen uses type synonym families much more than data families).
+instead of type synonym families--which I introduce below.  Most of the real
+world Haskell code I've seen uses type synonym families much more than data
+families).
 
 The second link is to the [type-families
 page](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/type-families.html)
@@ -407,15 +408,15 @@ if you've never used MVars, IORefs, etc.
 I wrote a super simple *tl;dr* [presentation about type
 families](https://cdepillabout.github.io/haskell-type-families-presentation).
 Originally I wrote it in Japanese for a Haskell Lightening Talk in Tokyo, but I
-recently translated it to English upon the request from someone in the **#haskell**
-room in the [functional programming slack community](http://fpchat.com/).  If
-you aren't sure about type families, please read that presentation and then
-proceed to the next section.
+recently translated it to English upon the request from someone in the
+**#haskell** room in the [functional programming slack
+community](http://fpchat.com/).  If you aren't sure about type families, please
+read that presentation and then proceed to the next section.
 
 ## Servant
 
-Now we come to the interesting section.  How does Servant actually uses these things?  Let's go back to the
-example code at the top of this blog post:
+Now we come to the interesting section.  How does Servant actually uses these
+things?  Let's go back to the example code at the top of this blog post:
 
 ```haskell
 {-# LANGUAGE DataKinds #-}
@@ -449,9 +450,11 @@ main :: IO ()
 main = run 32323 $ logStdoutDev app
 ```
 
-The two interesting functions are `serve` and `myAPI`.  [`serve`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:serve) is provided by
-[servant-server](https://hackage.haskell.org/package/servant-server),
-while `myAPI` is written by us.
+The two interesting functions are `serve` and `myAPI`.
+[`serve`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:serve)
+is provided by
+[servant-server](https://hackage.haskell.org/package/servant-server), while
+`myAPI` is written by us.
 
 Let's look at the type of serve:
 
@@ -465,16 +468,17 @@ serve :: HasServer layout => Proxy layout
 
 Let's start with the easy things.  It returns a
 [`Network.Wai.Application`](https://hackage.haskell.org/package/wai-3.0.3.0/docs/Network-Wai.html#t:Application).
-This represents an application that can be served by Warp (i.e.
-something that can be passed to the [`run`](https://hackage.haskell.org/package/warp-3.0.13.1/docs/Network-Wai-Handler-Warp.html#v:run) function provided by Warp).
+This represents an application that can be served by Warp (i.e.  something that
+can be passed to the
+[`run`](https://hackage.haskell.org/package/warp-3.0.13.1/docs/Network-Wai-Handler-Warp.html#v:run)
+function provided by Warp).
 
 The first argument is `Proxy layout`.  The `serve` function uses this to figure
 out what the API type is.  You might be asking, "*If we are also passing the
 `layout` type variable to the
 [`Server`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:Server)
 type constructor, why do we additionally need to pass a `Proxy layout`?
-Surely, we don't need to pass `layout` twice?*".  That
-will be covered later.
+Surely, we don't need to pass `layout` twice?*".  That will be covered later.
 
 (If you don't understand this, look at the type of the `serve` function again:
 
@@ -509,7 +513,8 @@ newtype ReaderT r m a = ...
 type Reader r a = ReaderT r Identity a
 ```
 
-Okay, so `Server` is just a specialization of `ServerT`.  Then what is `ServerT`?
+Okay, so `Server` is just a specialization of `ServerT`.  Then what is
+`ServerT`?
 
 ```haskell
 ghci> :info ServerT
@@ -543,8 +548,9 @@ Let's abbreviate part of the type to make it easier to digest:
 route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
 ```
 
-Basically `route` takes an `IO` of a `RouteResult` of a `ServerT` and returns a `Router`.
-Let's go back real quick and look at the implementation of the `serve` function:
+Basically `route` takes an `IO` of a `RouteResult` of a `ServerT` and returns a
+`Router`.  Let's go back real quick and look at the implementation of the
+`serve` function:
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> ServerT layout (EitherT ServantErr IO) -> Application
@@ -558,9 +564,9 @@ serve :: HasServer layout => Proxy layout ->                 (ServerT ...)  -> A
 route ::                     Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
 ```
 
-So how does the `serve` function work?  It's basically taking our `myAPI` (the `server` argument below)
-argument (which is of type `ServerT`), wrapping it in a base `RouteResult` and `IO`, then passing it to the
-`route` function.
+So how does the `serve` function work?  It's basically taking our `myAPI` (the
+`server` argument below) argument (which is of type `ServerT`), wrapping it in
+a base `RouteResult` and `IO`, then passing it to the `route` function.
 
 ```haskell
 serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
@@ -626,19 +632,22 @@ type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
-Remember how type-level operators can be rewritten to prefix form?  Rewriting `(:<|>)` to prefix form becomes this:
+Remember how type-level operators can be rewritten to prefix form?  Rewriting
+`(:<|>)` to prefix form becomes this:
 
 ```haskell
 type MyAPI = (:<|>) ("dogs" :> Get '[JSON] [Int]) ("cats" :> Get '[JSON] [String])
 ```
 
-The inner `(:>)` could also be rewritten to prefix form and it will get *even uglier*:
+The inner `(:>)` could also be rewritten to prefix form and it will get *even
+uglier*:
 
 ```haskell
 type MyAPI = (:<|>) ((:>) "dogs" (Get '[JSON] [Int])) ((:>) "cats" (Get '[JSON] [String]))
 ```
 
-Okay, so here's where the explanation starts to get a little difficult.  Remember the `app` function?
+Okay, so here's where the explanation starts to get a little difficult.
+Remember the `app` function?
 
 ```haskell
 app :: Application
@@ -846,8 +855,8 @@ myAPI = dogNums :<|> cats
 
 Still compiles!  Great!
 
-If the `path` argument in `ServerT (path :> sublayout)` is ignored in the value of the type family, what is it actually used
-for?
+If the `path` argument in `ServerT (path :> sublayout)` is ignored in the value
+of the type family, what is it actually used for?
 
 `symbolVal` is used to get the value of the `path` type!  It's using the value
 of `path` to do the routing.  It's creating a
