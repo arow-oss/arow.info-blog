@@ -47,7 +47,11 @@ import Servant
 type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 
--- | A Warp 'Application' that will serve our API.
+-- (warp is a so-called wai runner. But servant (and all other wai-frameworks
+-- like scotty, yesod, etc.) provide wai 'Application's that could be run using
+-- any wai runner. For example there are wai runners for cgi. I admit that most of
+-- the time warp is used though.
+-- | A wai 'Application' that will serve our API.
 app :: Application
 app = serve (Proxy :: Proxy MyAPI) myAPI
 
@@ -65,7 +69,7 @@ dogNums = return [1,2,3,4]
 cats :: EitherT ServantErr IO [String]
 cats = return ["long-haired", "short-haired"]
 
--- | Run our 'app' as a Warp 'Application'.
+-- | Run our 'app' as a wai 'Application'.
 main :: IO ()
 main = run 32323 $ logStdoutDev app
 ```
@@ -407,7 +411,7 @@ if you've never used MVars, IORefs, etc.
 
 I wrote a super simple *tl;dr* [presentation about type
 families](https://cdepillabout.github.io/haskell-type-families-presentation).
-Originally I wrote it in Japanese for a Haskell Lightening Talk in Tokyo, but I
+Originally I wrote it in Japanese for a Haskell Lightning Talk in Tokyo, but I
 recently translated it to English upon the request from someone in the
 **#haskell** room in the [functional programming slack
 community](http://fpchat.com/).  If you aren't sure about type families, please
@@ -541,7 +545,7 @@ type Server layout = ServerT layout (EitherT ServantErr IO)
 [`ServerT`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT)
 around the
 [`EitherT`](https://hackage.haskell.org/package/either-4.4.1/docs/Control-Monad-Trans-Either.html#t:EitherT)
-monad transformer.  This similar to how the
+monad transformer.  This is similar to how the
 [`Reader`](https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:Reader)
 monad is a specialization of the
 [`ReaderT`](https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:ReaderT)
@@ -840,6 +844,9 @@ myAPI = dogNums :<|> cats
 
 But it could be changed to this:
 
+(You could also introduce type synonyms for the "dogs" handler and the "cats"
+handler. It's just a thought, probably it wouldn't get more understandable.)
+
 ```haskell
 myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)
     :<|> ServerT ("cats" :> Get '[JSON] [String]) (EitherT ServantErr IO)
@@ -1072,7 +1079,7 @@ Here's an update on what we've learned so far:
 We're very close to figuring out how Servant is able to go from the `MyAPI` type
 `"dogs" :> Get '[JSON] [Int]` to the type of our handler `EitherT ServantErr IO [Int]`.
 
-In the next section will be look at the last part of the puzzle, the `Get` instance of `HasServer`.
+In the next section we'll be looking at the last part of the puzzle, the `Get` instance of `HasServer`.
 
 ## Red Pill, Blue Pill, Bottom of the Rabbit Hole
 
@@ -1125,6 +1132,10 @@ myAPI = dogNums :<|> cats
 We won't go into how the `route` function is implemented here, but if you are
 interested, you're welcome to look at the implementation of
 [`methodRouter`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123).
+
+(I think this section (the above) could benefit from mentioning that the
+rendering of return values is being done in `methodRouter` and therefore the
+`Proxy ctypes` (and the AllCTRender constraint) have to be passed along.)
 
 ## Wrap-Up
 
@@ -1184,6 +1195,21 @@ instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout
 The `ServerT` type family completely ignores the `path` argument!  In the
 implementation of the `route` function, if we didn't have the `Proxy layout`
 argument, we wouldn't be able to use the `path` argument at all!
+
+(Even if we didn't use the path we would have to use a proxy. If we only have a
+type like `Server a -> ()` then the compiler has no way of deciding whether `a`
+should be `"foo" :> Get '[JSON] ()` or just `Get '[JSON] ()` (or, say, `"bar"
+:> Get '[JSON] ()`). Again, this doesn't change depending on whether we
+actually use the path on the value level or not.
+
+Very generally if you have an associated type synonym `Foo a` then mentioning a
+type variable in a type *only* as an argument to `Foo` (e.g. just like this:
+`Foo a`) doesn't allow ghc to infer anything about `a` and would make the type
+ambiguous. The reason is that type families might not be injective. So you have
+to mention any type variable in a normal manner at least once. So `(Foo a, a)`
+would be ok, as would be `(Foo a, Proxy a)`.
+
+I hope that makes sense.)
 
 ## Conclusion
 
