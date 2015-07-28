@@ -295,7 +295,7 @@ type MyAPI = "dogs" :> Get '[JSON, FormUrlEncoded] [Int]
 ```
 
 (However, to get this to compile, there would need to be an instance of
-`ToFormUrlEncoded [Int]`.)  The `/dogs` route will return either JSON or
+`ToFormUrlEncoded [Int]`.)  The `/dogs` route will then return either JSON or
 form-encoded values.  The `/cats` route will return either JSON or plain text.
 
 I'm not going to go into how type-level lists are used in servant-server, but
@@ -407,7 +407,7 @@ if you've never used MVars, IORefs, etc.
 
 I wrote a super simple *tl;dr* [presentation about type
 families](https://cdepillabout.github.io/haskell-type-families-presentation).
-Originally I wrote it in Japanese for a Haskell Lightening Talk in Tokyo, but I
+Originally I wrote it in Japanese for a Haskell Lightning Talk in Tokyo, but I
 recently translated it to English upon the request from someone in the
 **#haskell** room in the [functional programming slack
 community](http://fpchat.com/).  If you aren't sure about type families, please
@@ -524,7 +524,7 @@ Surely, we don't need to pass `layout` twice?*".  That will be covered later.
 ```haskell
 serve :: HasServer layout => Proxy layout
                           -> Server layout
-                          -> Network.Wai.Application 
+                          -> Network.Wai.Application
 ```
 
 `layout` is specified twice, when it should only have to be specified once,
@@ -562,8 +562,8 @@ class HasServer (layout :: k) where
 ...
 ```
 
-...a type family!  This is what we've been waiting for!  `ServerT` is a type
-family.  It's a function that computes a type.  Let's take a look at the
+This is what we've been waiting for!  `ServerT` is a type family!  It's a
+function that computes a type.  Let's take a look at the
 [`HasServer`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:HasServer)
 typeclass before really diving into `ServerT`.
 
@@ -754,7 +754,7 @@ cats :: EitherT ServantErr IO [Int]
 cats = return ["long-haired", "short-haired"]
 ```
 
-It's basically just calling serve and passing it two things.
+It's just calling serve and passing it two things:
 
 * a `Proxy` with the `MyAPI` type.
 
@@ -851,7 +851,7 @@ It still compiles!  That's great!
 ## One Level Deeper
 
 Going back to the `HasServer` instance for `(:<|>)`, we see that the `route`
-function basically calls itself recursively on both arguments to `(:<|>)`.  For
+function calls itself recursively on both arguments to `(:<|>)`.  For
 these recursive calls, which `route` function will be called?
 
 ```haskell
