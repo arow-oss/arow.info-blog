@@ -587,7 +587,7 @@ the `m` parameter specialized to `EitherT ServantErr IO`.  Quite a mouthful.
 Let's abbreviate part of the type to make it easier to digest:
 
 ```haskell
-route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
+route :: Proxy layout -> IO (RouteResult (ServerT layout ...)) -> Router
 ```
 
 Basically `route` takes an `IO` of a `RouteResult` of a `ServerT` and returns a
@@ -602,8 +602,8 @@ serve proxy server = toApplication (runRouter (route proxy (return (RR (Right se
 The type of the `serve` function looks pretty similar to the `route` function:
 
 ```haskell
-serve :: HasServer layout => Proxy layout ->                 (ServerT ...)  -> Application
-route ::                     Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
+serve :: HasServer layout => Proxy layout ->                 (ServerT layout ...)  -> Application
+route ::                     Proxy layout -> IO (RouteResult (ServerT layout ...)) -> Router
 ```
 
 So how does the `serve` function work?  It's basically taking our `myAPI` (the
@@ -611,7 +611,7 @@ So how does the `serve` function work?  It's basically taking our `myAPI` (the
 then passing it to the `route` function.
 
 ```haskell
-serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
+serve :: HasServer layout => Proxy layout -> (ServerT layout ...) -> Application
 serve proxy server = toApplication (runRouter (route proxy (return (RR (Right server)))))
                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                                            look at all this wrapping!!!
@@ -623,7 +623,7 @@ It takes the resulting `Router` from the `route` function, passes it to
 to get the Wai application.  Pretty easy!  Let's see it point free!
 
 ```haskell
-serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
+serve :: HasServer layout => Proxy layout -> (ServerT layout ...) -> Application
 serve proxy = toApplication . runRouter . route proxy . return . RR . Right
                                                         ^^^^^^^^^^^^^^^^^^^
                                                   look at this pointfree wrapping!!!
@@ -667,7 +667,7 @@ Here's what we've learned so far, in convenient bullet-point form:
   - The `serve` function is basically just calling `route`.
 
     ```haskell
-    serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
+    serve :: HasServer layout => Proxy layout -> (ServerT layout ...) -> Application
     serve proxy = toApplication . runRouter . route proxy . return . RR . Right
     ```
 
@@ -677,7 +677,7 @@ Here's what we've learned so far, in convenient bullet-point form:
     class HasServer layout where
       type ServerT layout (m :: * -> *) :: *
 
-      route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
+      route :: Proxy layout -> IO (RouteResult (ServerT layout ...)) -> Router
     ```
 
 The next section will look at how the `HasServer` typeclass and `route`
@@ -804,7 +804,7 @@ used!  What does it look like?
 instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
   type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 
-  route :: Proxy layout
+  route :: Proxy (a :<|> b)
         -> IO (RouteResult ( ServerT a (EitherT ServantErr IO)
                         :<|> ServerT b (Eithert ServantErr IO)
                            )
@@ -827,9 +827,9 @@ What's the significance of this?  Two things.  One, the new, specialized type
 of `route` can be deduced:
 
 ```haskell
-route :: Proxy layout -> IO (RouteResult (ServerT layout ...)              ) -> Router
+route :: Proxy layout     -> IO (RouteResult (ServerT layout ...)              ) -> Router
 -- becomes
-route :: Proxy layout -> IO (RouteResult (ServerT a ... :<|> ServerT b ...)) -> Router
+route :: Proxy (a :<|> b) -> IO (RouteResult (ServerT a ... :<|> ServerT b ...)) -> Router
 ```
 
 And two, the type of the `myAPI` function from the example program can be
@@ -861,7 +861,7 @@ these recursive calls, which `route` function will be called?
 instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
   type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 
-  route :: Proxy layout
+  route :: Proxy (a :<|> b)
         -> IO (RouteResult ( ServerT a (EitherT ServantErr IO)
                         :<|> ServerT b (Eithert ServantErr IO)
                            )
@@ -903,7 +903,7 @@ instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout
 
   type ServerT (path :> sublayout) m = ServerT sublayout m
 
-  route :: Proxy layout
+  route :: Proxy (path :> sublayout)
         -> IO (RouteResult (ServerT sublayout (EitherT ServantErr IO)))
         -> Router
   route Proxy subserver = StaticRouter $
@@ -918,9 +918,9 @@ becomes `ServerT sublayout m`.  The `path` argument is not used.
 Here is the specialized type of the `route` function:
 
 ```haskell
-route :: Proxy layout -> IO (RouteResult (ServerT layout    ...)) -> Router
+route :: Proxy layout              -> IO (RouteResult (ServerT layout    ...)) -> Router
 -- becomes
-route :: Proxy layout -> IO (RouteResult (ServerT sublayout ...)) -> Router
+route :: Proxy (path :> sublayout) -> IO (RouteResult (ServerT sublayout ...)) -> Router
 ```
 
 Just like above, the type of `myAPI` can be changed to match this.  After the
@@ -951,7 +951,7 @@ of `path` to do the routing.  It's creating a
 that can later be used to lookup the path piece.
 
 ```haskell
-route :: Proxy layout
+route :: Proxy (path :> sublayout)
       -> IO (RouteResult (ServerT sublayout (EitherT ServantErr IO)))
       -> Router
 route Proxy subserver = StaticRouter $
@@ -1008,7 +1008,7 @@ Here's an update on what we've learned so far:
   - The `serve` function is basically just calling `route`.
 
     ```haskell
-    serve :: HasServer layout => Proxy layout -> (ServerT ...) -> Application
+    serve :: HasServer layout => Proxy layout -> (ServerT layout ...) -> Application
     serve proxy = toApplication . runRouter . route proxy . return . RR . Right
     ```
 
@@ -1018,7 +1018,7 @@ Here's an update on what we've learned so far:
     class HasServer layout where
       type ServerT layout (m :: * -> *) :: *
 
-      route :: Proxy layout -> IO (RouteResult (ServerT ...)) -> Router
+      route :: Proxy layout -> IO (RouteResult (ServerT layout ...)) -> Router
     ```
 
   - When `route` is passed the top-level `MyAPI` type, the `route` function in
@@ -1028,7 +1028,7 @@ Here's an update on what we've learned so far:
     instance (HasServer a, HasServer b) => HasServer (a :<|> b) where
       type ServerT (a :<|> b) m = ServerT a m :<|> ServerT b m
 
-      route :: Proxy layout
+      route :: Proxy (a :<|> b)
             -> IO (RouteResult ( ServerT a ...  :<|>  ServerT b ... ))
             -> Router
       route Proxy server = choice (route pa (extractL <$> server))
@@ -1055,7 +1055,7 @@ Here's an update on what we've learned so far:
     instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout) where
       type ServerT (path :> sublayout) m = ServerT sublayout m
 
-      route :: Proxy layout
+      route :: Proxy (path :> sublayout)
             -> IO (RouteResult (ServerT sublayout ...))
             -> Router
       route Proxy subserver = StaticRouter $
@@ -1085,7 +1085,7 @@ Here is the `Get` instance of `HasServer`:
 instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
   type ServerT (Get ctypes a) m = m a
 
-  route :: Proxy layout
+  route :: Proxy (Get ctypes a)
         -> IO (RouteResult (m a))
         -> Router
   route Proxy = methodRouter methodGet (Proxy :: Proxy ctypes) ok200
@@ -1094,9 +1094,9 @@ instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
 Here is the specialized type of the `route` function:
 
 ```haskell
-route :: Proxy layout -> IO (RouteResult (ServerT layout m)) -> Router
+route :: Proxy layout         -> IO (RouteResult (ServerT layout m)) -> Router
 -- becomes
-route :: Proxy layout -> IO (RouteResult (m a)) -> Router
+route :: Proxy (Get ctypes a) -> IO (RouteResult (m a))              -> Router
 ```
 
 In this instance, the `ServerT (Get ctypes a) m` type family simply becomes `m
