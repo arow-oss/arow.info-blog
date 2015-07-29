@@ -1169,24 +1169,59 @@ Here is the question that was asked:
 > type constructor, why do we additionally need to pass a `Proxy layout`?
 > Surely, we don't need to pass `layout` twice?
 
-Now that we have looked at the `HasServer` instance for `(:>)`, it should be
-apparent why we need to pass `layout` twice.
+This question was recently
+[answered](http://stackoverflow.com/q/31636431/3040129) on Stack Overflow by
+[Alp Mestanogullari](http://alpmestan.com/) (one of the developers of servant).
 
-Let's look at the `HasServer` instance for `(:>)`.
+He says that the main reason we need to pass `layout` twice is that type
+families, like `ServerT`, are not injective.  An explanation of injectivity is
+given on the Haskell Wiki page on [type
+families](https://wiki.haskell.org/GHC/Type_families#Injectivity.2C_type_inference.2C_and_ambiguity).
+
+This means that if we have `ServerT a` and `ServerT b`, even if we know that
+`ServerT a == ServerT b`, we cannot conclude that `a == b`.  (This is in
+contrast to a type like `Maybe a` and `Maybe b`, where if we know that `Maybe a
+== Maybe b`, then we also know that `a == b`.)
+
+The	`route` function effectively doesn't get to "see" the `layout` passed to
+`ServerT`.  It only "sees" the the type that `ServerT` turns into.
+
+For example, take this imaginary instace of `HasServer`:
+
+```haskell
+instance HasServer (Foo a) where
+  type ServerT (Foo a) = a
+
+  route :: Proxy (Foo a)
+        -> IO (RouteResult a)
+        -> Router
+```
+
+If `route` wasn't passed a `Proxy` as the first argument, its type signature
+would look like this:
+
+```haskell
+route :: IO (RouteResult a) -> Router
+```
+
+It wouldn't be able to "see" the `Foo`.
+
+In servant-server, a problem like this comes up with the `HasServer` instance
+for `(:>)`.
 
 ```haskell
 instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout) where
 
   type ServerT (path :> sublayout) m = ServerT sublayout m
 
-  route :: Proxy layout
+  route :: Proxy (path :> sublayout)
         -> IO (RouteResult (ServerT sublayout ...))
         -> Router
 ```
 
 The `ServerT` type family completely ignores the `path` argument!  In the
-implementation of the `route` function, if we didn't have the `Proxy layout`
-argument, we wouldn't be able to use the `path` argument at all!
+implementation of the `route` function, if we didn't have the `Proxy (path :>
+sublayout)` argument, we wouldn't be able to use the `path` argument at all!
 
 ## Conclusion
 
