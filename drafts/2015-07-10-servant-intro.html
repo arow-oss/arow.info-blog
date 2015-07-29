@@ -161,7 +161,7 @@ ghci<span class="fu">&gt;</span></code></pre></div>
 <p>Most web frameworks allow the user to write a handler for a specific route as a function. Here is an example of a handler function for a theoretical framework returning a JSON list <code>[1,2,3,4]</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">dogNums' ::</span> <span class="dt">SomeMonad</span> <span class="dt">Value</span>
 dogNums' <span class="fu">=</span> return <span class="fu">$</span> toJSON [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>]</code></pre></div>
-<p>For instance, when a user makes a request to <code>/dogs</code>, this function would get called, and the framework would pass the generated JSON back to the user. The type of the handler function is <code>SomeMonad Value</code>. This means it is running in <code>SomeMonad</code> and returning a JSON <code>Value</code>.</p>
+<p>When a user makes a request to <code>/dogs</code>, this function would get called, and the framework would pass the generated JSON back to the user. The type of the handler function is <code>SomeMonad Value</code>. This means it is running in <code>SomeMonad</code> and returning a JSON <code>Value</code>.</p>
 <p>This is not bad, but it’s not type safe. All the type signature says is that some kind of JSON is returned.</p>
 <p>It would be nice to enforce that a list of <code>Int</code>s is returned. Ideally we would like to write this function like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">dogNums'' ::</span> <span class="dt">SomeMonad</span> [<span class="dt">Int</span>]
@@ -174,11 +174,11 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <p>How does <code>dogNums</code> relate to <code>dogNums''</code>?</p>
 <p><code>SomeMonad</code> would be <code>EitherT ServantErr IO</code>. The list of <code>Int</code>s is the same.</p>
 <p>Servant is great because it gives us type safety in the return type of our handlers.</p>
-<p>However, one important thing is still missing. Servant needs to be told that the handler should be called when the user sends a GET request to <code>/dogs</code>.</p>
+<p>However, two important things are still missing. Servant needs to be told that the handler should be called when the user sends a GET request to <code>/dogs</code>. Servant also needs to be told to convert the <code>Int</code> list returned by the <code>dogNums</code> handler to JSON.</p>
 <p>This information is encoded in the API type:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">DogsAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span></code></pre></div>
 <p>This type says that Servant will respond to GET requests to <code>/dogs</code>, returning a JSON-encoded list of <code>Int</code>s.</p>
-<p>Before explaining how this works, we first need to look at type-level strings, type-level lists, type-level operators, and type families.</p>
+<p>Before explaining how the <code>dogNums</code> function gets tied to the <code>DogsAPI</code> type, we first need to look at type-level strings, type-level lists, type-level operators, and type families.</p>
 <h2 id="type-level-strings">Type-Level Strings</h2>
 <p>Recent versions of GHC support <a href="https://downloads.haskell.org/~ghc/7.10.1/docs/html/users_guide/type-level-literals.html">type-level strings</a>. What’s a type-level string? Let’s play around with it in ghci.</p>
 <p>First, the DataKinds language extension needs to be enabled.</p>
@@ -227,7 +227,7 @@ ghci<span class="fu">&gt;</span></code></pre></div>
 <p>Additional content types could also be specified:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">MyAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON, FormUrlEncoded] [Int]</span>
         <span class="fu">:&lt;|&gt;</span> <span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON, PlainText] Text</span></code></pre></div>
-<p>(However, to get this to compile, there would need to be an instance of <code>ToFormUrlEncoded [Int]</code>.) The <code>/dogs</code> route will return either JSON or form-encoded values. The <code>/cats</code> route will return either JSON or plain text.</p>
+<p>(However, to get this to compile, there would need to be an instance of <code>ToFormUrlEncoded [Int]</code>.) The <code>/dogs</code> route will then return either JSON or form-encoded values. The <code>/cats</code> route will return either JSON or plain text.</p>
 <p>I’m not going to go into how type-level lists are used in servant-server, but if you’re interested you may want to start with reading the <a href="https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L230"><code>Get</code> instance for <code>HasServer</code></a>, which will take you to the <a href="https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123"><code>methodRouter</code></a> function, which will take you to the <a href="https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant/src/Servant/API/ContentTypes.hs#L158"><code>AllCTRender</code></a> typeclass. The <code>AllCTRender</code> typeclass/instance is where the real magic starts happening.</p>
 <p>Oliver Charles has an <a href="https://ocharles.org.uk/blog/posts/2014-08-07-postgresql-simple-generic-sop.html">interesting post</a> on the generics-sop package where he talks a little about heterogeneous lists.</p>
 <h2 id="type-level-operators">Type-Level Operators</h2>
@@ -259,7 +259,7 @@ ghci<span class="fu">&gt;</span></code></pre></div>
 <p>The second link is to the <a href="https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/type-families.html">type-families page</a> in the GHC manual. It’s good if you already know about type families and just want a refresher, but it’s not good as an introduction to type families.</p>
 <p>The third result is an <a href="https://www.fpcomplete.com/school/to-infinity-and-beyond/pick-of-the-week/type-families-and-pokemon">article</a> on FP Complete. It gets points for being about Pokemon, but the setup/motivation for using type families is way too long<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>.</p>
 <p>The fourth result is an introduction to <a href="https://ocharles.org.uk/blog/posts/2014-12-12-type-families.html">type families</a> by Oliver Charles. It’s the best of the bunch, but it is slightly hard to follow if you’ve never used MVars, IORefs, etc.</p>
-<p>I wrote a super simple <em>tl;dr</em> <a href="https://cdepillabout.github.io/haskell-type-families-presentation">presentation about type families</a>. Originally I wrote it in Japanese for a Haskell Lightening Talk in Tokyo, but I recently translated it to English upon the request from someone in the <strong>#haskell</strong> room in the <a href="http://fpchat.com/">functional programming slack community</a>. If you aren’t sure about type families, please read that presentation and then proceed to the next section.</p>
+<p>I wrote a super simple <em>tl;dr</em> <a href="https://cdepillabout.github.io/haskell-type-families-presentation">presentation about type families</a>. Originally I wrote it in Japanese for a Haskell Lightning Talk in Tokyo, but I recently translated it to English upon the request from someone in the <strong>#haskell</strong> room in the <a href="http://fpchat.com/">functional programming slack community</a>. If you aren’t sure about type families, please read that presentation and then proceed to the next section.</p>
 <h2 id="servant">Servant</h2>
 <p>Now we come to the interesting section. How does Servant actually use type-level strings, type-level lists, type-operators, and type families? Let’s go back to the example code at the top of this blog post:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE DataKinds #-}</span>
@@ -330,7 +330,7 @@ ghci<span class="fu">&gt;</span> <span class="fu">:</span><span class="kw">type<
 <p>(If you don’t understand this, look at the type of the <code>serve</code> function again:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout
                           <span class="ot">-&gt;</span> <span class="dt">Server</span> layout
-                          <span class="ot">-&gt;</span> <span class="dt">Network.Wai.Application</span> </code></pre></div>
+                          <span class="ot">-&gt;</span> <span class="dt">Network.Wai.Application</span></code></pre></div>
 <p><code>layout</code> is specified twice, when it should only have to be specified once, right?)</p>
 <p>Now look at the second argument, <code>Server layout</code>. What is <code>Server</code>?</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="fu">:</span>info <span class="dt">Server</span>
@@ -343,27 +343,27 @@ ghci<span class="fu">&gt;</span> <span class="fu">:</span><span class="kw">type<
 <span class="kw">class</span> <span class="dt">HasServer</span> (<span class="ot">layout ::</span> k) <span class="kw">where</span>
   <span class="kw">type</span> family <span class="dt">ServerT</span> (<span class="ot">layout ::</span> k) (<span class="ot">m ::</span> <span class="fu">*</span> <span class="ot">-&gt;</span> <span class="fu">*</span>)<span class="ot"> ::</span> <span class="fu">*</span>
 <span class="fu">...</span></code></pre></div>
-<p>…a type family! This is what we’ve been waiting for! <code>ServerT</code> is a type family. It’s a function that computes a type. Let’s take a look at the <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:HasServer"><code>HasServer</code></a> typeclass before really diving into <code>ServerT</code>.</p>
+<p>This is what we’ve been waiting for! <code>ServerT</code> is a type family! It’s a function that computes a type. Let’s take a look at the <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:HasServer"><code>HasServer</code></a> typeclass before really diving into <code>ServerT</code>.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">HasServer</span> layout <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">ServerT</span> layout (<span class="ot">m ::</span> <span class="fu">*</span> <span class="ot">-&gt;</span> <span class="fu">*</span>)<span class="ot"> ::</span> <span class="fu">*</span>
 
 <span class="ot">  route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>))) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
 <p><code>HasServer</code> takes one type parameter, <code>layout</code>. <code>ServerT</code> is a type family that takes two parameters, <code>layout</code> and <code>m</code>.</p>
 <p>There is one function in this typeclass, <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:route"><code>route</code></a>. It takes a <code>Proxy layout</code> and an <code>IO</code> of a <code>RouteResult</code> of a <code>ServerT</code> with the <code>m</code> parameter specialized to <code>EitherT ServantErr IO</code>. Quite a mouthful. Let’s abbreviate part of the type to make it easier to digest:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
 <p>Basically <code>route</code> takes an <code>IO</code> of a <code>RouteResult</code> of a <code>ServerT</code> and returns a <code>Router</code>. Let’s go back real quick and look at the implementation of the <code>serve</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">ServerT</span> layout (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
 serve proxy server <span class="fu">=</span> toApplication (runRouter (route proxy (return (<span class="dt">RR</span> (<span class="dt">Right</span> server)))))</code></pre></div>
 <p>The type of the <code>serve</code> function looks pretty similar to the <code>route</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span>                 (<span class="dt">ServerT</span> <span class="fu">...</span>)  <span class="ot">-&gt;</span> <span class="dt">Application</span>
-<span class="ot">route ::</span>                     <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span>                 (<span class="dt">ServerT</span> layout <span class="fu">...</span>)  <span class="ot">-&gt;</span> <span class="dt">Application</span>
+<span class="ot">route ::</span>                     <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
 <p>So how does the <code>serve</code> function work? It’s basically taking our <code>myAPI</code> (the <code>server</code> argument below) argument, wrapping it in a <code>RouteResult</code> and <code>IO</code>, then passing it to the <code>route</code> function.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> (<span class="dt">ServerT</span> <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
 serve proxy server <span class="fu">=</span> toApplication (runRouter (route proxy (return (<span class="dt">RR</span> (<span class="dt">Right</span> server)))))
                                                            <span class="fu">^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
                                                            look at all this wrapping<span class="fu">!!!</span></code></pre></div>
 <p>It takes the resulting <code>Router</code> from the <code>route</code> function, passes it to <code>runRouter</code>, and then passes that to <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:toApplication"><code>toApplication</code></a> to get the Wai application. Pretty easy! Let’s see it point free!</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> (<span class="dt">ServerT</span> <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
 serve proxy <span class="fu">=</span> toApplication <span class="fu">.</span> runRouter <span class="fu">.</span> route proxy <span class="fu">.</span> return <span class="fu">.</span> <span class="dt">RR</span> <span class="fu">.</span> <span class="dt">Right</span>
                                                         <span class="fu">^^^^^^^^^^^^^^^^^^^</span>
                                                   look at this pointfree wrapping<span class="fu">!!!</span></code></pre></div>
@@ -390,13 +390,13 @@ app <span class="fu">=</span> serve (<span class="dt">Proxy</span><span class="o
 <span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">MyAPI</span> (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div></li>
 <li><p>The <code>serve</code> function is basically just calling <code>route</code>.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> (<span class="dt">ServerT</span> <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
 serve proxy <span class="fu">=</span> toApplication <span class="fu">.</span> runRouter <span class="fu">.</span> route proxy <span class="fu">.</span> return <span class="fu">.</span> <span class="dt">RR</span> <span class="fu">.</span> <span class="dt">Right</span></code></pre></div></li>
 <li><p>The <code>route</code> function is defined in the <code>HasServer</code> typeclass.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">HasServer</span> layout <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">ServerT</span> layout (<span class="ot">m ::</span> <span class="fu">*</span> <span class="ot">-&gt;</span> <span class="fu">*</span>)<span class="ot"> ::</span> <span class="fu">*</span>
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div></li>
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div></li>
 </ul>
 <p>The next section will look at how the <code>HasServer</code> typeclass and <code>route</code> function interact to convert <code>&quot;dogs&quot; :&gt; Get '[JSON] [Int]</code> to <code>EitherT ServantErr IO [Int]</code>.</p>
 <h2 id="hasserver-one-more-time"><code>HasServer</code>, one more time</h2>
@@ -435,7 +435,7 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 
 <span class="ot">cats ::</span> <span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span> [<span class="dt">Int</span>]
 cats <span class="fu">=</span> return [<span class="st">&quot;long-haired&quot;</span>, <span class="st">&quot;short-haired&quot;</span>]</code></pre></div>
-<p>It’s basically just calling serve and passing it two things.</p>
+<p>It’s just calling serve and passing it two things:</p>
 <ul>
 <li><p>a <code>Proxy</code> with the <code>MyAPI</code> type.</p></li>
 <li><p>the <code>myAPI</code> function, which is the actual implementation of the API.</p></li>
@@ -458,7 +458,7 @@ app <span class="fu">=</span> serve (<span class="dt">Proxy</span><span class="o
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> (<span class="dt">HasServer</span> a, <span class="dt">HasServer</span> b) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (a <span class="fu">:&lt;|&gt;</span> b) <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">ServerT</span> (a <span class="fu">:&lt;|&gt;</span> b) m <span class="fu">=</span> <span class="dt">ServerT</span> a m <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> b m
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (a <span class="fu">:&lt;|&gt;</span> b)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> ( <span class="dt">ServerT</span> a (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
                         <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> b (<span class="dt">Eithert</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
                            )
@@ -471,9 +471,9 @@ app <span class="fu">=</span> serve (<span class="dt">Proxy</span><span class="o
 <p>What’s going on here? The first thing to notice is that the value of the <code>ServerT (a :&lt;|&gt; b) m</code> type family becomes <code>ServerT a m :&lt;|&gt; ServerT b m</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">ServerT</span> (a <span class="fu">:&lt;|&gt;</span> b) m <span class="fu">=</span> <span class="dt">ServerT</span> a m <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> b m</code></pre></div>
 <p>What’s the significance of this? Two things. One, the new, specialized type of <code>route</code> can be deduced:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>)              ) <span class="ot">-&gt;</span> <span class="dt">Router</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout     <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>)              ) <span class="ot">-&gt;</span> <span class="dt">Router</span>
 <span class="co">-- becomes</span>
-<span class="ot">route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> a <span class="fu">...</span> <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> b <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<span class="ot">route ::</span> <span class="dt">Proxy</span> (a <span class="fu">:&lt;|&gt;</span> b) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> a <span class="fu">...</span> <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> b <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
 <p>And two, the type of the <code>myAPI</code> function from the example program can be changed to this specialized type, and the example program will still compile. Before, it looked like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">MyAPI</span> (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
@@ -483,11 +483,11 @@ myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats<
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
 <p>It still compiles! That’s great!</p>
 <h2 id="one-level-deeper">One Level Deeper</h2>
-<p>Going back to the <code>HasServer</code> instance for <code>(:&lt;|&gt;)</code>, we see that the <code>route</code> function basically calls itself recursively on both arguments to <code>(:&lt;|&gt;)</code>. For these recursive calls, which <code>route</code> function will be called?</p>
+<p>Going back to the <code>HasServer</code> instance for <code>(:&lt;|&gt;)</code>, we see that the <code>route</code> function calls itself recursively on both arguments to <code>(:&lt;|&gt;)</code>. For these recursive calls, which <code>route</code> function will be called?</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> (<span class="dt">HasServer</span> a, <span class="dt">HasServer</span> b) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (a <span class="fu">:&lt;|&gt;</span> b) <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">ServerT</span> (a <span class="fu">:&lt;|&gt;</span> b) m <span class="fu">=</span> <span class="dt">ServerT</span> a m <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> b m
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (a <span class="fu">:&lt;|&gt;</span> b)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> ( <span class="dt">ServerT</span> a (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
                         <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> b (<span class="dt">Eithert</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
                            )
@@ -510,7 +510,7 @@ myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats<
 
   <span class="kw">type</span> <span class="dt">ServerT</span> (path <span class="fu">:&gt;</span> sublayout) m <span class="fu">=</span> <span class="dt">ServerT</span> sublayout m
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (path <span class="fu">:&gt;</span> sublayout)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> sublayout (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)))
         <span class="ot">-&gt;</span> <span class="dt">Router</span>
   route <span class="dt">Proxy</span> subserver <span class="fu">=</span> <span class="dt">StaticRouter</span> <span class="fu">$</span>
@@ -519,9 +519,9 @@ myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats<
     <span class="kw">where</span> proxyPath <span class="fu">=</span> <span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> path</code></pre></div>
 <p>The value of the <code>ServerT (path &gt;: sublayout)</code> type family becomes <code>ServerT sublayout m</code>. The <code>path</code> argument is not used.</p>
 <p>Here is the specialized type of the <code>route</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout    <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout              <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout    <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span>
 <span class="co">-- becomes</span>
-<span class="ot">route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> sublayout <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<span class="ot">route ::</span> <span class="dt">Proxy</span> (path <span class="fu">:&gt;</span> sublayout) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> sublayout <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
 <p>Just like above, the type of <code>myAPI</code> can be changed to match this. After the last change, it looked like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">ServerT</span> (<span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]) (EitherT ServantErr IO)</span>
     <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> (<span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]) (EitherT ServantErr IO)</span>
@@ -533,7 +533,7 @@ myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats<
 <p>Still compiles! Great!</p>
 <p>If the <code>path</code> argument in <code>ServerT (path :&gt; sublayout)</code> is ignored in the value of the type family, what is it actually used for?</p>
 <p><code>symbolVal</code> is used to get the value of the <code>path</code> type! It’s using the value of <code>path</code> to do the routing. It’s creating a <a href="https://hackage.haskell.org/package/containers-0.5.6.3/docs/Data-Map-Lazy.html#t:Map"><code>Map</code></a> that can later be used to lookup the path piece.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> (path <span class="fu">:&gt;</span> sublayout)
       <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> sublayout (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)))
       <span class="ot">-&gt;</span> <span class="dt">Router</span>
 route <span class="dt">Proxy</span> subserver <span class="fu">=</span> <span class="dt">StaticRouter</span> <span class="fu">$</span>
@@ -569,18 +569,18 @@ app <span class="fu">=</span> serve (<span class="dt">Proxy</span><span class="o
 <span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">MyAPI</span> (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div></li>
 <li><p>The <code>serve</code> function is basically just calling <code>route</code>.</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> (<span class="dt">ServerT</span> <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">serve ::</span> <span class="dt">HasServer</span> layout <span class="ot">=&gt;</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Application</span>
 serve proxy <span class="fu">=</span> toApplication <span class="fu">.</span> runRouter <span class="fu">.</span> route proxy <span class="fu">.</span> return <span class="fu">.</span> <span class="dt">RR</span> <span class="fu">.</span> <span class="dt">Right</span></code></pre></div></li>
 <li><p>The <code>route</code> function is defined in the <code>HasServer</code> typeclass.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">HasServer</span> layout <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">ServerT</span> layout (<span class="ot">m ::</span> <span class="fu">*</span> <span class="ot">-&gt;</span> <span class="fu">*</span>)<span class="ot"> ::</span> <span class="fu">*</span>
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div></li>
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout <span class="fu">...</span>)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div></li>
 <li><p>When <code>route</code> is passed the top-level <code>MyAPI</code> type, the <code>route</code> function in the <code>HasServer</code> instance for <code>(:&lt;|&gt;)</code> is called.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> (<span class="dt">HasServer</span> a, <span class="dt">HasServer</span> b) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (a <span class="fu">:&lt;|&gt;</span> b) <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">ServerT</span> (a <span class="fu">:&lt;|&gt;</span> b) m <span class="fu">=</span> <span class="dt">ServerT</span> a m <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> b m
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (a <span class="fu">:&lt;|&gt;</span> b)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> ( <span class="dt">ServerT</span> a <span class="fu">...</span>  <span class="fu">:&lt;|&gt;</span>  <span class="dt">ServerT</span> b <span class="fu">...</span> ))
         <span class="ot">-&gt;</span> <span class="dt">Router</span>
   route <span class="dt">Proxy</span> server <span class="fu">=</span> choice (route pa (extractL <span class="fu">&lt;$&gt;</span> server))
@@ -596,7 +596,7 @@ serve proxy <span class="fu">=</span> toApplication <span class="fu">.</span> ru
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> (<span class="dt">KnownSymbol</span> path, <span class="dt">HasServer</span> sublayout) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (path <span class="fu">:&gt;</span> sublayout) <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">ServerT</span> (path <span class="fu">:&gt;</span> sublayout) m <span class="fu">=</span> <span class="dt">ServerT</span> sublayout m
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (path <span class="fu">:&gt;</span> sublayout)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> sublayout <span class="fu">...</span>))
         <span class="ot">-&gt;</span> <span class="dt">Router</span>
   route <span class="dt">Proxy</span> subserver <span class="fu">=</span> <span class="dt">StaticRouter</span> <span class="fu">$</span>
@@ -609,20 +609,20 @@ serve proxy <span class="fu">=</span> toApplication <span class="fu">.</span> ru
 <span class="dt">ServerT</span> (<span class="dt">Get</span> <span class="fu">...</span>) (<span class="dt">EitherT</span> <span class="fu">...</span>)</code></pre></div></li>
 </ul>
 <p>We’re very close to figuring out how Servant is able to go from the <code>MyAPI</code> type <code>&quot;dogs&quot; :&gt; Get '[JSON] [Int]</code> to the type of our handler <code>EitherT ServantErr IO [Int]</code>.</p>
-<p>In the next section will be look at the last part of the puzzle, the <code>Get</code> instance of <code>HasServer</code>.</p>
+<p>In the next section we will look at the last part of the puzzle, the <code>Get</code> instance of <code>HasServer</code>.</p>
 <h2 id="red-pill-blue-pill-bottom-of-the-rabbit-hole">Red Pill, Blue Pill, Bottom of the Rabbit Hole</h2>
 <p>Here is the <code>Get</code> instance of <code>HasServer</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> ( <span class="dt">AllCTRender</span> ctypes a ) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (<span class="dt">Get</span> ctypes a) <span class="kw">where</span>
   <span class="kw">type</span> <span class="dt">ServerT</span> (<span class="dt">Get</span> ctypes a) m <span class="fu">=</span> m a
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (<span class="dt">Get</span> ctypes a)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (m a))
         <span class="ot">-&gt;</span> <span class="dt">Router</span>
   route <span class="dt">Proxy</span> <span class="fu">=</span> methodRouter methodGet (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> ctypes) ok200</code></pre></div>
 <p>Here is the specialized type of the <code>route</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout m)) <span class="ot">-&gt;</span> <span class="dt">Router</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout m)) <span class="ot">-&gt;</span> <span class="dt">Router</span>
 <span class="co">-- becomes</span>
-<span class="ot">route ::</span> <span class="dt">Proxy</span> layout <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (m a)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<span class="ot">route ::</span> <span class="dt">Proxy</span> (<span class="dt">Get</span> ctypes a) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (m a))              <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
 <p>In this instance, the <code>ServerT (Get ctypes a) m</code> type family simply becomes <code>m a</code>.</p>
 <p>In our case,</p>
 <ul>
@@ -639,10 +639,10 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
 <p>We won’t go into how the <code>route</code> function is implemented here, but if you are interested, you’re welcome to look at the implementation of <a href="https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123"><code>methodRouter</code></a>.</p>
 <h2 id="wrap-up">Wrap-Up</h2>
-<p>At a very high-level, the <code>HasServer</code> typeclass, <code>ServerT</code> type family, and <code>route</code> function are used to peal away levels of the <code>MyAPI</code> type:</p>
+<p>At a very high-level, the <code>HasServer</code> typeclass, <code>ServerT</code> type family, and <code>route</code> function are used to peel away levels of the <code>MyAPI</code> type:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">MyAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span>
         <span class="fu">:&lt;|&gt;</span> <span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]</span></code></pre></div>
-<p>First, <code>(:&lt;|&gt;)</code> is pealed away leaving us with <code>&quot;dogs&quot; :&gt; Get '[JSON] [Int]</code>. Then <code>(:&gt;)</code> is pealed away leaving us with <code>Get '[JSON] [Int]</code>. This gets turned into the actual type of <code>dogNums</code>: <code>EitherT ServantErr IO [Int]</code>.</p>
+<p>First, <code>(:&lt;|&gt;)</code> is peeled away leaving us with <code>&quot;dogs&quot; :&gt; Get '[JSON] [Int]</code>. Then <code>(:&gt;)</code> is peeled away leaving us with <code>Get '[JSON] [Int]</code>. This gets turned into the actual type of <code>dogNums</code>: <code>EitherT ServantErr IO [Int]</code>.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">dogNums ::</span> <span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span> [<span class="dt">Int</span>]
 dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>]</code></pre></div>
 <h2 id="why-pass-layout-twice">Why Pass <code>layout</code> Twice?</h2>
@@ -657,16 +657,29 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <blockquote>
 <p>In the <code>route</code> function, if we are passing the <code>layout</code> type variable to the <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT"><code>ServerT</code></a> type constructor, why do we additionally need to pass a <code>Proxy layout</code>? Surely, we don’t need to pass <code>layout</code> twice?</p>
 </blockquote>
-<p>Now that we have looked at the <code>HasServer</code> instance for <code>(:&gt;)</code>, it should be apparent why we need to pass <code>layout</code> twice.</p>
-<p>Let’s look at the <code>HasServer</code> instance for <code>(:&gt;)</code>.</p>
+<p>This question was recently <a href="http://stackoverflow.com/q/31636431/3040129">answered</a> on Stack Overflow by <a href="http://alpmestan.com/">Alp Mestanogullari</a> (one of the developers of servant).</p>
+<p>He says that the main reason we need to pass <code>layout</code> twice is that type families, like <code>ServerT</code>, are not injective. An explanation of injectivity is given on the Haskell Wiki page on <a href="https://wiki.haskell.org/GHC/Type_families#Injectivity.2C_type_inference.2C_and_ambiguity">type families</a>.</p>
+<p>This means that if we have <code>ServerT a</code> and <code>ServerT b</code>, even if we know that <code>ServerT a == ServerT b</code>, we cannot conclude that <code>a == b</code>. (This is in contrast to a type like <code>Maybe a</code> and <code>Maybe b</code>, where if we know that <code>Maybe a == Maybe b</code>, then we also know that <code>a == b</code>.)</p>
+<p>The <code>route</code> function effectively doesn’t get to “see” the <code>layout</code> passed to <code>ServerT</code>. It only “sees” the the type that <code>ServerT</code> turns into.</p>
+<p>For example, take this imaginary instace of <code>HasServer</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">HasServer</span> (<span class="dt">Foo</span> a) <span class="kw">where</span>
+  <span class="kw">type</span> <span class="dt">ServerT</span> (<span class="dt">Foo</span> a) <span class="fu">=</span> a
+
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (<span class="dt">Foo</span> a)
+        <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> a)
+        <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<p>If <code>route</code> wasn’t passed a <code>Proxy</code> as the first argument, its type signature would look like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> a) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<p>It wouldn’t be able to “see” the <code>Foo</code>.</p>
+<p>In servant-server, a problem like this comes up with the <code>HasServer</code> instance for <code>(:&gt;)</code>.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> (<span class="dt">KnownSymbol</span> path, <span class="dt">HasServer</span> sublayout) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (path <span class="fu">:&gt;</span> sublayout) <span class="kw">where</span>
 
   <span class="kw">type</span> <span class="dt">ServerT</span> (path <span class="fu">:&gt;</span> sublayout) m <span class="fu">=</span> <span class="dt">ServerT</span> sublayout m
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> layout
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (path <span class="fu">:&gt;</span> sublayout)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> sublayout <span class="fu">...</span>))
         <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
-<p>The <code>ServerT</code> type family completely ignores the <code>path</code> argument! In the implementation of the <code>route</code> function, if we didn’t have the <code>Proxy layout</code> argument, we wouldn’t be able to use the <code>path</code> argument at all!</p>
+<p>The <code>ServerT</code> type family completely ignores the <code>path</code> argument! In the implementation of the <code>route</code> function, if we didn’t have the <code>Proxy (path :&gt; sublayout)</code> argument, we wouldn’t be able to use the <code>path</code> argument at all!</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>If you liked this tutorial, you may also like the official <a href="http://haskell-servant.github.io/tutorial/">servant tutorial</a>, or a tutorial about using <a href="http://www.parsonsmatt.org/programming/2015/06/07/servant-persistent.html">servant with persistent</a> by <a href="http://www.parsonsmatt.org/">Matt Parsons</a>.</p>
 <h2 id="footnotes">Footnotes</h2>
