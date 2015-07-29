@@ -120,10 +120,10 @@ dogNums' :: SomeMonad Value
 dogNums' = return $ toJSON [1,2,3,4]
 ```
 
-For instance, when a user makes a request to `/dogs`, this function would get
-called, and the framework would pass the generated JSON back to the user.
-The type of the handler function is `SomeMonad Value`.  This means it is
-running in `SomeMonad` and returning a JSON `Value`.
+When a user makes a request to `/dogs`, this function would get called, and the
+framework would pass the generated JSON back to the user.  The type of the
+handler function is `SomeMonad Value`.  This means it is running in `SomeMonad`
+and returning a JSON `Value`.
 
 This is not bad, but it's not type safe. All the type signature says is that
 some kind of JSON is returned.
@@ -156,8 +156,10 @@ How does `dogNums` relate to `dogNums''`?
 Servant is great because it gives us type safety in the return type of our
 handlers.
 
-However, one important thing is still missing. Servant needs to be told that
+However, two important things are still missing. Servant needs to be told that
 the handler should be called when the user sends a GET request to `/dogs`.
+Servant also needs to be told to convert the `Int` list returned by the
+`dogNums` handler to JSON.
 
 This information is encoded in the API type:
 
@@ -168,8 +170,9 @@ type DogsAPI = "dogs" :> Get '[JSON] [Int]
 This type says that Servant will respond to GET requests to `/dogs`, returning
 a JSON-encoded list of `Int`s.
 
-Before explaining how this works, we first need to look at type-level strings,
-type-level lists, type-level operators, and type families.
+Before explaining how the `dogNums` function gets tied to the `DogsAPI` type,
+we first need to look at type-level strings, type-level lists, type-level
+operators, and type families.
 
 ## Type-Level Strings
 
