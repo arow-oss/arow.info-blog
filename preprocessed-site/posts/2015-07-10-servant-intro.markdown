@@ -1132,15 +1132,15 @@ interested, you're welcome to look at the implementation of
 ## Wrap-Up
 
 At a very high-level, the `HasServer` typeclass, `ServerT` type family, and
-`route` function are used to peal away levels of the `MyAPI` type:
+`route` function are used to peel away levels of the `MyAPI` type:
 
 ```haskell
 type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 ```
 
-First, `(:<|>)` is pealed away leaving us with `"dogs" :> Get '[JSON] [Int]`.
-Then `(:>)` is pealed away leaving us with `Get '[JSON] [Int]`.  This gets
+First, `(:<|>)` is peeled away leaving us with `"dogs" :> Get '[JSON] [Int]`.
+Then `(:>)` is peeled away leaving us with `Get '[JSON] [Int]`.  This gets
 turned into the actual type of `dogNums`: `EitherT ServantErr IO [Int]`.
 
 ```haskell
