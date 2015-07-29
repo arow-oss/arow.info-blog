@@ -1075,7 +1075,7 @@ Here's an update on what we've learned so far:
 We're very close to figuring out how Servant is able to go from the `MyAPI` type
 `"dogs" :> Get '[JSON] [Int]` to the type of our handler `EitherT ServantErr IO [Int]`.
 
-In the next section will be look at the last part of the puzzle, the `Get` instance of `HasServer`.
+In the next section we will look at the last part of the puzzle, the `Get` instance of `HasServer`.
 
 ## Red Pill, Blue Pill, Bottom of the Rabbit Hole
 
