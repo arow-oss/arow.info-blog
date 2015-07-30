@@ -526,6 +526,8 @@ out what the API type is.  You might be asking, "*If we are also passing the
 type constructor, why do we additionally need to pass a `Proxy layout`?
 Surely, we don't need to pass `layout` twice?*".  That will be covered later.
 
+<!-- radix said that the following section was unnecessary and confusing. -->
+<!--
 (If you don't understand this, look at the type of the `serve` function again:
 
 ```haskell
@@ -536,6 +538,7 @@ serve :: HasServer layout => Proxy layout
 
 `layout` is specified twice, when it should only have to be specified once,
 right?)
+-->
 
 Now look at the second argument, `Server layout`.  What is `Server`?
 
