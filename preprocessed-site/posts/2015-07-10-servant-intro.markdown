@@ -5,7 +5,6 @@ headingDivClass: post-heading
 heading: Servant, Type Families, and Type-level Everything
 subHeading: A look at advanced GHC features used in Servant
 postedBy: Dennis Gosnell
-draft: yes
 ---
 
 Servant is a really nice library for building REST APIs in Haskell.  However,
