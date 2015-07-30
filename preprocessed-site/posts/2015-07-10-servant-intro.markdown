@@ -1241,6 +1241,19 @@ using [servant with
 persistent](http://www.parsonsmatt.org/programming/2015/06/07/servant-persistent.html)
 by [Matt Parsons](http://www.parsonsmatt.org/).
 
+## Thanks
+
+After completing a rough draft of this blog post, I emailed all three main
+servant developers ([Julian K. Arni](https://github.com/jkarni), [Alp
+Mestanogullari](http://alpmestan.com/), and [Sönke
+Hahn](https://github.com/soenkehahn)) asking them if they would review it.
+Since it's such a long blog post, and I'm sure they are busy guys, I was
+expecting *maybe* one of them to respond, but to my surprise, **all three**
+responded **within hours** of sending the email.  They all took the time not
+only to read through this post, but to give very helpful feedback.
+
+If any of you ever come to Tokyo, dinner is on me!
+
 ## Footnotes
 
 [^1]: The article [A Gentle Introduction to Monad
