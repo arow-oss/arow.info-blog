@@ -117,7 +117,7 @@
 <span class="kw">type</span> <span class="dt">MyAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span>
         <span class="fu">:&lt;|&gt;</span> <span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]</span>
 
-<span class="co">-- | A Warp 'Application' that will serve our API.</span>
+<span class="co">-- | A WAI 'Application' that will serve our API.</span>
 <span class="ot">app ::</span> <span class="dt">Application</span>
 app <span class="fu">=</span> serve (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> <span class="dt">MyAPI</span>) myAPI
 
@@ -135,7 +135,7 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <span class="ot">cats ::</span> <span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span> [<span class="dt">String</span>]
 cats <span class="fu">=</span> return [<span class="st">&quot;long-haired&quot;</span>, <span class="st">&quot;short-haired&quot;</span>]
 
-<span class="co">-- | Run our 'app' as a Warp 'Application'.</span>
+<span class="co">-- | Run our 'app' as a WAI 'Application'.</span>
 <span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> run <span class="dv">32323</span> <span class="fu">$</span> logStdoutDev app</code></pre></div>
 <p>The example project can be found <a href="https://github.com/cdepillabout/servant-example/commits/master">on Github</a>. The comments in the code should give a good idea as to what is going on, but if you would like a better introduction, the <a href="http://haskell-servant.github.io/tutorial/">Servant tutorial</a> is very good.</p>
@@ -309,6 +309,7 @@ cats <span class="fu">=</span> return [<span class="st">&quot;long-haired&quot;<
 <dd><p><code>EitherT ServantErr IO [Int]</code></p>
 </dd>
 </dl>
+<p>The following sections dive into actual code from servant-server’s <a href="https://github.com/haskell-servant/servant/tree/3dc304b8d7c9dbf2fb57afbc1d687f1ec8b48106/servant-server">master branch</a> on Github. The code is currently between version 0.4.2 and 0.5.0.</p>
 <h2 id="serve">Serve!</h2>
 <p>In the example code above, the two interesting functions are <code>serve</code> and <code>myAPI</code>. <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#v:serve"><code>serve</code></a> is provided by <a href="https://hackage.haskell.org/package/servant-server">servant-server</a>, while <code>myAPI</code> is written by us.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">MyAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span>
@@ -335,7 +336,7 @@ ghci<span class="fu">&gt;</span> <span class="fu">:</span><span class="kw">type<
 <p>Now look at the second argument, <code>Server layout</code>. What is <code>Server</code>?</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="fu">:</span>info <span class="dt">Server</span>
 <span class="kw">type</span> <span class="dt">Server</span> layout <span class="fu">=</span> <span class="dt">ServerT</span> layout (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)</code></pre></div>
-<p><code>Server</code> looks like it is a specialization of <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT"><code>ServerT</code></a> around the <a href="https://hackage.haskell.org/package/either-4.4.1/docs/Control-Monad-Trans-Either.html#t:EitherT"><code>EitherT</code></a> monad transformer. This similar to how the <a href="https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:Reader"><code>Reader</code></a> monad is a specialization of the <a href="https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:ReaderT"><code>ReaderT</code></a> monad<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>:</p>
+<p><code>Server</code> looks like it is a specialization of <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT"><code>ServerT</code></a> around the <a href="https://hackage.haskell.org/package/either-4.4.1/docs/Control-Monad-Trans-Either.html#t:EitherT"><code>EitherT</code></a> monad transformer. This is similar to how the <a href="https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:Reader"><code>Reader</code></a> monad is a specialization of the <a href="https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:ReaderT"><code>ReaderT</code></a> monad<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">ReaderT</span> r m a <span class="fu">=</span> <span class="fu">...</span>
 <span class="kw">type</span> <span class="dt">Reader</span> r a <span class="fu">=</span> <span class="dt">ReaderT</span> r <span class="dt">Identity</span> a</code></pre></div>
 <p>Okay, so <code>Server</code> is just a specialization of <code>ServerT</code>. Then what is <code>ServerT</code>?</p>
@@ -477,7 +478,7 @@ app <span class="fu">=</span> serve (<span class="dt">Proxy</span><span class="o
 <p>And two, the type of the <code>myAPI</code> function from the example program can be changed to this specialized type, and the example program will still compile. Before, it looked like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">MyAPI</span> (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
-<p>But it could be changed to this:</p>
+<p>But it could be changed to this<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">ServerT</span> (<span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]) (EitherT ServantErr IO)</span>
     <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> (<span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]) (EitherT ServantErr IO)</span>
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
@@ -612,24 +613,24 @@ serve proxy <span class="fu">=</span> toApplication <span class="fu">.</span> ru
 <p>In the next section we will look at the last part of the puzzle, the <code>Get</code> instance of <code>HasServer</code>.</p>
 <h2 id="red-pill-blue-pill-bottom-of-the-rabbit-hole">Red Pill, Blue Pill, Bottom of the Rabbit Hole</h2>
 <p>Here is the <code>Get</code> instance of <code>HasServer</code>:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> ( <span class="dt">AllCTRender</span> ctypes a ) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (<span class="dt">Get</span> ctypes a) <span class="kw">where</span>
-  <span class="kw">type</span> <span class="dt">ServerT</span> (<span class="dt">Get</span> ctypes a) m <span class="fu">=</span> m a
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> ( <span class="dt">AllCTRender</span> contentTypes a ) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (<span class="dt">Get</span> contentTypes a) <span class="kw">where</span>
+  <span class="kw">type</span> <span class="dt">ServerT</span> (<span class="dt">Get</span> contentTypes a) m <span class="fu">=</span> m a
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> (<span class="dt">Get</span> ctypes a)
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (<span class="dt">Get</span> contentTypes a)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (m a))
         <span class="ot">-&gt;</span> <span class="dt">Router</span>
-  route <span class="dt">Proxy</span> <span class="fu">=</span> methodRouter methodGet (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> ctypes) ok200</code></pre></div>
+  route <span class="dt">Proxy</span> <span class="fu">=</span> methodRouter methodGet (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> contentTypes) ok200</code></pre></div>
 <p>Here is the specialized type of the <code>route</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout m)) <span class="ot">-&gt;</span> <span class="dt">Router</span>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">Proxy</span> layout               <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> layout m)) <span class="ot">-&gt;</span> <span class="dt">Router</span>
 <span class="co">-- becomes</span>
-<span class="ot">route ::</span> <span class="dt">Proxy</span> (<span class="dt">Get</span> ctypes a) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (m a))              <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
-<p>In this instance, the <code>ServerT (Get ctypes a) m</code> type family simply becomes <code>m a</code>.</p>
+<span class="ot">route ::</span> <span class="dt">Proxy</span> (<span class="dt">Get</span> contentTypes a) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (m a))              <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<p>In this instance, the <code>ServerT (Get contentTypes a) m</code> type family simply becomes <code>m a</code>.</p>
 <p>In our case,</p>
 <ul>
 <li><code>m</code> is <code>EitherT ServantErr IO</code></li>
 <li><code>a</code> is <code>[Int]</code></li>
 </ul>
-<p><code>ServerT (Get ctypes a) m</code> becomes <code>EitherT ServantErr IO [Int]</code>.</p>
+<p><code>ServerT (Get contentTypes a) m</code> becomes <code>EitherT ServantErr IO [Int]</code>.</p>
 <p>That’s why the type of <code>dogNums</code> is <code>EitherT ServantErr IO [Int]</code>.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">dogNums ::</span> <span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span> [<span class="dt">Int</span>]
 dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>]</code></pre></div>
@@ -637,7 +638,8 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span> [<span class="dt">Int</span>]
     <span class="fu">:&lt;|&gt;</span> <span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span> [<span class="dt">String</span>]
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
-<p>We won’t go into how the <code>route</code> function is implemented here, but if you are interested, you’re welcome to look at the implementation of <a href="https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123"><code>methodRouter</code></a>.</p>
+<p>We won’t go into how the <code>route</code> function is implemented here, but if you are interested, you’re welcome to look at the implementation of <a href="https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123"><code>methodRouter</code></a>. <code>methodRouter</code> does the actual rendering of the return type. For example, it will turn our <code>[Int]</code> into a JSON blob.</p>
+<p>Because <code>methodRouter</code> handles the rendering of the return type, <code>route</code> needs to pass it <code>Proxy contentTypes</code> so that <code>methodRouter</code> knows what type to render.</p>
 <h2 id="wrap-up">Wrap-Up</h2>
 <p>At a very high-level, the <code>HasServer</code> typeclass, <code>ServerT</code> type family, and <code>route</code> function are used to peel away levels of the <code>MyAPI</code> type:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">MyAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span>
@@ -659,7 +661,7 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 </blockquote>
 <p>This question was recently <a href="http://stackoverflow.com/q/31636431/3040129">answered</a> on Stack Overflow by <a href="http://alpmestan.com/">Alp Mestanogullari</a> (one of the developers of servant).</p>
 <p>He says that the main reason we need to pass <code>layout</code> twice is that type families, like <code>ServerT</code>, are not injective. An explanation of injectivity is given on the Haskell Wiki page on <a href="https://wiki.haskell.org/GHC/Type_families#Injectivity.2C_type_inference.2C_and_ambiguity">type families</a>.</p>
-<p>This means that if we have <code>ServerT a</code> and <code>ServerT b</code>, even if we know that <code>ServerT a == ServerT b</code>, we cannot conclude that <code>a == b</code>. (This is in contrast to a type like <code>Maybe a</code> and <code>Maybe b</code>, where if we know that <code>Maybe a == Maybe b</code>, then we also know that <code>a == b</code>.)</p>
+<p>This means that if we have <code>ServerT a m</code> and <code>ServerT b m</code>, even if we know that <code>ServerT a m == ServerT b m</code> and <code>m == m</code>, we cannot conclude that <code>a == b</code>. (This is in contrast to a type like <code>Maybe a</code> and <code>Maybe b</code>, where if we know that <code>Maybe a == Maybe b</code>, then we also know that <code>a == b</code>.)</p>
 <p>The <code>route</code> function effectively doesn’t get to “see” the <code>layout</code> passed to <code>ServerT</code>. It only “sees” the the type that <code>ServerT</code> turns into.</p>
 <p>For example, take this imaginary instace of <code>HasServer</code>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">HasServer</span> (<span class="dt">Foo</span> a) <span class="kw">where</span>
@@ -679,7 +681,7 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <span class="ot">  route ::</span> <span class="dt">Proxy</span> (path <span class="fu">:&gt;</span> sublayout)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> sublayout <span class="fu">...</span>))
         <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
-<p>The <code>ServerT</code> type family completely ignores the <code>path</code> argument! In the implementation of the <code>route</code> function, if we didn’t have the <code>Proxy (path :&gt; sublayout)</code> argument, we wouldn’t be able to use the <code>path</code> argument at all!</p>
+<p>The <code>ServerT</code> type family completely ignores the <code>path</code> argument! In the implementation of the <code>route</code> function, if we didn’t have the <code>Proxy (path :&gt; sublayout)</code> argument, we wouldn’t be able to use the <code>path</code> argument at all!<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
 <h2 id="conclusion">Conclusion</h2>
 <p>If you liked this tutorial, you may also like the official <a href="http://haskell-servant.github.io/tutorial/">servant tutorial</a>, or a tutorial about using <a href="http://www.parsonsmatt.org/programming/2015/06/07/servant-persistent.html">servant with persistent</a> by <a href="http://www.parsonsmatt.org/">Matt Parsons</a>.</p>
 <h2 id="footnotes">Footnotes</h2>
@@ -688,6 +690,83 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <ol>
 <li id="fn1"><p>This article is also super long, so I really shouldn’t complain about length.<a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>The article <a href="https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md">A Gentle Introduction to Monad Transformers</a> might be a good place to start if you’re not too familiar with Monad transformers. However, if you’re not too familiar with Monad transformers, the rest of this article will probably be quite challenging.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>It may be easier to reason about this code using convenient type synonyms. Originally we had this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">ServerT</span> (<span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]) (EitherT ...)</span>
+    <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> (<span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]) (EitherT ...)</span>
+myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
+<p>But it may be be easier to think about it like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">DogsAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span>
+
+<span class="kw">type</span> <span class="dt">CatsAPI</span> <span class="fu">=</span> <span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]</span>
+
+<span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">DogsAPI</span> (<span class="dt">EitherT</span> <span class="fu">...</span>)
+    <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> <span class="dt">CatsAPI</span> (<span class="dt">EitherT</span> <span class="fu">...</span>)
+myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
+<a href="#fnref3">↩</a></li>
+<li id="fn4"><p>In fact, even if we didn’t use <code>path</code>, we would <em>still</em> have to use a <code>Proxy</code>. This is because the arguments to a type family declared inside a typeclass need to be used standalone in functions in that type class.</p>
+<p>It’s awkward to explain, but it is pretty easy to understand when you see an example.</p>
+<p>In the following typeclass, there is one one type family and two functions using that type family:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">Baz</span> a <span class="kw">where</span>
+    <span class="kw">type</span> <span class="dt">Hoge</span> a
+<span class="ot">    myGoodFunc ::</span> a <span class="ot">-&gt;</span> <span class="dt">Hoge</span> a <span class="ot">-&gt;</span> <span class="dt">Char</span>
+<span class="ot">    myBadFunc ::</span> <span class="dt">Hoge</span> a <span class="ot">-&gt;</span> <span class="dt">Char</span></code></pre></div>
+<p>Now imagine we had the following two instances:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Baz</span> <span class="dt">String</span> <span class="kw">where</span>
+    <span class="kw">type</span> <span class="dt">Hoge</span> <span class="dt">String</span> <span class="fu">=</span> <span class="dt">Int</span>
+
+<span class="ot">    myGoodFunc ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+    myGoodFunc <span class="fu">=</span> <span class="fu">...</span>
+
+<span class="ot">    myBadFunc ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+    myBadFunc <span class="fu">=</span> <span class="fu">...</span>
+
+<span class="kw">instance</span> <span class="dt">Baz</span> <span class="dt">Text</span> <span class="kw">where</span>
+    <span class="kw">type</span> <span class="dt">Hoge</span> <span class="dt">Text</span> <span class="fu">=</span> <span class="dt">Int</span>
+
+<span class="ot">    myGoodFunc ::</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+    myGoodFunc <span class="fu">=</span> <span class="fu">...</span>
+
+<span class="ot">    myBadFunc ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+    myBadFunc <span class="fu">=</span> <span class="fu">...</span></code></pre></div>
+<p>We use <code>myGoodFunc</code> and <code>myBadFunc</code> like below:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">exampleGood ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+exampleGood string int <span class="fu">=</span> myGoodFunc string int
+
+<span class="ot">exampleBad ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+exampleBad int <span class="fu">=</span> myBadFunc int</code></pre></div>
+<p>In <code>exampleGood</code>, GHC knows to pick the <code>myGoodFunc</code> from the <code>String</code> instance of the <code>Baz</code> typeclass because the first argument to <code>myGoodFunc</code> is a <code>String</code>.</p>
+<p>However, in <code>exampleBad</code>, GHC doesn’t know which <code>myBadFunc</code> to pick. Should it pick <code>myBadFunc</code> from the <code>Baz Text</code> instance, or from the <code>Baz String</code> instance? It doesn’t have enough information to decide. GHC will throw a compilation error.</p>
+<p>The <code>Baz</code> typeclass could be rewritten to make <code>myBadFunc</code> unambiguous.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">Baz</span> a <span class="kw">where</span>
+    <span class="kw">type</span> <span class="dt">Hoge</span> a
+<span class="ot">    myGoodFunc ::</span> a <span class="ot">-&gt;</span> <span class="dt">Hoge</span> a <span class="ot">-&gt;</span> <span class="dt">Char</span>
+<span class="ot">    myBadFunc ::</span> <span class="dt">Proxy</span> a <span class="ot">-&gt;</span> <span class="dt">Hoge</span> a <span class="ot">-&gt;</span> <span class="dt">Char</span>
+
+<span class="kw">instance</span> <span class="dt">Baz</span> <span class="dt">String</span> <span class="kw">where</span>
+    <span class="kw">type</span> <span class="dt">Hoge</span> <span class="dt">String</span> <span class="fu">=</span> <span class="dt">Int</span>
+
+<span class="ot">    myGoodFunc ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+    myGoodFunc <span class="fu">=</span> <span class="fu">...</span>
+
+<span class="ot">    myBadFunc ::</span> <span class="dt">Proxy</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+    myBadFunc <span class="fu">=</span> <span class="fu">...</span>
+
+<span class="kw">instance</span> <span class="dt">Baz</span> <span class="dt">Text</span> <span class="kw">where</span>
+    <span class="kw">type</span> <span class="dt">Hoge</span> <span class="dt">Text</span> <span class="fu">=</span> <span class="dt">Int</span>
+
+<span class="ot">    myGoodFunc ::</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+    myGoodFunc <span class="fu">=</span> <span class="fu">...</span>
+
+<span class="ot">    myBadFunc ::</span> <span class="dt">Proxy</span> <span class="dt">Text</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+    myBadFunc <span class="fu">=</span> <span class="fu">...</span></code></pre></div>
+<p><code>exmapleBad</code> would also have to be rewritten:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">exampleBad ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+exampleBad int <span class="fu">=</span> myBadFunc int
+<span class="co">-- becomes</span>
+<span class="ot">exampleBad ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
+exampleBad int <span class="fu">=</span> myBadFunc (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> <span class="dt">String</span>) int</code></pre></div>
+<p>Now GHC knows to call <code>myBadFunc</code> from the <code>Baz String</code> instance.</p>
+<p>The <code>HasServer</code> typeclass is also using this <code>Proxy</code> trick. That is why passing a <code>Proxy</code> is necesary.<a href="#fnref4">↩</a></p></li>
 </ol>
 </div>
             </div>
