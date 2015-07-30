@@ -47,7 +47,7 @@ import Servant
 type MyAPI = "dogs" :> Get '[JSON] [Int]
         :<|> "cats" :> Get '[JSON] [String]
 
--- | A Warp 'Application' that will serve our API.
+-- | A WAI 'Application' that will serve our API.
 app :: Application
 app = serve (Proxy :: Proxy MyAPI) myAPI
 
@@ -65,7 +65,7 @@ dogNums = return [1,2,3,4]
 cats :: EitherT ServantErr IO [String]
 cats = return ["long-haired", "short-haired"]
 
--- | Run our 'app' as a Warp 'Application'.
+-- | Run our 'app' as a WAI 'Application'.
 main :: IO ()
 main = run 32323 $ logStdoutDev app
 ```
@@ -544,7 +544,7 @@ type Server layout = ServerT layout (EitherT ServantErr IO)
 [`ServerT`](https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT)
 around the
 [`EitherT`](https://hackage.haskell.org/package/either-4.4.1/docs/Control-Monad-Trans-Either.html#t:EitherT)
-monad transformer.  This similar to how the
+monad transformer.  This is similar to how the
 [`Reader`](https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:Reader)
 monad is a specialization of the
 [`ReaderT`](https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:ReaderT)
@@ -841,7 +841,7 @@ myAPI :: ServerT MyAPI (EitherT ServantErr IO)
 myAPI = dogNums :<|> cats
 ```
 
-But it could be changed to this:
+But it could be changed to this[^3]:
 
 ```haskell
 myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ServantErr IO)
@@ -1082,32 +1082,32 @@ In the next section we will look at the last part of the puzzle, the `Get` insta
 Here is the `Get` instance of `HasServer`:
 
 ```haskell
-instance ( AllCTRender ctypes a ) => HasServer (Get ctypes a) where
-  type ServerT (Get ctypes a) m = m a
+instance ( AllCTRender contentTypes a ) => HasServer (Get contentTypes a) where
+  type ServerT (Get contentTypes a) m = m a
 
-  route :: Proxy (Get ctypes a)
+  route :: Proxy (Get contentTypes a)
         -> IO (RouteResult (m a))
         -> Router
-  route Proxy = methodRouter methodGet (Proxy :: Proxy ctypes) ok200
+  route Proxy = methodRouter methodGet (Proxy :: Proxy contentTypes) ok200
 ```
 
 Here is the specialized type of the `route` function:
 
 ```haskell
-route :: Proxy layout         -> IO (RouteResult (ServerT layout m)) -> Router
+route :: Proxy layout               -> IO (RouteResult (ServerT layout m)) -> Router
 -- becomes
-route :: Proxy (Get ctypes a) -> IO (RouteResult (m a))              -> Router
+route :: Proxy (Get contentTypes a) -> IO (RouteResult (m a))              -> Router
 ```
 
-In this instance, the `ServerT (Get ctypes a) m` type family simply becomes `m
-a`.
+In this instance, the `ServerT (Get contentTypes a) m` type family simply
+becomes `m a`.
 
 In our case,
 
 - `m` is `EitherT ServantErr IO`
 - `a` is `[Int]`
 
-`ServerT (Get ctypes a) m` becomes `EitherT ServantErr IO [Int]`.
+`ServerT (Get contentTypes a) m` becomes `EitherT ServantErr IO [Int]`.
 
 That's why the type of `dogNums` is `EitherT ServantErr IO [Int]`.
 
@@ -1128,6 +1128,12 @@ myAPI = dogNums :<|> cats
 We won't go into how the `route` function is implemented here, but if you are
 interested, you're welcome to look at the implementation of
 [`methodRouter`](https://github.com/haskell-servant/servant/blob/31b12d4bf468b9fd46f5c4b797f8ef11d0894aba/servant-server/src/Servant/Server/Internal.hs#L123).
+`methodRouter` does the actual rendering of the return type.  For example,
+it will turn our `[Int]` into a JSON blob.
+
+Because `methodRouter` handles the rendering of the return type, `route` needs
+to pass it `Proxy contentTypes` so that `methodRouter` knows what type to
+render.
 
 ## Wrap-Up
 
@@ -1242,3 +1248,23 @@ by [Matt Parsons](http://www.parsonsmatt.org/).
 
 [^2]: This article is also super long, so I really shouldn't complain about
       length.
+
+[^3]: It may be easier to reason about this code using convenient type synonyms.  Originally we had this:
+
+    ```haskell
+	myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ...)
+	    :<|> ServerT ("cats" :> Get '[JSON] [String]) (EitherT ...)
+	myAPI = dogNums :<|> cats
+	```
+
+	But it maybe be easier to think about it like this:
+
+    ```haskell
+	type DogsAPI = "dogs" :> Get '[JSON] [Int]
+
+	type CatsAPI = "cats" :> Get '[JSON] [String]
+
+	myAPI :: ServerT DogsAPI (EitherT ...)
+	    :<|> ServerT CatsAPI (EitherT ...)
+	myAPI = dogNums :<|> cats
+	```
