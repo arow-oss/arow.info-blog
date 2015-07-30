@@ -1184,10 +1184,10 @@ families, like `ServerT`, are not injective.  An explanation of injectivity is
 given on the Haskell Wiki page on [type
 families](https://wiki.haskell.org/GHC/Type_families#Injectivity.2C_type_inference.2C_and_ambiguity).
 
-This means that if we have `ServerT a` and `ServerT b`, even if we know that
-`ServerT a == ServerT b`, we cannot conclude that `a == b`.  (This is in
-contrast to a type like `Maybe a` and `Maybe b`, where if we know that `Maybe a
-== Maybe b`, then we also know that `a == b`.)
+This means that if we have `ServerT a m` and `ServerT b m`, even if we know
+that `ServerT a m == ServerT b m` and `m == m`, we cannot conclude that `a ==
+b`.  (This is in contrast to a type like `Maybe a` and `Maybe b`, where if we
+know that `Maybe a == Maybe b`, then we also know that `a == b`.)
 
 The	`route` function effectively doesn't get to "see" the `layout` passed to
 `ServerT`.  It only "sees" the the type that `ServerT` turns into.
@@ -1227,7 +1227,7 @@ instance (KnownSymbol path, HasServer sublayout) => HasServer (path :> sublayout
 
 The `ServerT` type family completely ignores the `path` argument!  In the
 implementation of the `route` function, if we didn't have the `Proxy (path :>
-sublayout)` argument, we wouldn't be able to use the `path` argument at all!
+sublayout)` argument, we wouldn't be able to use the `path` argument at all![^4]
 
 ## Conclusion
 
@@ -1249,22 +1249,123 @@ by [Matt Parsons](http://www.parsonsmatt.org/).
 [^2]: This article is also super long, so I really shouldn't complain about
       length.
 
-[^3]: It may be easier to reason about this code using convenient type synonyms.  Originally we had this:
+[^3]: It may be easier to reason about this code using convenient type
+    synonyms.  Originally we had this:
 
     ```haskell
-	myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ...)
-	    :<|> ServerT ("cats" :> Get '[JSON] [String]) (EitherT ...)
-	myAPI = dogNums :<|> cats
-	```
+    myAPI :: ServerT ("dogs" :> Get '[JSON] [Int]) (EitherT ...)
+        :<|> ServerT ("cats" :> Get '[JSON] [String]) (EitherT ...)
+    myAPI = dogNums :<|> cats
+    ```
 
-	But it maybe be easier to think about it like this:
+    But it may be be easier to think about it like this:
 
     ```haskell
-	type DogsAPI = "dogs" :> Get '[JSON] [Int]
+    type DogsAPI = "dogs" :> Get '[JSON] [Int]
 
-	type CatsAPI = "cats" :> Get '[JSON] [String]
+    type CatsAPI = "cats" :> Get '[JSON] [String]
 
-	myAPI :: ServerT DogsAPI (EitherT ...)
-	    :<|> ServerT CatsAPI (EitherT ...)
-	myAPI = dogNums :<|> cats
-	```
+    myAPI :: ServerT DogsAPI (EitherT ...)
+        :<|> ServerT CatsAPI (EitherT ...)
+    myAPI = dogNums :<|> cats
+    ```
+
+[^4]: In fact, even if we didn't use `path`, we would *still* have to use a
+    `Proxy`. This is because the arguments to a type family declared inside a
+    typeclass need to be used standalone in functions in that type class.
+
+    It's awkward to explain, but it is pretty easy to understand when you see
+    an example.
+
+    In the following typeclass, there is one one type family and two functions
+    using that type family:
+
+    ```haskell
+    class Baz a where
+        type Hoge a
+        myGoodFunc :: a -> Hoge a -> Char
+        myBadFunc :: Hoge a -> Char
+    ```
+
+    Now imagine we had the following two instances:
+
+    ```haskell
+    instance Baz String where
+        type Hoge String = Int
+
+        myGoodFunc :: String -> Int -> Char
+        myGoodFunc = ...
+
+        myBadFunc :: Int -> Char
+        myBadFunc = ...
+
+    instance Baz Text where
+        type Hoge Text = Int
+
+        myGoodFunc :: Text -> Int -> Char
+        myGoodFunc = ...
+
+        myBadFunc :: Int -> Char
+        myBadFunc = ...
+    ```
+
+    We use `myGoodFunc` and `myBadFunc` like below:
+
+    ```haskell
+    exampleGood :: String -> Int -> Char
+    exampleGood string int = myGoodFunc string int
+
+    exampleBad :: Int -> Char
+    exampleBad int = myBadFunc int
+    ```
+
+    In `exampleGood`, GHC knows to pick the `myGoodFunc` from the `String`
+    instance of the `Baz` typeclass because the first argument to `myGoodFunc`
+    is a `String`.
+
+    However, in `exampleBad`, GHC doesn't know which `myBadFunc` to pick.
+    Should it pick `myBadFunc` from the `Baz Text` instance, or from the `Baz
+    String` instance?  It doesn't have enough information to decide. GHC will
+    throw a compilation error.
+
+    The `Baz` typeclass could be rewritten to make `myBadFunc` unambiguous.
+
+    ```haskell
+    class Baz a where
+        type Hoge a
+        myGoodFunc :: a -> Hoge a -> Char
+        myBadFunc :: Proxy a -> Hoge a -> Char
+
+    instance Baz String where
+        type Hoge String = Int
+
+        myGoodFunc :: String -> Int -> Char
+        myGoodFunc = ...
+
+        myBadFunc :: Proxy String -> Int -> Char
+        myBadFunc = ...
+
+    instance Baz Text where
+        type Hoge Text = Int
+
+        myGoodFunc :: Text -> Int -> Char
+        myGoodFunc = ...
+
+        myBadFunc :: Proxy Text -> Int -> Char
+        myBadFunc = ...
+    ```
+
+    `exmapleBad` would also have to be rewritten:
+
+    ```haskell
+    exampleBad :: Int -> Char
+    exampleBad int = myBadFunc int
+    -- becomes
+    exampleBad :: Int -> Char
+    exampleBad int = myBadFunc (Proxy :: Proxy String) int
+    ```
+
+    Now GHC knows to call `myBadFunc` from the `Baz String` instance.
+
+    The `HasServer` typeclass is also using this `Proxy` trick.  That is why
+    passing a `Proxy` is necesary.
