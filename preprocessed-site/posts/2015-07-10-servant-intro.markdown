@@ -477,6 +477,11 @@ handler type
 
 ~ `EitherT ServantErr IO [Int]`
 
+
+The following sections dive into actual code from servant-server's [master
+branch](https://github.com/haskell-servant/servant/tree/3dc304b8d7c9dbf2fb57afbc1d687f1ec8b48106/servant-server)
+on Github.  The code is currently between version 0.4.2 and 0.5.0.
+
 ## Serve!
 
 In the example code above, the two interesting functions are `serve` and
