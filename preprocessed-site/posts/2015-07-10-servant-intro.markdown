@@ -1388,69 +1388,69 @@ If any of you ever come to Tokyo, dinner is on me!
     Now GHC knows to call `myBadFunc` from the `Baz String` instance.
 
     The `HasServer` typeclass is also using this `Proxy` trick.  That is why
-    passing a `Proxy` is necesary.
+    passing a `Proxy` is necessary.
 
 [^5]: If you've never seen `Data.Proxy.Proxy` before, it is normally used to
-	pass type information to a function.  For instance, imagine the following
-	function:
+    pass type information to a function.  For instance, imagine the following
+        function:
 
     ```haskell
-	read :: Read a => String -> a
-	read = ...
+    read :: Read a => String -> a
+    read = ...
 
-	show :: Show a => a -> String
-	show = ...
+    show :: Show a => a -> String
+    show = ...
 
     badFunc :: String -> String
     badFunc string = show $ read string
     ```
 
-	When trying to compile `badFunc`, GHC will throw an error.  `read` and
-	`show` are polymorphic, so GHC can't figure out what the type variable `a`
-	should be.
+    When trying to compile `badFunc`, GHC will throw an error.  `read` and
+    `show` are polymorphic, so GHC can't figure out what the type variable `a`
+    should be.
 
-	If we knew at compile time that we wanted it to be, say, `Int`, the
-	function could be written like this:
+    If we knew at compile time that we wanted it to be, say, `Int`, the
+    function could be written like this:
 
-	```haskell
-	okayFunc :: String -> String
-	okayFunc string = (show :: Int -> String) $ read string
-	```
+    ```haskell
+    okayFunc :: String -> String
+    okayFunc string = (show :: Int -> String) $ read string
+    ```
 
-	We've specialized the `show` function to take an `Int`.  GHC will be able
-	to infer that `read` needs to return an `Int`.
+    We've specialized the `show` function to take an `Int`.  GHC will be able
+    to infer that `read` needs to return an `Int`.
 
-	```haskell
-	ghci> okayFunc "3"
-	"3"
-	ghci> okayFunc "True"
-	*** Exception: Prelude.read: no parse
-	ghci>
-	```
+    ```haskell
+    ghci> okayFunc "3"
+    "3"
+    ghci> okayFunc "True"
+    *** Exception: Prelude.read: no parse
+    ghci>
+    ```
 
-	This works, but there is still one problem left.  What if we want the
-	caller to be able to determine the type?  Like we tried to do in `ghci`
-	above, what if we want to be able to parse `Bool`s as well as `Int`s?  We
-	can use `Proxy` to do this.
+    This works, but there is still one problem left.  What if we want the
+    caller to be able to determine the type?  Like we tried to do in `ghci`
+    above, what if we want to be able to parse `Bool`s as well as `Int`s?  We
+    can use `Proxy` to do this.
 
-	```haskell
-	goodFunc :: forall a. (Read a, Show a) => Proxy a -> String -> String
-	goodFunc _ string = (show :: a -> String) $ read string
-	```
+    ```haskell
+    goodFunc :: forall a. (Read a, Show a) => Proxy a -> String -> String
+    goodFunc _ string = (show :: a -> String) $ read string
+    ```
 
-	**Note**: For this example we need to enable the `ScopedTypeVariables`
-	language pragma.
+    **Note**: For this example we need to enable the `ScopedTypeVariables`
+    language pragma.
 
-	We specify that `show`'s type signature is `a -> String`.  This `a` is
-	being passed in as `Proxy a`.
+    We specify that `show`'s type signature is `a -> String`.  This `a` is
+    being passed in as `Proxy a`.
 
-	In `ghci`, `goodFunc` can be used like this:
+    In `ghci`, `goodFunc` can be used like this:
 
-	```haskell
-	ghci> goodFunc (Proxy :: Proxy Int) "3"
-	"3"
-	ghci> goodFunc (Proxy :: Proxy Bool) "True"
-	"True"
-	ghci> goodFunc (Proxy :: Proxy Integer) "lalala"
-	*** Exception: Prelude.read: no parse
-	```
+    ```haskell
+    ghci> goodFunc (Proxy :: Proxy Int) "3"
+    "3"
+    ghci> goodFunc (Proxy :: Proxy Bool) "True"
+    "True"
+    ghci> goodFunc (Proxy :: Proxy Integer) "lalala"
+    *** Exception: Prelude.read: no parse
+    ```
