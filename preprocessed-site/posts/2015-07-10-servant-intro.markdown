@@ -1424,7 +1424,7 @@ If any of you ever come to Tokyo, dinner is on me!
 	ghci> okayFunc "3"
 	"3"
 	ghci> okayFunc "True"
-	"*** Exception: Prelude.read: no parse
+	*** Exception: Prelude.read: no parse
 	ghci>
 	```
 
@@ -1452,5 +1452,5 @@ If any of you ever come to Tokyo, dinner is on me!
 	ghci> goodFunc (Proxy :: Proxy Bool) "True"
 	"True"
 	ghci> goodFunc (Proxy :: Proxy Integer) "lalala"
-	"*** Exception: Prelude.read: no parse
+	*** Exception: Prelude.read: no parse
 	```
