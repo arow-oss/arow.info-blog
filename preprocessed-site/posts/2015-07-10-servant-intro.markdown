@@ -1191,15 +1191,15 @@ families, like `ServerT`, are not injective.  An explanation of injectivity is
 given on the Haskell Wiki page on [type
 families](https://wiki.haskell.org/GHC/Type_families#Injectivity.2C_type_inference.2C_and_ambiguity).
 
-This means that if we have `ServerT a m` and `ServerT b m`, even if we know
-that `ServerT a m == ServerT b m` and `m == m`, we cannot conclude that `a ==
-b`.  (This is in contrast to a type like `Maybe a` and `Maybe b`, where if we
-know that `Maybe a == Maybe b`, then we also know that `a == b`.)
+If we have `ServerT a m` and `ServerT b m`, even if we know that `ServerT a m
+== ServerT b m` and `m == m`, we cannot conclude that `a == b`.  (This is in
+contrast to a type like `Maybe a` and `Maybe b`, where if we know that `Maybe a
+== Maybe b`, then we also know that `a == b`.)
 
-The	`route` function effectively doesn't get to "see" the `layout` passed to
-`ServerT`.  It only "sees" the the type that `ServerT` turns into.
+The `route` function effectively doesn't get to "see" the `layout` passed to
+`ServerT`.  It only "sees" the type that `ServerT` turns into.
 
-For example, take this imaginary instace of `HasServer`:
+For example, take this imaginary instance of `HasServer`:
 
 ```haskell
 instance HasServer (Foo a) where
@@ -1292,8 +1292,8 @@ If any of you ever come to Tokyo, dinner is on me!
 
 [^4]: In fact, even if we didn't use `path`, we would *still* have to use a
     `Proxy`. This is because the arguments to a type family declared inside a
-    typeclass need to be used standalone in functions making use of that type
-    family.
+    typeclass need to be used in a way that makes them unambiguous in functions
+    making use of that type family.
 
     It's awkward to explain, but it is pretty easy to understand when you see
     an example.
@@ -1340,8 +1340,8 @@ If any of you ever come to Tokyo, dinner is on me!
     exampleBad int = myBadFunc int
     ```
 
-    In `exampleGood`, GHC knows to pick the `myGoodFunc` the `Baz String`
-    instance the first argument to `myGoodFunc` is a `String`.
+    In `exampleGood`, GHC knows to pick the `myGoodFunc` from the `Baz String`
+    instance because the first argument to `myGoodFunc` is a `String`.
 
     However, in `exampleBad`, GHC doesn't know which `myBadFunc` to pick.
     Should it pick `myBadFunc` from the `Baz Text` instance, or from the `Baz
@@ -1390,9 +1390,15 @@ If any of you ever come to Tokyo, dinner is on me!
     The `HasServer` typeclass is also using this `Proxy` trick.  That is why
     passing a `Proxy` is necessary.
 
+    The key takeaway is: when you know something like `Maybe a`, you know `a`.
+    when you know `Hoge a`, you **don't know** `a`. In the two typeclass
+    instances above, `Hoge String` *and* `Hoge Text` become `Int`, so if all
+    you have is `Int`, GHC doesn't know whether you started with `Hoge String`
+    or `Hoge Text`. GHC can't pick the right typeclass instance.
+
 [^5]: If you've never seen `Data.Proxy.Proxy` before, it is normally used to
     pass type information to a function.  For instance, imagine the following
-        function:
+    function:
 
     ```haskell
     read :: Read a => String -> a
