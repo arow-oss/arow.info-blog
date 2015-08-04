@@ -1199,13 +1199,20 @@ contrast to a type like `Maybe a` and `Maybe b`, where if we know that `Maybe a
 The `route` function effectively doesn't get to "see" the `layout` passed to
 `ServerT`.  It only "sees" the type that `ServerT` turns into.
 
-For example, take this imaginary instance of `HasServer`:
+For example, take these two imaginary instance of `HasServer`:
 
 ```haskell
-instance HasServer (Foo a) where
-  type ServerT (Foo a) = a
+instance HasServer (Lala a) where
+  type ServerT (Lala a) = a
 
-  route :: Proxy (Foo a)
+  route :: Proxy (Lala a)
+        -> IO (RouteResult a)
+        -> Router
+
+instance HasServer (Popo a) where
+  type ServerT (Popo a) = a
+
+  route :: Proxy (Popo a)
         -> IO (RouteResult a)
         -> Router
 ```
@@ -1214,10 +1221,33 @@ If `route` wasn't passed a `Proxy` as the first argument, its type signature
 would look like this:
 
 ```haskell
+route :: IO (RouteResult (ServerT ...) -> Router
+```
+
+Let's see what it would look like for the `HasServer (Lala a)` instance:
+
+```haskell
+route :: IO (RouteResult (ServerT (Lala a)) -> Router
+```
+
+However, the type family tells us that `ServerT (Lala a) = a`, so this type
+signature becomes:
+
+```haskell
 route :: IO (RouteResult a) -> Router
 ```
 
-It wouldn't be able to "see" the `Foo`.
+We can look at the same thing for the `HasServer (Popo a)` instance:
+
+```haskell
+route :: IO (RouteResult (ServerT (Popo a)) -> Router
+-- because we know that @ServerT (Popo a) = a@, we can figure out that the type
+-- signature of 'route' becomes:
+route :: IO (RouteResult a) -> Router
+```
+
+The resulting type signature for both instances is the same.  Servant gets
+around this problem by passing a `Proxy` specifying the type we want to use.
 
 In servant-server, a problem like this comes up with the `HasServer` instance
 for `(:>)`.
@@ -1415,7 +1445,7 @@ If any of you ever come to Tokyo, dinner is on me!
     `show` are polymorphic, so GHC can't figure out what the type variable `a`
     should be.
 
-    If we knew at compile time that we wanted it to be, say, `Int`, the
+    If we knew at compile time that we wanted it to be, say, an `Int`, the
     function could be written like this:
 
     ```haskell
