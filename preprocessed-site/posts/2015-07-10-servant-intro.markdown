@@ -160,7 +160,7 @@ the handler should be called when the user sends a GET request to `/dogs`.
 Servant also needs to be told to convert the `Int` list returned by the
 `dogNums` handler to JSON.
 
-This information is encoded in the API type:
+This information is encoded in the API type[^6]:
 
 ```haskell
 type DogsAPI = "dogs" :> Get '[JSON] [Int]
@@ -1454,3 +1454,52 @@ If any of you ever come to Tokyo, dinner is on me!
     ghci> goodFunc (Proxy :: Proxy Integer) "lalala"
     *** Exception: Prelude.read: no parse
     ```
+
+[^6]: Technically, this information is partially found in the API type, and
+    partially comes from the fact that you arrange your `Server` handlers in
+    the same order as the corresponding endpoints in the API type.
+
+    Later parts of the article will talk more about this in depth, but you can
+    get an idea for what it means by looking at the `myAPI` function.
+
+    ```haskell
+    type MyAPI = "dogs" :> Get '[JSON] [Int]
+            :<|> "cats" :> Get '[JSON] [String]
+
+    app :: Application
+    app = serve (Proxy :: Proxy MyAPI) myAPI
+
+    myAPI :: ServerT MyAPI (EitherT ServantErr IO)
+    myAPI = dogNums :<|> cats
+
+    dogNums :: EitherT ServantErr IO [Int]
+    dogNums = return [1,2,3,4]
+
+    cats :: EitherT ServantErr IO [String]
+    cats = return ["long-haired", "short-haired"]
+    ```
+
+    servant requires you to write the handlers for your endpoints in the same
+    order that the corresponding endpoints appear in the API type.  It is by
+    relying on this order that servant can cross-reference the information
+    found in the API types and the types of the handlers themselves, in order
+    to check that you're not returning an `Int` where a `String` is expected.
+
+    For example, based on the order of the "/dogs" and "/cats" handler in the
+    `MyAPI` type, GHC would throw an error if you revered the order of
+    `dogsNums` and `cats` in the `myAPI` function.
+
+    ```haskell
+    type MyAPI = "dogs" :> Get '[JSON] [Int]
+            :<|> "cats" :> Get '[JSON] [String]
+
+    -- This works.
+    myAPI :: ServerT MyAPI (EitherT ServantErr IO)
+    myAPI = dogNums :<|> cats
+
+    -- This does not compile.
+    myAPI :: ServerT MyAPI (EitherT ServantErr IO)
+    myAPI = cats :<|> dogNums
+    ```
+
+    This information will be clarified later in the article.
