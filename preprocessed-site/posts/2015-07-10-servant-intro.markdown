@@ -1292,12 +1292,13 @@ If any of you ever come to Tokyo, dinner is on me!
 
 [^4]: In fact, even if we didn't use `path`, we would *still* have to use a
     `Proxy`. This is because the arguments to a type family declared inside a
-    typeclass need to be used standalone in functions in that type class.
+    typeclass need to be used standalone in functions making use of that type
+    family.
 
     It's awkward to explain, but it is pretty easy to understand when you see
     an example.
 
-    In the following typeclass, there is one one type family and two functions
+    In the following typeclass, there is one type family and two functions
     using that type family:
 
     ```haskell
@@ -1339,9 +1340,8 @@ If any of you ever come to Tokyo, dinner is on me!
     exampleBad int = myBadFunc int
     ```
 
-    In `exampleGood`, GHC knows to pick the `myGoodFunc` from the `String`
-    instance of the `Baz` typeclass because the first argument to `myGoodFunc`
-    is a `String`.
+    In `exampleGood`, GHC knows to pick the `myGoodFunc` the `Baz String`
+    instance the first argument to `myGoodFunc` is a `String`.
 
     However, in `exampleBad`, GHC doesn't know which `myBadFunc` to pick.
     Should it pick `myBadFunc` from the `Baz Text` instance, or from the `Baz
