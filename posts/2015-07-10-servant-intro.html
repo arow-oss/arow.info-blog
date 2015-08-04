@@ -175,7 +175,7 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <p><code>SomeMonad</code> would be <code>EitherT ServantErr IO</code>. The list of <code>Int</code>s is the same.</p>
 <p>Servant is great because it gives us type safety in the return type of our handlers.</p>
 <p>However, two important things are still missing. Servant needs to be told that the handler should be called when the user sends a GET request to <code>/dogs</code>. Servant also needs to be told to convert the <code>Int</code> list returned by the <code>dogNums</code> handler to JSON.</p>
-<p>This information is encoded in the API type:</p>
+<p>This information is encoded in the API type<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">DogsAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span></code></pre></div>
 <p>This type says that Servant will respond to GET requests to <code>/dogs</code>, returning a JSON-encoded list of <code>Int</code>s.</p>
 <p>Before explaining how the <code>dogNums</code> function gets tied to the <code>DogsAPI</code> type, we first need to look at type-level strings, type-level lists, type-level operators, and type families.</p>
@@ -190,7 +190,7 @@ ghci<span class="fu">&gt;</span></code></pre></div>
 ghci<span class="fu">&gt;</span></code></pre></div>
 <p>Hmm, the type-level string appears to be of kind <a href="https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#t:Symbol"><code>GHC.TypeLits.Symbol</code></a>. What can be done with this?</p>
 <p>Looking at the <code>GHC.TypeLits</code> module, there appears to be a <a href="https://hackage.haskell.org/package/base-4.8.0.0/docs/GHC-TypeLits.html#v:symbolVal"><code>symbolVal</code></a> function. It can be used to get back the <strong>value</strong> of the type-level string.</p>
-<p>Let’s try this out in ghci. <code>symbolVal</code> and <a href="https://hackage.haskell.org/package/base-4.8.0.0/docs/Data-Proxy.html#t:Proxy"><code>Data.Proxy.Proxy</code></a><a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> need to be imported. <code>Proxy</code> is used to “proxy” the type-level literal.</p>
+<p>Let’s try this out in ghci. <code>symbolVal</code> and <a href="https://hackage.haskell.org/package/base-4.8.0.0/docs/Data-Proxy.html#t:Proxy"><code>Data.Proxy.Proxy</code></a><a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> need to be imported. <code>Proxy</code> is used to “proxy” the type-level literal.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="kw">import </span><span class="dt">GHC.TypeLits</span>
 ghci<span class="fu">&gt;</span> <span class="kw">import </span><span class="dt">Data.Proxy</span>
 ghci<span class="fu">&gt;</span> symbolVal (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> <span class="st">&quot;hello&quot;</span>)
@@ -257,7 +257,7 @@ ghci<span class="fu">&gt;</span></code></pre></div>
 <p>Type families are a relatively simple addition to Haskell that allow the user to do some computation at the type level. However, if you google for <a href="https://www.google.co.jp/search?q=haskell+type+families&amp;ie=utf-8&amp;oe=utf-8&amp;gws_rd=cr&amp;ei=OzuSVZSMA6S-mAX044aoCQ">type families</a>, it’s easy to get scared.</p>
 <p>The first result is the <a href="https://wiki.haskell.org/GHC/Type_families">GHC/Type families</a> article on the Haskell Wiki. This is written with an advanced Haskeller in mind. Don’t worry if it’s too hard. (The other problem is that most of their examples use data families instead of type synonym families–which I introduce below. Most of the real world Haskell code I’ve seen uses type synonym families much more than data families).</p>
 <p>The second link is to the <a href="https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/type-families.html">type-families page</a> in the GHC manual. It’s good if you already know about type families and just want a refresher, but it’s not good as an introduction to type families.</p>
-<p>The third result is an <a href="https://www.fpcomplete.com/school/to-infinity-and-beyond/pick-of-the-week/type-families-and-pokemon">article</a> on FP Complete. It gets points for being about Pokemon, but the setup/motivation for using type families is way too long<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>.</p>
+<p>The third result is an <a href="https://www.fpcomplete.com/school/to-infinity-and-beyond/pick-of-the-week/type-families-and-pokemon">article</a> on FP Complete. It gets points for being about Pokemon, but the setup/motivation for using type families is way too long<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>.</p>
 <p>The fourth result is an introduction to <a href="https://ocharles.org.uk/blog/posts/2014-12-12-type-families.html">type families</a> by Oliver Charles. It’s the best of the bunch, but it is slightly hard to follow if you’ve never used MVars, IORefs, etc.</p>
 <p>I wrote a super simple <em>tl;dr</em> <a href="https://cdepillabout.github.io/haskell-type-families-presentation">presentation about type families</a>. Originally I wrote it in Japanese for a Haskell Lightning Talk in Tokyo, but I recently translated it to English upon the request from someone in the <strong>#haskell</strong> room in the <a href="http://fpchat.com/">functional programming slack community</a>. If you aren’t sure about type families, please read that presentation and then proceed to the next section.</p>
 <h2 id="servant">Servant</h2>
@@ -344,7 +344,7 @@ right?)
 <p>Now look at the second argument, <code>Server layout</code>. What is <code>Server</code>?</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">ghci<span class="fu">&gt;</span> <span class="fu">:</span>info <span class="dt">Server</span>
 <span class="kw">type</span> <span class="dt">Server</span> layout <span class="fu">=</span> <span class="dt">ServerT</span> layout (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)</code></pre></div>
-<p><code>Server</code> looks like it is a specialization of <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT"><code>ServerT</code></a> around the <a href="https://hackage.haskell.org/package/either-4.4.1/docs/Control-Monad-Trans-Either.html#t:EitherT"><code>EitherT</code></a> monad transformer. This is similar to how the <a href="https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:Reader"><code>Reader</code></a> monad is a specialization of the <a href="https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:ReaderT"><code>ReaderT</code></a> monad<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>:</p>
+<p><code>Server</code> looks like it is a specialization of <a href="https://hackage.haskell.org/package/servant-server-0.4.2/docs/Servant-Server.html#t:ServerT"><code>ServerT</code></a> around the <a href="https://hackage.haskell.org/package/either-4.4.1/docs/Control-Monad-Trans-Either.html#t:EitherT"><code>EitherT</code></a> monad transformer. This is similar to how the <a href="https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:Reader"><code>Reader</code></a> monad is a specialization of the <a href="https://hackage.haskell.org/package/transformers-0.4.3.0/docs/Control-Monad-Trans-Reader.html#t:ReaderT"><code>ReaderT</code></a> monad<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">ReaderT</span> r m a <span class="fu">=</span> <span class="fu">...</span>
 <span class="kw">type</span> <span class="dt">Reader</span> r a <span class="fu">=</span> <span class="dt">ReaderT</span> r <span class="dt">Identity</span> a</code></pre></div>
 <p>Okay, so <code>Server</code> is just a specialization of <code>ServerT</code>. Then what is <code>ServerT</code>?</p>
@@ -486,7 +486,7 @@ app <span class="fu">=</span> serve (<span class="dt">Proxy</span><span class="o
 <p>And two, the type of the <code>myAPI</code> function from the example program can be changed to this specialized type, and the example program will still compile. Before, it looked like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">MyAPI</span> (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
-<p>But it could be changed to this<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>:</p>
+<p>But it could be changed to this<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">ServerT</span> (<span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]) (EitherT ServantErr IO)</span>
     <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> (<span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]) (EitherT ServantErr IO)</span>
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
@@ -669,18 +669,34 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 </blockquote>
 <p>This question was recently <a href="http://stackoverflow.com/q/31636431/3040129">answered</a> on Stack Overflow by <a href="http://alpmestan.com/">Alp Mestanogullari</a> (one of the developers of servant).</p>
 <p>He says that the main reason we need to pass <code>layout</code> twice is that type families, like <code>ServerT</code>, are not injective. An explanation of injectivity is given on the Haskell Wiki page on <a href="https://wiki.haskell.org/GHC/Type_families#Injectivity.2C_type_inference.2C_and_ambiguity">type families</a>.</p>
-<p>This means that if we have <code>ServerT a m</code> and <code>ServerT b m</code>, even if we know that <code>ServerT a m == ServerT b m</code> and <code>m == m</code>, we cannot conclude that <code>a == b</code>. (This is in contrast to a type like <code>Maybe a</code> and <code>Maybe b</code>, where if we know that <code>Maybe a == Maybe b</code>, then we also know that <code>a == b</code>.)</p>
-<p>The <code>route</code> function effectively doesn’t get to “see” the <code>layout</code> passed to <code>ServerT</code>. It only “sees” the the type that <code>ServerT</code> turns into.</p>
-<p>For example, take this imaginary instace of <code>HasServer</code>:</p>
-<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">HasServer</span> (<span class="dt">Foo</span> a) <span class="kw">where</span>
-  <span class="kw">type</span> <span class="dt">ServerT</span> (<span class="dt">Foo</span> a) <span class="fu">=</span> a
+<p>If we have <code>ServerT a m</code> and <code>ServerT b m</code>, even if we know that <code>ServerT a m == ServerT b m</code> and <code>m == m</code>, we cannot conclude that <code>a == b</code>. (This is in contrast to a type like <code>Maybe a</code> and <code>Maybe b</code>, where if we know that <code>Maybe a == Maybe b</code>, then we also know that <code>a == b</code>.)</p>
+<p>The <code>route</code> function effectively doesn’t get to “see” the <code>layout</code> passed to <code>ServerT</code>. It only “sees” the type that <code>ServerT</code> turns into.</p>
+<p>For example, take these two imaginary instance of <code>HasServer</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">HasServer</span> (<span class="dt">Lala</span> a) <span class="kw">where</span>
+  <span class="kw">type</span> <span class="dt">ServerT</span> (<span class="dt">Lala</span> a) <span class="fu">=</span> a
 
-<span class="ot">  route ::</span> <span class="dt">Proxy</span> (<span class="dt">Foo</span> a)
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (<span class="dt">Lala</span> a)
+        <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> a)
+        <span class="ot">-&gt;</span> <span class="dt">Router</span>
+
+<span class="kw">instance</span> <span class="dt">HasServer</span> (<span class="dt">Popo</span> a) <span class="kw">where</span>
+  <span class="kw">type</span> <span class="dt">ServerT</span> (<span class="dt">Popo</span> a) <span class="fu">=</span> a
+
+<span class="ot">  route ::</span> <span class="dt">Proxy</span> (<span class="dt">Popo</span> a)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> a)
         <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
 <p>If <code>route</code> wasn’t passed a <code>Proxy</code> as the first argument, its type signature would look like this:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> <span class="fu">...</span>) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<p>Let’s see what it would look like for the <code>HasServer (Lala a)</code> instance:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> (<span class="dt">Lala</span> a)) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<p>However, the type family tells us that <code>ServerT (Lala a) = a</code>, so this type signature becomes:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> a) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
-<p>It wouldn’t be able to “see” the <code>Foo</code>.</p>
+<p>We can look at the same thing for the <code>HasServer (Popo a)</code> instance:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">route ::</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> (<span class="dt">Popo</span> a)) <span class="ot">-&gt;</span> <span class="dt">Router</span>
+<span class="co">-- because we know that @ServerT (Popo a) = a@, we can figure out that the type</span>
+<span class="co">-- signature of 'route' becomes:</span>
+<span class="ot">route ::</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> a) <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
+<p>The resulting type signature for both instances is the same. Servant gets around this problem by passing a <code>Proxy</code> specifying the type we want to use.</p>
 <p>In servant-server, a problem like this comes up with the <code>HasServer</code> instance for <code>(:&gt;)</code>.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> (<span class="dt">KnownSymbol</span> path, <span class="dt">HasServer</span> sublayout) <span class="ot">=&gt;</span> <span class="dt">HasServer</span> (path <span class="fu">:&gt;</span> sublayout) <span class="kw">where</span>
 
@@ -689,7 +705,7 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <span class="ot">  route ::</span> <span class="dt">Proxy</span> (path <span class="fu">:&gt;</span> sublayout)
         <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">RouteResult</span> (<span class="dt">ServerT</span> sublayout <span class="fu">...</span>))
         <span class="ot">-&gt;</span> <span class="dt">Router</span></code></pre></div>
-<p>The <code>ServerT</code> type family completely ignores the <code>path</code> argument! In the implementation of the <code>route</code> function, if we didn’t have the <code>Proxy (path :&gt; sublayout)</code> argument, we wouldn’t be able to use the <code>path</code> argument at all!<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
+<p>The <code>ServerT</code> type family completely ignores the <code>path</code> argument! In the implementation of the <code>route</code> function, if we didn’t have the <code>Proxy (path :&gt; sublayout)</code> argument, we wouldn’t be able to use the <code>path</code> argument at all!<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a></p>
 <h2 id="conclusion">Conclusion</h2>
 <p>If you liked this tutorial, you may also like the official <a href="http://haskell-servant.github.io/tutorial/">servant tutorial</a>, or a tutorial about using <a href="http://www.parsonsmatt.org/programming/2015/06/07/servant-persistent.html">servant with persistent</a> by <a href="http://www.parsonsmatt.org/">Matt Parsons</a>.</p>
 <h2 id="thanks">Thanks</h2>
@@ -699,7 +715,36 @@ dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class=
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>If you’ve never seen <code>Data.Proxy.Proxy</code> before, it is normally used to pass type information to a function. For instance, imagine the following function:</p>
+<li id="fn1"><p>Technically, this information is partially found in the API type, and partially comes from the fact that you arrange your <code>Server</code> handlers in the same order as the corresponding endpoints in the API type.</p>
+<p>Later parts of the article will talk more about this in depth, but you can get an idea for what it means by looking at the <code>myAPI</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">MyAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span>
+        <span class="fu">:&lt;|&gt;</span> <span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]</span>
+
+<span class="ot">app ::</span> <span class="dt">Application</span>
+app <span class="fu">=</span> serve (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> <span class="dt">MyAPI</span>) myAPI
+
+<span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">MyAPI</span> (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
+myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats
+
+<span class="ot">dogNums ::</span> <span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span> [<span class="dt">Int</span>]
+dogNums <span class="fu">=</span> return [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>]
+
+<span class="ot">cats ::</span> <span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span> [<span class="dt">String</span>]
+cats <span class="fu">=</span> return [<span class="st">&quot;long-haired&quot;</span>, <span class="st">&quot;short-haired&quot;</span>]</code></pre></div>
+<p>servant requires you to write the handlers for your endpoints in the same order that the corresponding endpoints appear in the API type. It is by relying on this order that servant can cross-reference the information found in the API types and the types of the handlers themselves, in order to check that you’re not returning an <code>Int</code> where a <code>String</code> is expected.</p>
+<p>For example, based on the order of the “/dogs” and “/cats” handler in the <code>MyAPI</code> type, GHC would throw an error if you revered the order of <code>dogsNums</code> and <code>cats</code> in the <code>myAPI</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">MyAPI</span> <span class="fu">=</span> <span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]</span>
+        <span class="fu">:&lt;|&gt;</span> <span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]</span>
+
+<span class="co">-- This works.</span>
+<span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">MyAPI</span> (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
+myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats
+
+<span class="co">-- This does not compile.</span>
+<span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">MyAPI</span> (<span class="dt">EitherT</span> <span class="dt">ServantErr</span> <span class="dt">IO</span>)
+myAPI <span class="fu">=</span> cats <span class="fu">:&lt;|&gt;</span> dogNums</code></pre></div>
+<p>This information will be clarified later in the article.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>If you’ve never seen <code>Data.Proxy.Proxy</code> before, it is normally used to pass type information to a function. For instance, imagine the following function:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">read<span class="ot"> ::</span> <span class="dt">Read</span> a <span class="ot">=&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> a
 read <span class="fu">=</span> <span class="fu">...</span>
 
@@ -709,7 +754,7 @@ show <span class="fu">=</span> <span class="fu">...</span>
 <span class="ot">badFunc ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
 badFunc string <span class="fu">=</span> show <span class="fu">$</span> read string</code></pre></div>
 <p>When trying to compile <code>badFunc</code>, GHC will throw an error. <code>read</code> and <code>show</code> are polymorphic, so GHC can’t figure out what the type variable <code>a</code> should be.</p>
-<p>If we knew at compile time that we wanted it to be, say, <code>Int</code>, the function could be written like this:</p>
+<p>If we knew at compile time that we wanted it to be, say, an <code>Int</code>, the function could be written like this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">okayFunc ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">String</span>
 okayFunc string <span class="fu">=</span> (show<span class="ot"> ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">String</span>) <span class="fu">$</span> read string</code></pre></div>
 <p>We’ve specialized the <code>show</code> function to take an <code>Int</code>. GHC will be able to infer that <code>read</code> needs to return an <code>Int</code>.</p>
@@ -730,10 +775,10 @@ ghci<span class="fu">&gt;</span> goodFunc (<span class="dt">Proxy</span><span cl
 <span class="st">&quot;True&quot;</span>
 ghci<span class="fu">&gt;</span> goodFunc (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> <span class="dt">Integer</span>) <span class="st">&quot;lalala&quot;</span>
 <span class="fu">***</span> <span class="dt">Exception</span><span class="fu">:</span> Prelude.read<span class="fu">:</span> no parse</code></pre></div>
-<a href="#fnref1">↩</a></li>
-<li id="fn2"><p>This article is also super long, so I really shouldn’t complain about length.<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>The article <a href="https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md">A Gentle Introduction to Monad Transformers</a> might be a good place to start if you’re not too familiar with Monad transformers. However, if you’re not too familiar with Monad transformers, the rest of this article will probably be quite challenging.<a href="#fnref3">↩</a></p></li>
-<li id="fn4"><p>It may be easier to reason about this code using convenient type synonyms. Originally we had this:</p>
+<a href="#fnref2">↩</a></li>
+<li id="fn3"><p>This article is also super long, so I really shouldn’t complain about length.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>The article <a href="https://github.com/kqr/gists/blob/master/articles/gentle-introduction-monad-transformers.md">A Gentle Introduction to Monad Transformers</a> might be a good place to start if you’re not too familiar with Monad transformers. However, if you’re not too familiar with Monad transformers, the rest of this article will probably be quite challenging.<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>It may be easier to reason about this code using convenient type synonyms. Originally we had this:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">myAPI ::</span> <span class="dt">ServerT</span> (<span class="st">&quot;dogs&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [Int]) (EitherT ...)</span>
     <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> (<span class="st">&quot;cats&quot;</span> <span class="fu">:&gt;</span> <span class="dt">Get</span> <span class="ch">'[JSON] [String]) (EitherT ...)</span>
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
@@ -745,10 +790,10 @@ myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats<
 <span class="ot">myAPI ::</span> <span class="dt">ServerT</span> <span class="dt">DogsAPI</span> (<span class="dt">EitherT</span> <span class="fu">...</span>)
     <span class="fu">:&lt;|&gt;</span> <span class="dt">ServerT</span> <span class="dt">CatsAPI</span> (<span class="dt">EitherT</span> <span class="fu">...</span>)
 myAPI <span class="fu">=</span> dogNums <span class="fu">:&lt;|&gt;</span> cats</code></pre></div>
-<a href="#fnref4">↩</a></li>
-<li id="fn5"><p>In fact, even if we didn’t use <code>path</code>, we would <em>still</em> have to use a <code>Proxy</code>. This is because the arguments to a type family declared inside a typeclass need to be used standalone in functions in that type class.</p>
+<a href="#fnref5">↩</a></li>
+<li id="fn6"><p>In fact, even if we didn’t use <code>path</code>, we would <em>still</em> have to use a <code>Proxy</code>. This is because the arguments to a type family declared inside a typeclass need to be used in a way that makes them unambiguous in functions making use of that type family.</p>
 <p>It’s awkward to explain, but it is pretty easy to understand when you see an example.</p>
-<p>In the following typeclass, there is one one type family and two functions using that type family:</p>
+<p>In the following typeclass, there is one type family and two functions using that type family:</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">Baz</span> a <span class="kw">where</span>
     <span class="kw">type</span> <span class="dt">Hoge</span> a
 <span class="ot">    myGoodFunc ::</span> a <span class="ot">-&gt;</span> <span class="dt">Hoge</span> a <span class="ot">-&gt;</span> <span class="dt">Char</span>
@@ -777,7 +822,7 @@ exampleGood string int <span class="fu">=</span> myGoodFunc string int
 
 <span class="ot">exampleBad ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
 exampleBad int <span class="fu">=</span> myBadFunc int</code></pre></div>
-<p>In <code>exampleGood</code>, GHC knows to pick the <code>myGoodFunc</code> from the <code>String</code> instance of the <code>Baz</code> typeclass because the first argument to <code>myGoodFunc</code> is a <code>String</code>.</p>
+<p>In <code>exampleGood</code>, GHC knows to pick the <code>myGoodFunc</code> from the <code>Baz String</code> instance because the first argument to <code>myGoodFunc</code> is a <code>String</code>.</p>
 <p>However, in <code>exampleBad</code>, GHC doesn’t know which <code>myBadFunc</code> to pick. Should it pick <code>myBadFunc</code> from the <code>Baz Text</code> instance, or from the <code>Baz String</code> instance? It doesn’t have enough information to decide. GHC will throw a compilation error.</p>
 <p>The <code>Baz</code> typeclass could be rewritten to make <code>myBadFunc</code> unambiguous.</p>
 <div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">class</span> <span class="dt">Baz</span> a <span class="kw">where</span>
@@ -809,7 +854,8 @@ exampleBad int <span class="fu">=</span> myBadFunc int
 <span class="ot">exampleBad ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Char</span>
 exampleBad int <span class="fu">=</span> myBadFunc (<span class="dt">Proxy</span><span class="ot"> ::</span> <span class="dt">Proxy</span> <span class="dt">String</span>) int</code></pre></div>
 <p>Now GHC knows to call <code>myBadFunc</code> from the <code>Baz String</code> instance.</p>
-<p>The <code>HasServer</code> typeclass is also using this <code>Proxy</code> trick. That is why passing a <code>Proxy</code> is necesary.<a href="#fnref5">↩</a></p></li>
+<p>The <code>HasServer</code> typeclass is also using this <code>Proxy</code> trick. That is why passing a <code>Proxy</code> is necessary.</p>
+<p>The key takeaway is: when you know something like <code>Maybe a</code>, you know <code>a</code>. when you know <code>Hoge a</code>, you <strong>don’t know</strong> <code>a</code>. In the two typeclass instances above, <code>Hoge String</code> <em>and</em> <code>Hoge Text</code> become <code>Int</code>, so if all you have is <code>Int</code>, GHC doesn’t know whether you started with <code>Hoge String</code> or <code>Hoge Text</code>. GHC can’t pick the right typeclass instance.<a href="#fnref6">↩</a></p></li>
 </ol>
 </div>
             </div>
