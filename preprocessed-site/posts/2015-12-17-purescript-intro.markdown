@@ -161,8 +161,8 @@ are often named the same as their counterparts in Haskell.
 ## Compiler and Build Tools
 
 The PureScript/JavaScript ecosystem is much more complex than the Haskell
-ecosystem.  In Haskell, when building a project, the normal advice is to ["just
-use `stack`"][1].  In PureScript, you have to deal with `node`, `npm`, `bower`,
+ecosystem.  In Haskell, when building a project, the normal advice is to "just
+use `stack`"[^1].  In PureScript, you have to deal with `node`, `npm`, `bower`,
 `pulp`, and `gulp`.  It may be second-nature for someone familiar with
 JavaScript, but it can be intimidating to a Haskeller.
 
@@ -328,7 +328,7 @@ Pulp is a build tool specific to PureScript.  It is similar to `stack` or
 `cabal` for Haskell.  It works well for libraries and simple projects, but it
 does not have enough flexibility for larger projects.  It seems like the
 general recommendation from the PureScript community is to use Pulp for simple
-libraries, and gulp for any [non-trivial application][2].
+libraries, and gulp for any non-trivial application[^2].
 
 Pulp can be installed with `npm`:
 
@@ -517,7 +517,7 @@ Github.
 
 SlamData is providing an open source, visualization solution for NoSQL data.
 PureScript is being used in the frontend for visualization of data.  SlamData
-is currently employing three full-time PureScript developers.[3]
+is currently employing three full-time PureScript developers.[^3]
 
 ### People
 
@@ -540,10 +540,11 @@ maintain the Halogen project.  Gary is _very_ helpful on Github.  He has
 responded to many of my issues (even silly ones).  If PureScript succeeds as a
 language, it will be partially due to the helpfulness of Gary.
 
-#### John A. De Goes (jdegoes)
+#### John A. De Goes ([jdegoes](https://github.com/jdegoes))
 
 John is the CTO of SlamData.  He is active within the Halogen project and also
-responds to many issues in the PureScript compiler's issue tracker.
+responds to many issues in the PureScript compiler's issue tracker.  John is
+also a long-time Haskell hacker.
 
 ## Conclusion
 
@@ -555,13 +556,13 @@ Good luck on your PureScript journey.
 
 ## Footnotes
 
-[1]: It used to be, "Just use `cabal` and sandboxes.  For multi-project
+[^1]: It used to be, "Just use `cabal` and sandboxes.  For multi-project
 builds... maybe try a small shell script?"
 
-[2]: Pulp was originally written in JavaScript, which may be why it does not
+[^2]: Pulp was originally written in JavaScript, which may be why it does not
 have the features one would expect from `stack` or `cabal`.  However, it is
 [currently](https://github.com/bodil/pulp/issues/119) being rewritten in
 PureScript, so maybe there is hope that it will be more flexible in the future.
 
-[3]: I believe I saw this number somewhere, but I can't find the page I saw it
+[^3]: I believe I saw this number somewhere, but I can't find the page I saw it
 on.  If someone could confirm/deny this, it would be much appreciated.
