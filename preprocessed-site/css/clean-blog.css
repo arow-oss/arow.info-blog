@@ -27,6 +27,7 @@ h6 {
 }
 a {
   color: #404040;
+  text-decoration: underline;
 }
 a:hover,
 a:focus {
@@ -62,6 +63,7 @@ hr.small {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 1px;
+  text-decoration: none;
 }
 @media only screen and (min-width: 768px) {
   .navbar-custom {

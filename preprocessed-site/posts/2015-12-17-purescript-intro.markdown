@@ -1,5 +1,6 @@
 ---
 title: ARoW.info Blog -- PureScript for the Haskeller
+draft: yes
 headingBackgroundImage: ../img/post-bg.jpg
 headingDivClass: post-heading
 heading: PureScript for the Haskeller
@@ -8,7 +9,7 @@ postedBy: <a href="http://functor.tokyo">Dennis Gosnell</a>
 ---
 
 This article is an introduction to PureScript for someone that knows Haskell
-but may not be familiar with JavaScript.  PureScript is very similar to
+(but may not be familiar with JavaScript).  PureScript is very similar to
 Haskell.  If you know Haskell, PureScript will be very easy to learn.
 
 This article first gives an overview of the differences between PureScript and
@@ -17,12 +18,12 @@ systems and DOM manipulation libraries.
 
 ## Differences Between Haskell and PureScript
 
-There are only a few key differences between Haskell and PureScript.
-[Here](https://github.com/purescript/purescript/wiki/Differences-from-Haskell)
-is a comprehensive list.  You should read this first.
+There are only a few key differences between Haskell and PureScript.  Here is a
+[comprehensive
+list](https://github.com/purescript/purescript/wiki/Differences-from-Haskell).
+You should read this first.
 
-Here are a couple things that are substantially different from Haskell, and
-often came up in the code I was writing:
+Here are a couple things that often came up in the code I was writing:
 
 - [`forall`](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#explicit-forall)
   is explicit in PureScript.  This is somewhat annoying, but easy to get used
@@ -47,14 +48,14 @@ often came up in the code I was writing:
       [`Maybe`](https://github.com/purescript/purescript-maybe) and
       [`Either`](https://github.com/purescript/purescript-either).  They live
       in separate modules.
-    - The typeclass hierarchy is much more find-grained (see below).
+    - The typeclass hierarchy is much more find-grained ([see below](#typeclass-hierarchy)).
     - Alternative Preludes that export many modules are more common in
       Purescript.  See the
       [`purescript-batteries`](https://github.com/tfausak/purescript-batteries)
       package, for example.
-- PureScript uses extensible records (see below).
+- PureScript uses extensible records ([see below](#extensible-records)).
 - PureScript doesn't use a `IO` monad, but instead extensible effects with the
-  `Eff` Monad (see below).
+  `Eff` Monad ([see below](#eff-monad)).
 
 ### Typeclass Hierarchy
 
@@ -73,7 +74,7 @@ packages in PureScript.  This includes
 [`List`](https://github.com/purescript/purescript-lists),
 [`Monoid`](https://github.com/purescript/purescript-monoid/blob/master/docs/Data/Monoid.md),
 etc.  When looking for which package contains a class or type you are used to
-from Haskell, you may want to use Pursuit (see below).
+from Haskell, you may want to use Pursuit ([see below](#pursuit)).
 
 There is also a list of [recommended PureScript
 libraries](https://github.com/purescript/purescript/wiki/Recommended-Libraries)
