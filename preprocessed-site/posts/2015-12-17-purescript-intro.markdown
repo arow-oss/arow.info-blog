@@ -41,7 +41,7 @@ Here are a couple things that often came up in the code I was writing:
   for tuples.
 - The composition operator is not `(.)`, but `(<<<)`.
 - `undefined` is not provided in the `Prelude`, but it can be
-  [simulated](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#error-and-undefined).
+  [emulated](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#error-and-undefined).
 - PureScript's `Prelude` is somewhat different from Haskell's.
     - It has to be imported in every module that uses it.
     - It doesn't export things like
@@ -90,7 +90,7 @@ the PureScript book.
 
 PureScript has extensible records (also called "row polymorphism").  A short
 introduction is given in [Chapter
-5.8](https://leanpub.com/purescript/read#leanpub-auto-record-patterns-and-row-polymorphism)
+5.7](https://leanpub.com/purescript/read#leanpub-auto-record-patterns-and-row-polymorphism)
 of the PureScript book.  Make sure you understand extensible records before
 reading about the `Eff` monad.
 
@@ -167,8 +167,8 @@ use `stack`"[^1].  In PureScript, you have to deal with `node`, `npm`, `bower`,
 `pulp`, and `gulp`.  It may be second-nature for someone familiar with
 JavaScript, but it can be intimidating to a Haskeller.
 
-The following sections try to explain the relationship between Node.js, npm,
-Bower, Pulp, Gulp, and Grunt.
+The following sections explain the relationship between Node.js, npm, Bower,
+Pulp, Gulp, and Grunt.
 
 I have created two example projects that you can use to play around with the
 following tools.  One [project]() is using Node.js, npm, Bower, and Pulp, and
@@ -363,7 +363,7 @@ in a couple different cases.  The most common is when building a project that
 produces multiple JavaScript files as output.  It is also used when you need to
 change build settings that Pulp does not provide access to.
 
-It seems like people using PureScript in production (SlamData) use Gulp almost
+It seems like people using PureScript in production ([SlamData](#slamdata)) use Gulp almost
 exclusively.
 
 Gulp can be installed with `npm`:
@@ -408,7 +408,8 @@ describing the differences between Grunt and Gulp.
 
 PureScript is mostly used for writing frontend code.  Because of this, there
 are many DOM manipulation libraries available.  In this section, I talk about
-four different PureScript libraries used for DOM manipulation.
+four different PureScript libraries used for DOM manipulation: simple-dom,
+purescript-react, Thermite, and Halogen.
 
 ### simple-dom
 
@@ -496,7 +497,7 @@ coproducts, etc.  For an intermediate/advanced Haskeller, it provides _very_
 nice abstractions for developing web frontends.
 
 Halogen has a [README](https://github.com/slamdata/purescript-halogen) that
-explains in detail how to use the library.  There are also about ten example
+explains in detail how to use the library.  There are also 10+ example
 projects in the
 [examples](https://github.com/slamdata/purescript-halogen/tree/master/examples)
 directory.
@@ -508,11 +509,16 @@ makes working with Halogen a delight.
 
 ## PureScript in Industry
 
-PureScript is starting to be used in industry.  Below I talk a little about the
-companies using PureScript, and the users you're likely to see active on
-Github.
+In this section I talk about companies using PureScript in industry and users
+you are likely to see active on Github.
 
 ### Companies
+
+There are not currently many companies using PureScript in production.
+SlamData is a notable exception.
+
+If you know any other companies that should be added to this list, please let
+me know.
 
 #### [SlamData](http://slamdata.com/)
 
@@ -524,8 +530,9 @@ is currently employing three full-time PureScript developers.[^3]
 
 The people below are all very active on Github in a variety of PureScript
 projects.  You'll likely run in to them if you submit issues or send pull
-requests.  If you know of anyone that should be added to this list, please let
-me know.
+requests.
+
+If you know of anyone that should be added to this list, please let me know.
 
 #### Phil Freeman ([paf31](https://github.com/paf31))
 
@@ -561,7 +568,7 @@ Good luck on your PureScript journey.
 builds... maybe try a small shell script?"
 
 [^2]: Pulp was originally written in JavaScript, which may be why it does not
-have the features one would expect from `stack` or `cabal`.  However, it is
+have the features one would expect from something like `stack`.  However, it is
 [currently](https://github.com/bodil/pulp/issues/119) being rewritten in
 PureScript, so maybe there is hope that it will be more flexible in the future.
 
