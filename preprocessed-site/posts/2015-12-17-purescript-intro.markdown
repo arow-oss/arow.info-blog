@@ -171,9 +171,12 @@ The following sections explain the relationship between Node.js, npm, Bower,
 Pulp, Gulp, and Grunt.
 
 I have created two example projects that you can use to play around with the
-following tools.  One [project]() is using Node.js, npm, Bower, and Pulp, and
-the other [project]() is using Node.js, npm, Bower, and Gulp.  You can use
-either project to follow long.
+following tools.  One
+[project](https://github.com/cdepillabout/purescript-example-project-using-pulp)
+is using Node.js, npm, Bower, and Pulp, and the other
+[project](https://github.com/cdepillabout/purescript-example-project-using-gulp)
+is using Node.js, npm, Bower, and Gulp.  You can use either project to follow
+long.
 
 ### Node.js
 
