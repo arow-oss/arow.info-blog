@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content>
+    <meta name="author" content>
+
+    <title>ARoW.info Blog -- PureScript for the Haskeller</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"> -->
+
+    <!-- Pandoc syntax highlighting CSS -->
+    <link href="../css/syntax.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="../css/clean-blog.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+								<a class="navbar-brand" href="//www.arow.info"><img height="30px" src="//www.arow.info/img/logo.png"></a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="//www.arow.info">Home</a>
+                    </li>
+                    <li>
+                        <a href="../index.html">Blog</a>
+                    </li>
+                    <!-- <li> -->
+                    <!--     <a href="/post.html">Sample Post</a> -->
+                    <!-- </li> -->
+                    <!-- <li> -->
+                    <!--     <a href="/contact.html">Contact</a> -->
+                    <!-- </li> -->
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+    <header class="intro-header" style="background-image: url('../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                  <div class="post-heading">
+                    <h1>PureScript for the Haskeller</h1>
+                    <h2 class="subheading">Where to get started in PureScript for the Haskell programmer</h2><span class="meta">Posted by <a href="http://functor.tokyo">Dennis Gosnell</a></span>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <article>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+              <p>This article is an introduction to PureScript for someone that knows Haskell (but may not be familiar with JavaScript). PureScript is very similar to Haskell. If you know Haskell, PureScript will be very easy to learn.</p>
+<p>This article first gives an overview of the differences between PureScript and Haskell, and then dives into things specific to PureScript like the build systems and DOM manipulation libraries.</p>
+<h2 id="differences-between-haskell-and-purescript">Differences Between Haskell and PureScript</h2>
+<p>There are only a few key differences between Haskell and PureScript. Here is a <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell">comprehensive list</a>. You should read this first.</p>
+<p>Here are a couple things that often came up in the code I was writing:</p>
+<ul>
+<li><a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#explicit-forall"><code>forall</code></a> is explicit in PureScript. This is somewhat annoying, but easy to get used to. In some future version of PureScript, <a href="https://github.com/purescript/purescript/issues/766">it might not be required</a>.</li>
+<li>Instances are <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#named-instances">named</a>.</li>
+<li>Orphan instances are <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#orphan-instances">completely disallowed</a>.</li>
+<li>No functional dependencies or type families. This makes type checking in PureScript worse than Haskell in <a href="https://github.com/purescript/purescript-transformers/issues/64">some cases</a>.</li>
+<li>There is no <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#tuples">special syntax</a> for tuples.</li>
+<li>The composition operator is not <code>(.)</code>, but <code>(&lt;&lt;&lt;)</code>.</li>
+<li><code>undefined</code> is not provided in the <code>Prelude</code>, but it can be <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#error-and-undefined">emulated</a>.</li>
+<li>PureScript’s <code>Prelude</code> is somewhat different from Haskell’s.
+<ul>
+<li>It has to be imported in every module that uses it.</li>
+<li>It doesn’t export things like <a href="https://github.com/purescript/purescript-maybe"><code>Maybe</code></a> and <a href="https://github.com/purescript/purescript-either"><code>Either</code></a>. They live in separate modules.</li>
+<li>The typeclass hierarchy is much more find-grained (<a href="#typeclass-hierarchy">see below</a>).</li>
+<li>Alternative Preludes that export many modules are more common in Purescript. See the <a href="https://github.com/tfausak/purescript-batteries"><code>purescript-batteries</code></a> package, for example.</li>
+</ul></li>
+<li>PureScript uses extensible records (<a href="#extensible-records">see below</a>).</li>
+<li>PureScript doesn’t use a <code>IO</code> monad, but instead extensible effects with the <code>Eff</code> Monad (<a href="#eff-monad">see below</a>).</li>
+</ul>
+<h3 id="typeclass-hierarchy">Typeclass Hierarchy</h3>
+<p>The typeclass hierarchy provided by PureScript’s <code>Prelude</code> is much more fine-grained than Haskell. It is worth reading through PureScript’s <a href="https://github.com/purescript/purescript-prelude/blob/master/src/Prelude.purs"><code>Prelude</code></a> to see how it is split up. It is not very long.</p>
+<p>A lot of classes and types provided by Haskell’s <code>base</code> package are separate packages in PureScript. This includes <a href="https://github.com/purescript/purescript-maybe"><code>Maybe</code></a>, <a href="https://github.com/purescript/purescript-either"><code>Either</code></a>, <a href="https://github.com/purescript/purescript-foldable-traversable"><code>Foldable</code></a>, <a href="https://github.com/purescript/purescript-foldable-traversable"><code>Traversable</code></a>, <a href="https://github.com/purescript/purescript-identity"><code>Identity</code></a>, <a href="https://github.com/purescript/purescript-lists"><code>List</code></a>, <a href="https://github.com/purescript/purescript-monoid/blob/master/docs/Data/Monoid.md"><code>Monoid</code></a>, etc. When looking for which package contains a class or type you are used to from Haskell, you may want to use Pursuit (<a href="#pursuit">see below</a>).</p>
+<p>There is also a list of <a href="https://github.com/purescript/purescript/wiki/Recommended-Libraries">recommended PureScript libraries</a> on the PureScript wiki. This is a good resource to use to find common packages.</p>
+<h3 id="extensible-records">Extensible Records</h3>
+<p>Records in PureScript don’t work like records in Haskell. PureScript records are introduced nicely in <a href="https://leanpub.com/purescript/read#leanpub-auto-functions-and-records">Chapter 3</a> of the PureScript book.</p>
+<p>PureScript has extensible records (also called “row polymorphism”). A short introduction is given in <a href="https://leanpub.com/purescript/read#leanpub-auto-record-patterns-and-row-polymorphism">Chapter 5.7</a> of the PureScript book. Make sure you understand extensible records before reading about the <code>Eff</code> monad.</p>
+<p>One neat thing about PureScript records is that they can be used in newtypes. The following code in Haskell will fail to compile:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">newtype</span> <span class="dt">Foo</span> <span class="fu">=</span> <span class="dt">Foo</span> {<span class="ot"> a ::</span> <span class="dt">String</span>,<span class="ot"> b ::</span> <span class="dt">Int</span> }</code></pre></div>
+<p>You’ll get the following error message:</p>
+<pre><code>foo.hs:1:15:
+    The constructor of a newtype must have exactly one field
+      but ‘Foo’ has two
+    In the definition of data constructor ‘Foo’
+    In the newtype declaration for ‘Foo’</code></pre>
+<p>However, the same code in PureScript is completely fine!</p>
+<pre class="purescript"><code>newtype Foo = Foo { a :: String, b :: Int }</code></pre>
+<p>When looking at the type of the <code>Foo</code> constructor in <code>psci</code>, we can see that it takes a record as an argument:</p>
+<pre><code>&gt; :t Foo
+{ a :: String, b :: Int } -&gt; Foo</code></pre>
+<h3 id="eff-monad"><code>Eff</code> Monad</h3>
+<p>PureScript doesn’t use the <code>IO</code> monad. It uses the <code>Eff</code> monad. There are two good tutorials on using the <code>Eff</code> monad:</p>
+<ul>
+<li><a href="http://www.purescript.org/learn/eff/">Handling Native Effects with the Eff Monad</a></li>
+<li><a href="https://leanpub.com/purescript/read#leanpub-auto-the-eff-monad">Chapter 8</a> of the PureScript book</li>
+</ul>
+<p>Since callbacks are used so heavily in JavaScript, PureScript code frequently uses the <a href="https://github.com/slamdata/purescript-aff"><code>Aff</code></a> monad. The <code>Aff</code> monad is an asynchronous effect monad. It may be worthwhile to check it out.</p>
+<h3 id="ffi-and-javascript">FFI and JavaScript</h3>
+<p>You can get pretty far in PureScript without ever needing to drop down to JavaScript. But calling out to JavaScript is sometimes necessary. Luckily, PureScript has a very nice JavaScript FFI. Here are two good tutorials on PureScript’s FFI:</p>
+<ul>
+<li><a href="http://www.purescript.org/learn/ffi/">The Foreign Function Interface</a></li>
+<li><a href="https://leanpub.com/purescript/read#leanpub-auto-the-foreign-function-interface">Chapter 10</a> of the PureScript book</li>
+</ul>
+<h2 id="pursuit">Pursuit</h2>
+<p><a href="http://pursuit.purescript.org/">Pursuit</a> is like a combination of Hackage and Hoogle/Hayoo. It should be your first stop when looking for a function/type/class that you are used to from Haskell. Things in PureScript are often named the same as their counterparts in Haskell.</p>
+<h2 id="compiler-and-build-tools">Compiler and Build Tools</h2>
+<p>The PureScript/JavaScript ecosystem is much more complex than the Haskell ecosystem. In Haskell, when building a project, the normal advice is to “just use <code>stack</code>”<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. In PureScript, you have to deal with <code>node</code>, <code>npm</code>, <code>bower</code>, <code>pulp</code>, and <code>gulp</code>. It may be second-nature for someone familiar with JavaScript, but it can be intimidating to a Haskeller.</p>
+<p>The following sections explain the relationship between Node.js, npm, Bower, Pulp, Gulp, and Grunt.</p>
+<p>I have created two example projects that you can use to play around with the following tools. One <a href="https://github.com/cdepillabout/purescript-example-project-using-pulp">project</a> is using Node.js, npm, Bower, and Pulp, and the other <a href="https://github.com/cdepillabout/purescript-example-project-using-gulp">project</a> is using Node.js, npm, Bower, and Gulp. You can use either project to follow long.</p>
+<h3 id="node.js">Node.js</h3>
+<p><a href="https://nodejs.org">Node.js</a> is a runtime environment for developing server-side web applications. It lets you run JavaScript code on a server, instead of just in a browser.</p>
+<p>Node.js has to be installed to be able to use PureScript. It is recommended to install Node.js with your <a href="https://nodejs.org/en/download/package-manager/">distribution’s package manager</a>.</p>
+<h3 id="npm">npm</h3>
+<p><a href="https://www.npmjs.com/">npm</a> is a package manager for JavaScript and Node.js. You can find the package repository <a href="https://www.npmjs.com">here</a>.</p>
+<p>npm is used to install other build tools like <code>bower</code> and <code>gulp</code> (discussed below). It is recommended to install npm with your <a href="https://nodejs.org/en/download/package-manager/">distribution’s package manager</a>.</p>
+<p>The command <code>npm install</code> is used to install packages from the npm package repository. It creates a directory <code>node_modules/</code> in your current working directory with the installed packages underneath it.</p>
+<p>For example, if you run <code>npm install bower</code> to install the bower package, the <code>bower</code> executable will be created as <code>node_modules/bower/bin/bower</code>.</p>
+<p>All executables installed with npm will be available as symbolic links in <code>node_modules/.bin/</code>. You may want to add this directory to your <code>PATH</code>, or use one of the other techniques specified in <a href="http://stackoverflow.com/a/15157360">this stackoverflow answer</a>.</p>
+<p>One easy way to use npm is to use a <code>package.json</code> file. The <code>package.json</code> file lists the dependencies for the current project. All dependencies will be installed if you run <code>npm install</code> with no arguments.</p>
+<p>Here is an example <code>package.json</code> file that lists the PureScript compiler, Bower, and gulp as dev-time dependencies, and the virtual-dom package as a runtime dependency:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">{</span>
+  <span class="st">&quot;name&quot;</span><span class="op">:</span> <span class="st">&quot;purescript-foo&quot;</span><span class="op">,</span>
+  <span class="st">&quot;version&quot;</span><span class="op">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="op">,</span>
+  <span class="st">&quot;description&quot;</span><span class="op">:</span> <span class="st">&quot;example package&quot;</span><span class="op">,</span>
+  <span class="st">&quot;author&quot;</span><span class="op">:</span> <span class="st">&quot;Pyour Skrept &lt;ps@example.com&gt;&quot;</span><span class="op">,</span>
+  <span class="st">&quot;license&quot;</span><span class="op">:</span> <span class="st">&quot;Apache 2.0&quot;</span><span class="op">,</span>
+  <span class="st">&quot;homepage&quot;</span><span class="op">:</span> <span class="st">&quot;https://github.com/example/purescript-foo&quot;</span><span class="op">,</span>
+  <span class="st">&quot;dependencies&quot;</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">&quot;virtual-dom&quot;</span><span class="op">:</span> <span class="st">&quot;^2.1.1&quot;</span>
+  <span class="op">},</span>
+  <span class="st">&quot;devDependencies&quot;</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">&quot;purescript&quot;</span><span class="op">:</span> <span class="st">&quot;^0.7.6&quot;</span><span class="op">,</span>
+    <span class="st">&quot;bower&quot;</span><span class="op">:</span> <span class="st">&quot;^1.6.5&quot;</span><span class="op">,</span>
+    <span class="st">&quot;gulp&quot;</span><span class="op">:</span> <span class="st">&quot;^3.9.0&quot;</span><span class="op">,</span>
+    <span class="st">&quot;gulp-purescript&quot;</span><span class="op">:</span> <span class="st">&quot;^0.7.0&quot;</span>
+  <span class="op">},</span>
+  <span class="st">&quot;repository&quot;</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">&quot;type&quot;</span><span class="op">:</span> <span class="st">&quot;git&quot;</span><span class="op">,</span>
+    <span class="st">&quot;url&quot;</span><span class="op">:</span> <span class="st">&quot;git+ssh://git@github.com/example/purescript-foo.git&quot;</span>
+  <span class="op">}</span>
+<span class="op">}</span></code></pre></div>
+<p>Check out the <code>package.json</code> file in the example project. Use <code>npm install</code> to install all the tools specified in the <code>package.json</code> file.</p>
+<h3 id="purescript-compiler">PureScript Compiler</h3>
+<p>The PureScript compiler provides the executables <code>psc</code> and <code>psci</code>. These correspond to <code>ghc</code> and <code>ghci</code>, respectively.</p>
+<p>The PureScript compiler can be installed <a href="http://www.purescript.org/download/">multiple ways</a>. Since we are using <code>npm</code> to install <code>bower</code>, <code>gulp</code>, etc., the easiest way is just to install it with <code>npm</code>:</p>
+<pre class="sh"><code>$ npm install purescript</code></pre>
+<p>You can access <code>psc</code> and <code>psci</code> in <code>node_modules/.bin/</code>.</p>
+<h3 id="bower">Bower</h3>
+<p>Bower is a <em>separate</em> package manager from npm. npm is often used for managing Node.js modules (for example, build tools, the PureScript compiler, gulp, etc). Bower is used to manage packages related to the front-end, like PureScript libraries. Here is an answer on stackoverflow <a href="http://stackoverflow.com/a/18652918">explaining the difference</a> between npm and Bower.</p>
+<p>Here is Bower’s <a href="http://bower.io/search/">package repository</a>. If you search for “purescript”, you should find many packages. PureScript packages are almost all uploaded to Bower. Pursuit even <a href="http://pursuit.purescript.org/help">requires</a> that new packages are uploaded to Bower’s repository.</p>
+<p>Bower can be installed with <code>npm</code>:</p>
+<pre class="sh"><code>$ npm install bower</code></pre>
+<p>You can access <code>bower</code> in <code>node_modules/.bin/</code>.</p>
+<p>Once you have installed Bower, you can use Bower to install PureScript packages. This is how you would install the <code>purescript-prelude</code> package:</p>
+<pre class="sh"><code>$ bower install purescript-prelude</code></pre>
+<p><code>bower</code> installs packages to the <code>bower_components/</code> directory in the current working directory. After installing <code>purescript-prelude</code> you should be able to find PureScript source files under <code>bower_components/purescript-prelude/</code>.</p>
+<p>Just like npm can use a <code>package.json</code> file, Bower can use a <code>bower.json</code> file to specify multiple packages. Here is an example <code>bower.json</code> file. It specifies that we are using the <code>purescript-prelude</code> and <code>purescript-console</code> libraries in the current project:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">{</span>
+  <span class="st">&quot;name&quot;</span><span class="op">:</span> <span class="st">&quot;purescript-foo&quot;</span><span class="op">,</span>
+  <span class="st">&quot;version&quot;</span><span class="op">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="op">,</span>
+  <span class="st">&quot;moduleType&quot;</span><span class="op">:</span> [ <span class="st">&quot;node&quot;</span> ]<span class="op">,</span>
+  <span class="st">&quot;ignore&quot;</span><span class="op">:</span> [ <span class="st">&quot;**/.*&quot;</span><span class="op">,</span> <span class="st">&quot;node_modules&quot;</span><span class="op">,</span> <span class="st">&quot;bower_components&quot;</span><span class="op">,</span> <span class="st">&quot;output&quot;</span> ]<span class="op">,</span>
+  <span class="st">&quot;dependencies&quot;</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">&quot;purescript-console&quot;</span><span class="op">:</span> <span class="st">&quot;^0.1.0&quot;</span><span class="op">,</span>
+    <span class="st">&quot;purescript-prelude&quot;</span><span class="op">:</span> <span class="st">&quot;^0.1.0&quot;</span>
+  <span class="op">}</span>
+<span class="op">}</span></code></pre></div>
+<p>To install all the files listed in <code>bower.json</code>, the <code>install</code> command is used:</p>
+<pre class="sh"><code>$ bower install</code></pre>
+<p>In order to update libraries to newer versions, the <code>update</code> command is used:</p>
+<pre class="sh"><code>$ bower update</code></pre>
+<p>Check out the <code>bower.json</code> file in the example projects. Try running <code>bower install</code> and <code>bower update</code> and see what happens.</p>
+<h3 id="pulp">Pulp</h3>
+<p>Pulp is a build tool specific to PureScript. It is similar to <code>stack</code> or <code>cabal</code> for Haskell. It works well for libraries and simple projects, but it does not have enough flexibility for larger projects. It seems like the general recommendation from the PureScript community is to use Pulp for simple libraries, and gulp for any non-trivial application<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>.</p>
+<p>Pulp can be installed with <code>npm</code>:</p>
+<pre class="sh"><code>$ npm install pulp</code></pre>
+<p>You can access <code>pulp</code> in <code>node_modules/.bin/</code>.</p>
+<p>Pulp can be used to build and test your project:</p>
+<pre class="sh"><code>$ pulp build
+...
+$ pulp test
+...</code></pre>
+<p>You can find other functions in the Pulp <a href="https://github.com/bodil/pulp">README</a>.</p>
+<p>Try running <code>pulp build</code> and <code>pulp test</code> in the example project for Pulp. Try running <code>pulp server</code> and opening up the <code>index.html</code> file in your browser.</p>
+<h3 id="gulp">Gulp</h3>
+<p>Gulp is a full-featured, dependency-tracking build tool. It is similar to Make or <a href="http://community.haskell.org/~ndm/shake/">Shake</a>.</p>
+<p>Gulp is used over Pulp in a couple different cases. The most common is when building a project that produces multiple JavaScript files as output. It is also used when you need to change build settings that Pulp does not provide access to.</p>
+<p>It seems like people using PureScript in production (<a href="#slamdata">SlamData</a>) use Gulp almost exclusively.</p>
+<p>Gulp can be installed with <code>npm</code>:</p>
+<pre class="sh"><code>$ npm install gulp</code></pre>
+<p>You can access <code>gulp</code> in <code>node_modules/.bin/</code>.</p>
+<p>Just like <code>make</code> uses a <code>Makefile</code>, <code>gulp</code> uses a <code>gulpfile.js</code>. This file lists the different targets available, and what should happen when they are run.</p>
+<p>Take a look at the <code>gulpfile.js</code> from the example project. Try running the <code>build</code> and <code>test</code> targets:</p>
+<pre class="sh"><code>$ gulp build
+...
+$ gulp test
+...</code></pre>
+<p>Try running the <code>server</code> target and opening up <code>site/index.html</code> in a browser.</p>
+<pre class="sh"><code>$ gulp server
+...</code></pre>
+<h3 id="grunt">Grunt</h3>
+<p>Grunt is a build tool similar to Gulp. It does not seem to be used much in the PureScript community, but you occasionally see references to it.</p>
+<p>If you are interested, here is an <a href="https://medium.com/@preslavrachev/gulp-vs-grunt-why-one-why-the-other-f5d3b398edc4#.p71z2qybh">article</a> describing the differences between Grunt and Gulp.</p>
+<h2 id="dom-manipulation-libraries">DOM Manipulation Libraries</h2>
+<p>PureScript is mostly used for writing frontend code. Because of this, there are many DOM manipulation libraries available. In this section, I talk about four different PureScript libraries used for DOM manipulation: simple-dom, purescript-react, Thermite, and Halogen.</p>
+<h3 id="simple-dom">simple-dom</h3>
+<p>Like the name implies, <a href="https://github.com/aktowns/purescript-simple-dom">simple-dom</a> is the simplest of the four libraries. It provides an interface similar to that provided by web browsers. It is easy to <a href="https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Document.md#document">create new nodes</a> in an HTML Document, <a href="https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Element.md#element">append child nodes</a> to an element, etc. Code written using simple-dom is very similar to code written using raw JavaScript (although PureScript makes it more type-safe).</p>
+<p>A small amount of sample code is available in the project’s <a href="https://github.com/aktowns/purescript-simple-dom#some-examples">README</a>. It does not have any type information, so it is somewhat hard to read. However, the library is very simple so this shouldn’t be much of a problem.</p>
+<p>The <a href="https://github.com/aktowns/purescript-simple-dom/commits/master">simple-dom</a>, repository hasn’t been very active over the past month. Two (minor) issues I have created in the past month did not get a response.</p>
+<p>simple-dom should be easy to use even for someone just getting started with languages like PureScript or Haskell.</p>
+<h3 id="purescript-react">purescript-react</h3>
+<p><a href="https://github.com/purescript-contrib/purescript-react">purescript-react</a> is a set of low-level bindings to <a href="https://facebook.github.io/react/">React</a> for PureScript. React is a library that abstracts updating the UI from an application. From the <a href="https://facebook.github.io/react/docs/why-react.html">Why React?</a> page:</p>
+<blockquote>
+<p>Many people choose to think of React as the V in MVC. We built React to solve one problem: building large applications with data that changes over time. Simply express how your app should look at any given point in time, and React will automatically manage all UI updates when your underlying data changes.</p>
+</blockquote>
+<p>Examples for purescript-react can be found both in the <a href="https://github.com/purescript-contrib/purescript-react">README</a> and in the <a href="https://github.com/purescript-contrib/purescript-react/blob/master/test/Main.purs">tests</a>.</p>
+<p>I have not personally used purescript-react, but it looks like there has been development <a href="https://github.com/purescript-contrib/purescript-react/commits/master">within the last month</a>. The author, paf31, seems to respond quickly to issues and pull requests.</p>
+<p>purescript-react will appeal to people coming from JavaScript with knowledge of React. Like simple-dom, it gives an easy way to make use of your existing knowledge in a type-safe fashion.</p>
+<h3 id="thermite">Thermite</h3>
+<p>From the Thermite <a href="https://github.com/paf31/purescript-thermite">README</a>:</p>
+<blockquote>
+<p>purescript-thermite is a simple PureScript wrapper for purescript-react. It does not (and does not aim to) provide all of the functionality of ReactJS, but instead to provide a clean API to the most commonly-used parts of its API.</p>
+</blockquote>
+<p>Examples for Thermite can be found in the <a href="https://github.com/paf31/purescript-thermite#getting-started">README</a>, as well a <a href="https://github.com/paf31/purescript-thermite/blob/master/test">test project</a>. The running test project can be viewed <a href="http://functorial.com/purescript-thermite-todomvc/">here</a>.</p>
+<p>I have not personally used Thermite, but it looks like there has been some acitivity within the last month. The author, paf31, responds to issuse and pull requests quickly.</p>
+<h3 id="halogen">Halogen</h3>
+<p>Halogen is quite possibly the most interesting of the DOM manipulation libraries for PureScript. It is similar to Thermite but aims to be more type-safe and composable. It is based on <a href="https://github.com/Matt-Esch/virtual-dom">virtual-dom</a> (a library similar to, but more low-level, than React). It feels like a well-typed, easy-to-use version of Elm.</p>
+<p>Halogen makes use of many advanced concepts like free monads, functor coproducts, etc. For an intermediate/advanced Haskeller, it provides <em>very</em> nice abstractions for developing web frontends.</p>
+<p>Halogen has a <a href="https://github.com/slamdata/purescript-halogen">README</a> that explains in detail how to use the library. There are also 10+ example projects in the <a href="https://github.com/slamdata/purescript-halogen/tree/master/examples">examples</a> directory.</p>
+<p>Halogen is being used heavily by SlamData. Because of this, its development seems to be progressing faster than any of the other libraries. The developers of Halogen are very quick in responding to issues and pull requests. This makes working with Halogen a delight.</p>
+<h2 id="purescript-in-industry">PureScript in Industry</h2>
+<p>In this section I talk about companies using PureScript in industry and users you are likely to see active on Github.</p>
+<h3 id="companies">Companies</h3>
+<p>There are not currently many companies using PureScript in production. SlamData is a notable exception.</p>
+<p>If you know any other companies that should be added to this list, please let me know.</p>
+<h4 id="slamdata"><a href="http://slamdata.com/">SlamData</a></h4>
+<p>SlamData is providing an open source, visualization solution for NoSQL data. PureScript is being used in the frontend for visualization of data. SlamData is currently employing three full-time PureScript developers.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<h3 id="people">People</h3>
+<p>The people below are all very active on Github in a variety of PureScript projects. You’ll likely run in to them if you submit issues or send pull requests.</p>
+<p>If you know of anyone that should be added to this list, please let me know.</p>
+<h4 id="phil-freeman-paf31">Phil Freeman (<a href="https://github.com/paf31">paf31</a>)</h4>
+<p>Phil is the creator of PureScript. He contributes a lot of code to the PureScript compiler, as well as responding to issues and pull requests. He also maintains the purescript-react and Thermite libraries.</p>
+<h4 id="gary-burgess-garyb">Gary Burgess (<a href="https://github.com/garyb">garyb</a>)</h4>
+<p>Gary is working for SlamData and is also very active in the PureScript community. He does a lot of work on the PureScript compiler as well as maintain the Halogen project. Gary is <em>very</em> helpful on Github. He has responded to many of my issues (even silly ones). If PureScript succeeds as a language, it will be partially due to the helpfulness of Gary.</p>
+<h4 id="john-a.-de-goes-jdegoes">John A. De Goes (<a href="https://github.com/jdegoes">jdegoes</a>)</h4>
+<p>John is the CTO of SlamData. He is active within the Halogen project and also responds to many issues in the PureScript compiler’s issue tracker. John is also a long-time Haskell hacker.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>PureScript is very easy for a Haskeller to learn. The most complicated thing will be learning the PureScript/JavaScript ecosystem and deciding on a DOM manipulation library.</p>
+<p>Good luck on your PureScript journey.</p>
+<h2 id="footnotes">Footnotes</h2>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>It used to be, “Just use <code>cabal</code> and sandboxes. For multi-project builds… maybe try a small shell script?”<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Pulp was originally written in JavaScript, which may be why it does not have the features one would expect from something like <code>stack</code>. However, it is <a href="https://github.com/bodil/pulp/issues/119">currently</a> being rewritten in PureScript, so maybe there is hope that it will be more flexible in the future.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>I believe I saw this number somewhere, but I can’t find the page I saw it on. If someone could confirm/deny this, it would be much appreciated.<a href="#fnref3">↩</a></p></li>
+</ol>
+</div>
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="#">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/arow-oss">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright ARoW Co., Ltd. 2015</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="../js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../js/bootstrap.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="../js/clean-blog.js"></script>
+
+</body>
+
+</html>
