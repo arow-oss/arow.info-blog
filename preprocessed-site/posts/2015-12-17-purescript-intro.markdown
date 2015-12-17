@@ -533,7 +533,7 @@ me know.
 
 SlamData is providing an open source, visualization solution for NoSQL data.
 PureScript is being used in the frontend for visualization of data.  SlamData
-is currently employing three full-time PureScript developers.[^3]
+is currently employing four full-time PureScript developers.
 
 ### People
 
@@ -580,6 +580,3 @@ builds... maybe try a small shell script?"
 have the features one would expect from something like `stack`.  However, it is
 [currently](https://github.com/bodil/pulp/issues/119) being rewritten in
 PureScript, so maybe there is hope that it will be more flexible in the future.
-
-[^3]: I believe I saw this number somewhere, but I can't find the page I saw it
-on.  If someone could confirm/deny this, it would be much appreciated.
