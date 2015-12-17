@@ -119,8 +119,9 @@ However, the same code in PureScript is completely fine!
 newtype Foo = Foo { a :: String, b :: Int }
 ```
 
-When looking at the type of the `Foo` constructor in `psci`, we can see that it
-takes a record as an argument:
+When looking at the type of the `Foo` constructor in `psci` (interactive
+environment like `ghci` for PureScript, [see below](#purescript-compiler)), we
+can see that it takes a record as an argument:
 
 ```
 > :t Foo
@@ -333,13 +334,16 @@ $ bower update
 Check out the `bower.json` file in the example projects.  Try running `bower
 install` and `bower update` and see what happens.
 
+Some people in the JavaScript community are "anti-Bower", but it is still
+heavily used in the PureScript community.[^2]
+
 ### Pulp
 
 Pulp is a build tool specific to PureScript.  It is similar to `stack` or
 `cabal` for Haskell.  It works well for libraries and simple projects, but it
 does not have enough flexibility for larger projects.  It seems like the
 general recommendation from the PureScript community is to use Pulp for simple
-libraries, and gulp for any non-trivial application[^2].
+libraries, and gulp for any non-trivial application.[^3]
 
 Pulp can be installed with `npm`:
 
@@ -358,6 +362,18 @@ $ pulp test
 ...
 ```
 
+Pulp can also act as a frontend for Bower.  This is how we update library dependencies with Bower:
+
+```sh
+$ bower update
+```
+
+This uses Pulp to do the exact same thing.  It uses Bower behind the scenes:
+
+```sh
+$ pulp dep update
+```
+
 You can find other functions in the Pulp [README](https://github.com/bodil/pulp).
 
 Try running `pulp build` and `pulp test` in the example project for Pulp.  Try
@@ -368,10 +384,11 @@ running `pulp server` and opening up the `index.html` file in your browser.
 Gulp is a full-featured, dependency-tracking build tool.  It is similar to Make
 or [Shake](http://community.haskell.org/~ndm/shake/).
 
-Gulp is used over Pulp
-in a couple different cases.  The most common is when building a project that
-produces multiple JavaScript files as output.  It is also used when you need to
-change build settings that Pulp does not provide access to.
+Gulp is used instead of Pulp in a couple different cases.  The most common is
+when building a project that produces multiple JavaScript files as output.  It
+is also used when you need to change build settings that Pulp does not provide
+access to.  It is also helpful when you are adding PureScript code to an
+existing project or workflow.
 
 It seems like people using PureScript in production ([SlamData](#slamdata)) use Gulp almost
 exclusively.
@@ -408,8 +425,8 @@ $ gulp server
 ### Grunt
 
 Grunt is a build tool similar to Gulp.  At one point, Grunt was the common
-build tool, but it has since became Pulp and Gulp.  Grunt is no longer used to
-build PureScript code.
+build tool for PureScript, but it has since became Pulp and Gulp.  Grunt is no
+longer used to build PureScript code.
 
 If you are interested, here is an
 [article](https://medium.com/@preslavrachev/gulp-vs-grunt-why-one-why-the-other-f5d3b398edc4#.p71z2qybh)
@@ -420,7 +437,7 @@ describing the differences between Grunt and Gulp.
 PureScript is mostly used for writing frontend code.  Because of this, there
 are many DOM manipulation libraries available.  In this section, I talk about
 five different PureScript libraries used for DOM manipulation:
-purescript-simple-dom, purescrit-dom, purescript-react, Thermite, and Halogen.
+purescript-simple-dom, purescript-dom, purescript-react, Thermite, and Halogen.
 They are ordered from least-used to most-used.  When using PureScript in
 production, you should really consider using Thermite or Halogen.
 
@@ -601,7 +618,13 @@ Good luck on your PureScript journey.
 [^1]: It used to be, "Just use `cabal` and sandboxes.  For multi-project
 builds... maybe try a small shell script?"
 
-[^2]: Pulp was originally written in JavaScript, which may be why it does not
+[^2]: Check out [this
+article](http://gofore.com/ohjelmistokehitys/stop-using-bower/) or [this
+issue](https://github.com/purescript/purescript/issues/631) for more
+discussion.
+
+
+[^3]: Pulp was originally written in JavaScript, which may be why it does not
 have the features one would expect from something like `stack`.  However, it is
 [currently](https://github.com/bodil/pulp/issues/119) being rewritten in
 PureScript, so maybe there is hope that it will be more flexible in the future.
