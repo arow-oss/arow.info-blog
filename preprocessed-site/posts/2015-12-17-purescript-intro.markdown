@@ -48,7 +48,7 @@ Here are a couple things that often came up in the code I was writing:
       [`Maybe`](https://github.com/purescript/purescript-maybe) and
       [`Either`](https://github.com/purescript/purescript-either).  They live
       in separate modules.
-    - The typeclass hierarchy is much more find-grained ([see below](#typeclass-hierarchy)).
+    - The typeclass hierarchy is much more fine-grained ([see below](#typeclass-hierarchy)).
     - Alternative Preludes that export many modules are more common in
       Purescript.  See the
       [`purescript-batteries`](https://github.com/tfausak/purescript-batteries)
@@ -483,7 +483,7 @@ From the Thermite [README](https://github.com/paf31/purescript-thermite):
 
 Examples for Thermite can be found in the
 [README](https://github.com/paf31/purescript-thermite#getting-started), as well
-a [test
+as [test
 project](https://github.com/paf31/purescript-thermite/blob/master/test).  The
 running test project can be viewed
 [here](http://functorial.com/purescript-thermite-todomvc/).
