@@ -209,6 +209,11 @@ All executables installed with npm will be available as symbolic links in
 use one of the other techniques specified in [this stackoverflow
 answer](http://stackoverflow.com/a/15157360).
 
+npm can also install packages globally.  For instance, you can use the command
+`npm install -g bower` to install bower globally.  [By
+default](http://stackoverflow.com/a/5926706/3040129), global packages are
+installed to `/usr/lib/node_modules/`.
+
 One easy way to use npm is to use a `package.json` file.  The `package.json`
 file lists the dependencies for the current project.  All dependencies will be
 installed if you run `npm install` with no arguments.
@@ -400,8 +405,9 @@ $ gulp server
 
 ### Grunt
 
-Grunt is a build tool similar to Gulp.  It does not seem to be used much in the
-PureScript community, but you occasionally see references to it.
+Grunt is a build tool similar to Gulp.  At one point, Grunt was the common
+build tool, but it has since became Pulp and Gulp.  Grunt is no longer used to
+build PureScript code.
 
 If you are interested, here is an
 [article](https://medium.com/@preslavrachev/gulp-vs-grunt-why-one-why-the-other-f5d3b398edc4#.p71z2qybh)
