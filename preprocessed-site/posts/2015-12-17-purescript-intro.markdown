@@ -41,7 +41,7 @@ Here are a couple things that often came up in the code I was writing:
 - There is no [special
   syntax](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#tuples)
   for tuples.
-- The composition operator is not `(.)`, but `(<<<)`.
+- The function composition operator is not `(.)`, but `(<<<)`.
 - `undefined` is not provided in the `Prelude`, but it can be
   [emulated](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#error-and-undefined).
 - PureScript's `Prelude` is somewhat different from Haskell's.
@@ -421,6 +421,8 @@ PureScript is mostly used for writing frontend code.  Because of this, there
 are many DOM manipulation libraries available.  In this section, I talk about
 five different PureScript libraries used for DOM manipulation:
 purescript-simple-dom, purescrit-dom, purescript-react, Thermite, and Halogen.
+They are ordered from least-used to most-used.  When using PureScript in
+production, you should really consider using Thermite or Halogen.
 
 ### purescript-simple-dom
 
@@ -460,14 +462,13 @@ could just be a wrapper around purescript-dom, but that hasn't happened yet.
 purescript-dom is used heavily in Halogen.
 
 There is no sample code or examples for purescript-dom.  However, it is a
-straight wrapper around the DOM, so it shouldn't be *too* hard to figure out.
+straight wrapper around the DOM, so it shouldn't be _too_ hard to figure out.
 
 Because it is used in Halogen, purescript-dom gets regular updates.
 
-purescript-dom can be used in all places that purescript-simple-dom can be
-used.  It is the recommended library to use if you are working with the
-browser's DOM and don't want to pull in a big library like Thermite or
-Halogen.
+purescript-dom can be used in all places purescript-simple-dom can be used.  It
+is the recommended library to use if you are working with the browser's DOM and
+don't want to pull in a big library like Thermite or Halogen.
 
 ### purescript-react
 
@@ -507,7 +508,7 @@ From the Thermite [README](https://github.com/paf31/purescript-thermite):
 
 Examples for Thermite can be found in the
 [README](https://github.com/paf31/purescript-thermite#getting-started), as well
-as [test
+as the [test
 project](https://github.com/paf31/purescript-thermite/blob/master/test).  The
 running test project can be viewed
 [here](http://functorial.com/purescript-thermite-todomvc/).
@@ -576,10 +577,10 @@ also maintains the purescript-react and Thermite libraries.
 #### Gary Burgess ([garyb](https://github.com/garyb))
 
 Gary is working for SlamData and is also very active in the PureScript
-community.  He does a lot of work on the PureScript compiler as well as
-maintain the Halogen project.  Gary is _very_ helpful on Github.  He has
-responded to many of my issues (even silly ones).  If PureScript succeeds as a
-language, it will be partially due to the helpfulness of Gary.
+community.  He is a coauthor of the PureScript compiler and maintains the
+Halogen project.  Gary is _very_ helpful on Github.  He has responded to many
+of my issues (even silly ones).  If PureScript succeeds as a language, it will
+be partially due to the helpfulness of Gary.
 
 #### John A. De Goes ([jdegoes](https://github.com/jdegoes))
 
@@ -589,7 +590,7 @@ also a long-time Haskell hacker.
 
 ## Conclusion
 
-PureScript is very easy for a Haskeller to learn.  The most complicated thing
+PureScript is very easy for a Haskeller to learn.  The most complicated things
 will be learning the PureScript/JavaScript ecosystem and deciding on a DOM
 manipulation library.
 
