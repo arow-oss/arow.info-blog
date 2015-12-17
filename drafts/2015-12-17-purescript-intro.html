@@ -102,14 +102,15 @@
 <li>Instances are <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#named-instances">named</a>.</li>
 <li>Orphan instances are <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#orphan-instances">completely disallowed</a>.</li>
 <li>No functional dependencies or type families. This makes type checking in PureScript worse than Haskell in <a href="https://github.com/purescript/purescript-transformers/issues/64">some cases</a>.</li>
+<li>Nothing like Template Haskell. This makes using lenses and JSON more time-consuming.</li>
 <li>There is no <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#tuples">special syntax</a> for tuples.</li>
-<li>The composition operator is not <code>(.)</code>, but <code>(&lt;&lt;&lt;)</code>.</li>
+<li>The function composition operator is not <code>(.)</code>, but <code>(&lt;&lt;&lt;)</code>.</li>
 <li><code>undefined</code> is not provided in the <code>Prelude</code>, but it can be <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#error-and-undefined">emulated</a>.</li>
 <li>PureScript’s <code>Prelude</code> is somewhat different from Haskell’s.
 <ul>
 <li>It has to be imported in every module that uses it.</li>
 <li>It doesn’t export things like <a href="https://github.com/purescript/purescript-maybe"><code>Maybe</code></a> and <a href="https://github.com/purescript/purescript-either"><code>Either</code></a>. They live in separate modules.</li>
-<li>The typeclass hierarchy is much more find-grained (<a href="#typeclass-hierarchy">see below</a>).</li>
+<li>The typeclass hierarchy is much more fine-grained (<a href="#typeclass-hierarchy">see below</a>).</li>
 <li>Alternative Preludes that export many modules are more common in Purescript. See the <a href="https://github.com/tfausak/purescript-batteries"><code>purescript-batteries</code></a> package, for example.</li>
 </ul></li>
 <li>PureScript uses extensible records (<a href="#extensible-records">see below</a>).</li>
@@ -163,6 +164,7 @@
 <p>The command <code>npm install</code> is used to install packages from the npm package repository. It creates a directory <code>node_modules/</code> in your current working directory with the installed packages underneath it.</p>
 <p>For example, if you run <code>npm install bower</code> to install the bower package, the <code>bower</code> executable will be created as <code>node_modules/bower/bin/bower</code>.</p>
 <p>All executables installed with npm will be available as symbolic links in <code>node_modules/.bin/</code>. You may want to add this directory to your <code>PATH</code>, or use one of the other techniques specified in <a href="http://stackoverflow.com/a/15157360">this stackoverflow answer</a>.</p>
+<p>npm can also install packages globally. For instance, you can use the command <code>npm install -g bower</code> to install bower globally. <a href="http://stackoverflow.com/a/5926706/3040129">By default</a>, global packages are installed to <code>/usr/lib/node_modules/</code>.</p>
 <p>One easy way to use npm is to use a <code>package.json</code> file. The <code>package.json</code> file lists the dependencies for the current project. All dependencies will be installed if you run <code>npm install</code> with no arguments.</p>
 <p>Here is an example <code>package.json</code> file that lists the PureScript compiler, Bower, and gulp as dev-time dependencies, and the virtual-dom package as a runtime dependency:</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">{</span>
@@ -246,15 +248,20 @@ $ gulp test
 <pre class="sh"><code>$ gulp server
 ...</code></pre>
 <h3 id="grunt">Grunt</h3>
-<p>Grunt is a build tool similar to Gulp. It does not seem to be used much in the PureScript community, but you occasionally see references to it.</p>
+<p>Grunt is a build tool similar to Gulp. At one point, Grunt was the common build tool, but it has since became Pulp and Gulp. Grunt is no longer used to build PureScript code.</p>
 <p>If you are interested, here is an <a href="https://medium.com/@preslavrachev/gulp-vs-grunt-why-one-why-the-other-f5d3b398edc4#.p71z2qybh">article</a> describing the differences between Grunt and Gulp.</p>
 <h2 id="dom-manipulation-libraries">DOM Manipulation Libraries</h2>
-<p>PureScript is mostly used for writing frontend code. Because of this, there are many DOM manipulation libraries available. In this section, I talk about four different PureScript libraries used for DOM manipulation: simple-dom, purescript-react, Thermite, and Halogen.</p>
-<h3 id="simple-dom">simple-dom</h3>
-<p>Like the name implies, <a href="https://github.com/aktowns/purescript-simple-dom">simple-dom</a> is the simplest of the four libraries. It provides an interface similar to that provided by web browsers. It is easy to <a href="https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Document.md#document">create new nodes</a> in an HTML Document, <a href="https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Element.md#element">append child nodes</a> to an element, etc. Code written using simple-dom is very similar to code written using raw JavaScript (although PureScript makes it more type-safe).</p>
+<p>PureScript is mostly used for writing frontend code. Because of this, there are many DOM manipulation libraries available. In this section, I talk about five different PureScript libraries used for DOM manipulation: purescript-simple-dom, purescrit-dom, purescript-react, Thermite, and Halogen. They are ordered from least-used to most-used. When using PureScript in production, you should really consider using Thermite or Halogen.</p>
+<h3 id="purescript-simple-dom">purescript-simple-dom</h3>
+<p>Like the name implies, <a href="https://github.com/aktowns/purescript-simple-dom">purescript-simple-dom</a> is the simplest of the four libraries. It provides an interface similar to that provided by web browsers. It is easy to <a href="https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Document.md#document">create new nodes</a> in an HTML Document, <a href="https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Element.md#element">append child nodes</a> to an element, etc. Code written using purescript-simple-dom is very similar to code written using raw JavaScript (although PureScript makes it more type-safe).</p>
 <p>A small amount of sample code is available in the project’s <a href="https://github.com/aktowns/purescript-simple-dom#some-examples">README</a>. It does not have any type information, so it is somewhat hard to read. However, the library is very simple so this shouldn’t be much of a problem.</p>
-<p>The <a href="https://github.com/aktowns/purescript-simple-dom/commits/master">simple-dom</a>, repository hasn’t been very active over the past month. Two (minor) issues I have created in the past month did not get a response.</p>
-<p>simple-dom should be easy to use even for someone just getting started with languages like PureScript or Haskell.</p>
+<p>The <a href="https://github.com/aktowns/purescript-simple-dom/commits/master">purescript-simple-dom</a>, repository hasn’t been very active over the past month. Two (minor) issues I have created in the past month did not get a response.</p>
+<p>purescript-simple-dom should be easy to use even for someone just getting started with languages like PureScript or Haskell.</p>
+<h3 id="purescript-dom">purescript-dom</h3>
+<p>The <a href="https://github.com/purescript-contrib/purescript-dom">purescript-dom</a> library is similar to purescript-simple-dom. It provides a low-level interface for working with the browser DOM. It was created by <a href="#gary-burgess">Gary Burgess</a> because of sporadic activity and opinionated design in purescript-simple-dom. It is intended to be the low-level base for all future libraries that provide interfaces to the DOM. Ideally, purescript-simple-dom could just be a wrapper around purescript-dom, but that hasn’t happened yet. purescript-dom is used heavily in Halogen.</p>
+<p>There is no sample code or examples for purescript-dom. However, it is a straight wrapper around the DOM, so it shouldn’t be <em>too</em> hard to figure out.</p>
+<p>Because it is used in Halogen, purescript-dom gets regular updates.</p>
+<p>purescript-dom can be used in all places purescript-simple-dom can be used. It is the recommended library to use if you are working with the browser’s DOM and don’t want to pull in a big library like Thermite or Halogen.</p>
 <h3 id="purescript-react">purescript-react</h3>
 <p><a href="https://github.com/purescript-contrib/purescript-react">purescript-react</a> is a set of low-level bindings to <a href="https://facebook.github.io/react/">React</a> for PureScript. React is a library that abstracts updating the UI from an application. From the <a href="https://facebook.github.io/react/docs/why-react.html">Why React?</a> page:</p>
 <blockquote>
@@ -268,7 +275,7 @@ $ gulp test
 <blockquote>
 <p>purescript-thermite is a simple PureScript wrapper for purescript-react. It does not (and does not aim to) provide all of the functionality of ReactJS, but instead to provide a clean API to the most commonly-used parts of its API.</p>
 </blockquote>
-<p>Examples for Thermite can be found in the <a href="https://github.com/paf31/purescript-thermite#getting-started">README</a>, as well a <a href="https://github.com/paf31/purescript-thermite/blob/master/test">test project</a>. The running test project can be viewed <a href="http://functorial.com/purescript-thermite-todomvc/">here</a>.</p>
+<p>Examples for Thermite can be found in the <a href="https://github.com/paf31/purescript-thermite#getting-started">README</a>, as well as the <a href="https://github.com/paf31/purescript-thermite/blob/master/test">test project</a>. The running test project can be viewed <a href="http://functorial.com/purescript-thermite-todomvc/">here</a>.</p>
 <p>I have not personally used Thermite, but it looks like there has been some acitivity within the last month. The author, paf31, responds to issuse and pull requests quickly.</p>
 <h3 id="halogen">Halogen</h3>
 <p>Halogen is quite possibly the most interesting of the DOM manipulation libraries for PureScript. It is similar to Thermite but aims to be more type-safe and composable. It is based on <a href="https://github.com/Matt-Esch/virtual-dom">virtual-dom</a> (a library similar to, but more low-level, than React). It feels like a well-typed, easy-to-use version of Elm.</p>
@@ -281,18 +288,18 @@ $ gulp test
 <p>There are not currently many companies using PureScript in production. SlamData is a notable exception.</p>
 <p>If you know any other companies that should be added to this list, please let me know.</p>
 <h4 id="slamdata"><a href="http://slamdata.com/">SlamData</a></h4>
-<p>SlamData is providing an open source, visualization solution for NoSQL data. PureScript is being used in the frontend for visualization of data. SlamData is currently employing three full-time PureScript developers.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<p>SlamData is providing an open source, visualization solution for NoSQL data. PureScript is being used in the frontend for visualization of data. SlamData is currently employing four full-time PureScript developers.</p>
 <h3 id="people">People</h3>
 <p>The people below are all very active on Github in a variety of PureScript projects. You’ll likely run in to them if you submit issues or send pull requests.</p>
 <p>If you know of anyone that should be added to this list, please let me know.</p>
 <h4 id="phil-freeman-paf31">Phil Freeman (<a href="https://github.com/paf31">paf31</a>)</h4>
 <p>Phil is the creator of PureScript. He contributes a lot of code to the PureScript compiler, as well as responding to issues and pull requests. He also maintains the purescript-react and Thermite libraries.</p>
 <h4 id="gary-burgess-garyb">Gary Burgess (<a href="https://github.com/garyb">garyb</a>)</h4>
-<p>Gary is working for SlamData and is also very active in the PureScript community. He does a lot of work on the PureScript compiler as well as maintain the Halogen project. Gary is <em>very</em> helpful on Github. He has responded to many of my issues (even silly ones). If PureScript succeeds as a language, it will be partially due to the helpfulness of Gary.</p>
+<p>Gary is working for SlamData and is also very active in the PureScript community. He is a coauthor of the PureScript compiler and maintains the Halogen project. Gary is <em>very</em> helpful on Github. He has responded to many of my issues (even silly ones). If PureScript succeeds as a language, it will be partially due to the helpfulness of Gary.</p>
 <h4 id="john-a.-de-goes-jdegoes">John A. De Goes (<a href="https://github.com/jdegoes">jdegoes</a>)</h4>
 <p>John is the CTO of SlamData. He is active within the Halogen project and also responds to many issues in the PureScript compiler’s issue tracker. John is also a long-time Haskell hacker.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>PureScript is very easy for a Haskeller to learn. The most complicated thing will be learning the PureScript/JavaScript ecosystem and deciding on a DOM manipulation library.</p>
+<p>PureScript is very easy for a Haskeller to learn. The most complicated things will be learning the PureScript/JavaScript ecosystem and deciding on a DOM manipulation library.</p>
 <p>Good luck on your PureScript journey.</p>
 <h2 id="footnotes">Footnotes</h2>
 <div class="footnotes">
@@ -300,7 +307,6 @@ $ gulp test
 <ol>
 <li id="fn1"><p>It used to be, “Just use <code>cabal</code> and sandboxes. For multi-project builds… maybe try a small shell script?”<a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>Pulp was originally written in JavaScript, which may be why it does not have the features one would expect from something like <code>stack</code>. However, it is <a href="https://github.com/bodil/pulp/issues/119">currently</a> being rewritten in PureScript, so maybe there is hope that it will be more flexible in the future.<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>I believe I saw this number somewhere, but I can’t find the page I saw it on. If someone could confirm/deny this, it would be much appreciated.<a href="#fnref3">↩</a></p></li>
 </ol>
 </div>
             </div>
