@@ -27,7 +27,7 @@ Here are a couple things that often came up in the code I was writing:
 
 - [`forall`](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#explicit-forall)
   is explicit in PureScript.  This is somewhat annoying, but easy to get used
-  to.  In some future version of PureScript, [it might  not be
+  to.  In some future version of PureScript, [it might not be
   required](https://github.com/purescript/purescript/issues/766).
 - Instances are
   [named](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#named-instances).
@@ -36,6 +36,8 @@ Here are a couple things that often came up in the code I was writing:
 - No functional dependencies or type families.  This makes type checking in
   PureScript worse than Haskell in [some
   cases](https://github.com/purescript/purescript-transformers/issues/64).
+- Nothing like Template Haskell.  This makes using lenses and JSON more
+  time-consuming.
 - There is no [special
   syntax](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#tuples)
   for tuples.
@@ -417,20 +419,21 @@ describing the differences between Grunt and Gulp.
 
 PureScript is mostly used for writing frontend code.  Because of this, there
 are many DOM manipulation libraries available.  In this section, I talk about
-four different PureScript libraries used for DOM manipulation: simple-dom,
-purescript-react, Thermite, and Halogen.
+five different PureScript libraries used for DOM manipulation:
+purescript-simple-dom, purescrit-dom, purescript-react, Thermite, and Halogen.
 
-### simple-dom
+### purescript-simple-dom
 
 Like the name implies,
-[simple-dom](https://github.com/aktowns/purescript-simple-dom) is the simplest
-of the four libraries.  It provides an interface similar to that provided by
-web browsers.  It is easy to [create new
+[purescript-simple-dom](https://github.com/aktowns/purescript-simple-dom) is
+the simplest of the four libraries.  It provides an interface similar to that
+provided by web browsers.  It is easy to [create new
 nodes](https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Document.md#document)
 in an HTML Document, [append child
 nodes](https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Element.md#element)
-to an element, etc.  Code written using simple-dom is very similar to code
-written using raw JavaScript (although PureScript makes it more type-safe).
+to an element, etc.  Code written using purescript-simple-dom is very similar
+to code written using raw JavaScript (although PureScript makes it more
+type-safe).
 
 A small amount of sample code is available in the project's
 [README](https://github.com/aktowns/purescript-simple-dom#some-examples).  It
@@ -438,12 +441,33 @@ does not have any type information, so it is somewhat hard to read.  However,
 the library is very simple so this shouldn't be much of a problem.
 
 The
-[simple-dom](https://github.com/aktowns/purescript-simple-dom/commits/master),
+[purescript-simple-dom](https://github.com/aktowns/purescript-simple-dom/commits/master),
 repository hasn't been very active over the past month.  Two (minor) issues I
 have created in the past month did not get a response.
 
-simple-dom should be easy to use even for someone just getting started with
-languages like PureScript or Haskell.
+purescript-simple-dom should be easy to use even for someone just getting
+started with languages like PureScript or Haskell.
+
+### purescript-dom
+
+The [purescript-dom](https://github.com/purescript-contrib/purescript-dom)
+library is similar to purescript-simple-dom.  It provides a low-level interface
+for working with the browser DOM.  It was created by [Gary
+Burgess](#gary-burgess) because of sporadic activity and opinionated design in
+purescript-simple-dom.  It is intended to be the low-level base for all future
+libraries that provide interfaces to the DOM.  Ideally, purescript-simple-dom
+could just be a wrapper around purescript-dom, but that hasn't happened yet.
+purescript-dom is used heavily in Halogen.
+
+There is no sample code or examples for purescript-dom.  However, it is a
+straight wrapper around the DOM, so it shouldn't be *too* hard to figure out.
+
+Because it is used in Halogen, purescript-dom gets regular updates.
+
+purescript-dom can be used in all places that purescript-simple-dom can be
+used.  It is the recommended library to use if you are working with the
+browser's DOM and don't want to pull in a big library like Thermite or
+Halogen.
 
 ### purescript-react
 
