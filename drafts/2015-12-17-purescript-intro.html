@@ -133,7 +133,7 @@
     In the newtype declaration for ‘Foo’</code></pre>
 <p>However, the same code in PureScript is completely fine!</p>
 <pre class="purescript"><code>newtype Foo = Foo { a :: String, b :: Int }</code></pre>
-<p>When looking at the type of the <code>Foo</code> constructor in <code>psci</code>, we can see that it takes a record as an argument:</p>
+<p>When looking at the type of the <code>Foo</code> constructor in <code>psci</code> (interactive environment like <code>ghci</code> for PureScript, <a href="#purescript-compiler">see below</a>), we can see that it takes a record as an argument:</p>
 <pre><code>&gt; :t Foo
 { a :: String, b :: Int } -&gt; Foo</code></pre>
 <h3 id="eff-monad"><code>Eff</code> Monad</h3>
@@ -219,8 +219,9 @@
 <p>In order to update libraries to newer versions, the <code>update</code> command is used:</p>
 <pre class="sh"><code>$ bower update</code></pre>
 <p>Check out the <code>bower.json</code> file in the example projects. Try running <code>bower install</code> and <code>bower update</code> and see what happens.</p>
+<p>Some people in the JavaScript community are “anti-Bower”, but it is still heavily used in the PureScript community.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
 <h3 id="pulp">Pulp</h3>
-<p>Pulp is a build tool specific to PureScript. It is similar to <code>stack</code> or <code>cabal</code> for Haskell. It works well for libraries and simple projects, but it does not have enough flexibility for larger projects. It seems like the general recommendation from the PureScript community is to use Pulp for simple libraries, and gulp for any non-trivial application<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>.</p>
+<p>Pulp is a build tool specific to PureScript. It is similar to <code>stack</code> or <code>cabal</code> for Haskell. It works well for libraries and simple projects, but it does not have enough flexibility for larger projects. It seems like the general recommendation from the PureScript community is to use Pulp for simple libraries, and gulp for any non-trivial application.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
 <p>Pulp can be installed with <code>npm</code>:</p>
 <pre class="sh"><code>$ npm install pulp</code></pre>
 <p>You can access <code>pulp</code> in <code>node_modules/.bin/</code>.</p>
@@ -229,11 +230,15 @@
 ...
 $ pulp test
 ...</code></pre>
+<p>Pulp can also act as a frontend for Bower. This is how we update library dependencies with Bower:</p>
+<pre class="sh"><code>$ bower update</code></pre>
+<p>This uses Pulp to do the exact same thing. It uses Bower behind the scenes:</p>
+<pre class="sh"><code>$ pulp dep update</code></pre>
 <p>You can find other functions in the Pulp <a href="https://github.com/bodil/pulp">README</a>.</p>
 <p>Try running <code>pulp build</code> and <code>pulp test</code> in the example project for Pulp. Try running <code>pulp server</code> and opening up the <code>index.html</code> file in your browser.</p>
 <h3 id="gulp">Gulp</h3>
 <p>Gulp is a full-featured, dependency-tracking build tool. It is similar to Make or <a href="http://community.haskell.org/~ndm/shake/">Shake</a>.</p>
-<p>Gulp is used over Pulp in a couple different cases. The most common is when building a project that produces multiple JavaScript files as output. It is also used when you need to change build settings that Pulp does not provide access to.</p>
+<p>Gulp is used instead of Pulp in a couple different cases. The most common is when building a project that produces multiple JavaScript files as output. It is also used when you need to change build settings that Pulp does not provide access to. It is also helpful when you are adding PureScript code to an existing project or workflow.</p>
 <p>It seems like people using PureScript in production (<a href="#slamdata">SlamData</a>) use Gulp almost exclusively.</p>
 <p>Gulp can be installed with <code>npm</code>:</p>
 <pre class="sh"><code>$ npm install gulp</code></pre>
@@ -248,10 +253,10 @@ $ gulp test
 <pre class="sh"><code>$ gulp server
 ...</code></pre>
 <h3 id="grunt">Grunt</h3>
-<p>Grunt is a build tool similar to Gulp. At one point, Grunt was the common build tool, but it has since became Pulp and Gulp. Grunt is no longer used to build PureScript code.</p>
+<p>Grunt is a build tool similar to Gulp. At one point, Grunt was the common build tool for PureScript, but it has since became Pulp and Gulp. Grunt is no longer used to build PureScript code.</p>
 <p>If you are interested, here is an <a href="https://medium.com/@preslavrachev/gulp-vs-grunt-why-one-why-the-other-f5d3b398edc4#.p71z2qybh">article</a> describing the differences between Grunt and Gulp.</p>
 <h2 id="dom-manipulation-libraries">DOM Manipulation Libraries</h2>
-<p>PureScript is mostly used for writing frontend code. Because of this, there are many DOM manipulation libraries available. In this section, I talk about five different PureScript libraries used for DOM manipulation: purescript-simple-dom, purescrit-dom, purescript-react, Thermite, and Halogen. They are ordered from least-used to most-used. When using PureScript in production, you should really consider using Thermite or Halogen.</p>
+<p>PureScript is mostly used for writing frontend code. Because of this, there are many DOM manipulation libraries available. In this section, I talk about five different PureScript libraries used for DOM manipulation: purescript-simple-dom, purescript-dom, purescript-react, Thermite, and Halogen. They are ordered from least-used to most-used. When using PureScript in production, you should really consider using Thermite or Halogen.</p>
 <h3 id="purescript-simple-dom">purescript-simple-dom</h3>
 <p>Like the name implies, <a href="https://github.com/aktowns/purescript-simple-dom">purescript-simple-dom</a> is the simplest of the four libraries. It provides an interface similar to that provided by web browsers. It is easy to <a href="https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Document.md#document">create new nodes</a> in an HTML Document, <a href="https://github.com/aktowns/purescript-simple-dom/blob/master/docs/Data/DOM/Simple/Element.md#element">append child nodes</a> to an element, etc. Code written using purescript-simple-dom is very similar to code written using raw JavaScript (although PureScript makes it more type-safe).</p>
 <p>A small amount of sample code is available in the project’s <a href="https://github.com/aktowns/purescript-simple-dom#some-examples">README</a>. It does not have any type information, so it is somewhat hard to read. However, the library is very simple so this shouldn’t be much of a problem.</p>
@@ -306,7 +311,8 @@ $ gulp test
 <hr />
 <ol>
 <li id="fn1"><p>It used to be, “Just use <code>cabal</code> and sandboxes. For multi-project builds… maybe try a small shell script?”<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>Pulp was originally written in JavaScript, which may be why it does not have the features one would expect from something like <code>stack</code>. However, it is <a href="https://github.com/bodil/pulp/issues/119">currently</a> being rewritten in PureScript, so maybe there is hope that it will be more flexible in the future.<a href="#fnref2">↩</a></p></li>
+<li id="fn2"><p>Check out <a href="http://gofore.com/ohjelmistokehitys/stop-using-bower/">this article</a> or <a href="https://github.com/purescript/purescript/issues/631">this issue</a> for more discussion.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Pulp was originally written in JavaScript, which may be why it does not have the features one would expect from something like <code>stack</code>. However, it is <a href="https://github.com/bodil/pulp/issues/119">currently</a> being rewritten in PureScript, so maybe there is hope that it will be more flexible in the future.<a href="#fnref3">↩</a></p></li>
 </ol>
 </div>
             </div>
