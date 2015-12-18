@@ -92,11 +92,11 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-              <p>This article is an introduction to PureScript for someone that knows Haskell (but may not be familiar with JavaScript). PureScript is very similar to Haskell. If you know Haskell, PureScript will be very easy to learn.</p>
-<p>This article first gives an overview of the differences between PureScript and Haskell, and then dives into things specific to PureScript like the build systems and DOM manipulation libraries.</p>
+              <p>This article is an introduction to PureScript for someone who knows Haskell (but may not be familiar with JavaScript). PureScript is very similar to Haskell. If you know Haskell, PureScript will be very easy to learn.</p>
+<p>This article gives an overview of the differences between PureScript and Haskell, and then dives into things specific to PureScript like build systems and DOM manipulation libraries.</p>
 <h2 id="differences-between-haskell-and-purescript">Differences Between Haskell and PureScript</h2>
 <p>There are only a few key differences between Haskell and PureScript. Here is a <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell">comprehensive list</a>. You should read this first.</p>
-<p>Here are a couple things that often came up in the code I was writing:</p>
+<p>Here are a couple things that often came up when I was writing code:</p>
 <ul>
 <li><a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#explicit-forall"><code>forall</code></a> is explicit in PureScript. This is somewhat annoying, but easy to get used to. In some future version of PureScript, <a href="https://github.com/purescript/purescript/issues/766">it might not be required</a>.</li>
 <li>Instances are <a href="https://github.com/purescript/purescript/wiki/Differences-from-Haskell#named-instances">named</a>.</li>
@@ -253,7 +253,7 @@ $ gulp test
 <pre class="sh"><code>$ gulp server
 ...</code></pre>
 <h3 id="grunt">Grunt</h3>
-<p>Grunt is a build tool similar to Gulp. At one point, Grunt was the common build tool for PureScript, but it has since became Pulp and Gulp. Grunt is no longer used to build PureScript code.</p>
+<p>Grunt is a build tool similar to Gulp. At one point, Grunt was the common build tool for PureScript, but it has since given way to Pulp and Gulp. Grunt is no longer used to build PureScript code.</p>
 <p>If you are interested, here is an <a href="https://medium.com/@preslavrachev/gulp-vs-grunt-why-one-why-the-other-f5d3b398edc4#.p71z2qybh">article</a> describing the differences between Grunt and Gulp.</p>
 <h2 id="dom-manipulation-libraries">DOM Manipulation Libraries</h2>
 <p>PureScript is mostly used for writing frontend code. Because of this, there are many DOM manipulation libraries available. In this section, I talk about five different PureScript libraries used for DOM manipulation: purescript-simple-dom, purescript-dom, purescript-react, Thermite, and Halogen. They are ordered from least-used to most-used. When using PureScript in production, you should really consider using Thermite or Halogen.</p>
@@ -263,12 +263,12 @@ $ gulp test
 <p>The <a href="https://github.com/aktowns/purescript-simple-dom/commits/master">purescript-simple-dom</a>, repository hasn’t been very active over the past month. Two (minor) issues I have created in the past month did not get a response.</p>
 <p>purescript-simple-dom should be easy to use even for someone just getting started with languages like PureScript or Haskell.</p>
 <h3 id="purescript-dom">purescript-dom</h3>
-<p>The <a href="https://github.com/purescript-contrib/purescript-dom">purescript-dom</a> library is similar to purescript-simple-dom. It provides a low-level interface for working with the browser DOM. It was created by <a href="#gary-burgess">Gary Burgess</a> because of sporadic activity and opinionated design in purescript-simple-dom. It is intended to be the low-level base for all future libraries that provide interfaces to the DOM. Ideally, purescript-simple-dom could just be a wrapper around purescript-dom, but that hasn’t happened yet. purescript-dom is used heavily in Halogen.</p>
+<p>The <a href="https://github.com/purescript-contrib/purescript-dom">purescript-dom</a> library is similar to purescript-simple-dom. It provides a low-level interface for working with the browser DOM. It was created by <a href="#gary-burgess-garyb">Gary Burgess</a> because of sporadic activity and the opinionated design of purescript-simple-dom. It is intended to be the low-level base for all future libraries that provide interfaces to the DOM. Ideally, purescript-simple-dom could be implemented as a wrapper around purescript-dom, but it hasn’t happened yet. purescript-dom is used heavily in Halogen.</p>
 <p>There is no sample code or examples for purescript-dom. However, it is a straight wrapper around the DOM, so it shouldn’t be <em>too</em> hard to figure out.</p>
 <p>Because it is used in Halogen, purescript-dom gets regular updates.</p>
 <p>purescript-dom can be used in all places purescript-simple-dom can be used. It is the recommended library to use if you are working with the browser’s DOM and don’t want to pull in a big library like Thermite or Halogen.</p>
 <h3 id="purescript-react">purescript-react</h3>
-<p><a href="https://github.com/purescript-contrib/purescript-react">purescript-react</a> is a set of low-level bindings to <a href="https://facebook.github.io/react/">React</a> for PureScript. React is a library that abstracts updating the UI from an application. From the <a href="https://facebook.github.io/react/docs/why-react.html">Why React?</a> page:</p>
+<p><a href="https://github.com/purescript-contrib/purescript-react">purescript-react</a> is a set of low-level bindings to <a href="https://facebook.github.io/react/">React</a> for PureScript. React is a library that abstracts updating a UI. From the <a href="https://facebook.github.io/react/docs/why-react.html">Why React?</a> page:</p>
 <blockquote>
 <p>Many people choose to think of React as the V in MVC. We built React to solve one problem: building large applications with data that changes over time. Simply express how your app should look at any given point in time, and React will automatically manage all UI updates when your underlying data changes.</p>
 </blockquote>
