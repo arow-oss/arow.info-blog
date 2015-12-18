@@ -7,13 +7,13 @@ subHeading: Where to get started in PureScript for the Haskell programmer
 postedBy: <a href="http://functor.tokyo">Dennis Gosnell</a>
 ---
 
-This article is an introduction to PureScript for someone that knows Haskell
+This article is an introduction to PureScript for someone who knows Haskell
 (but may not be familiar with JavaScript).  PureScript is very similar to
 Haskell.  If you know Haskell, PureScript will be very easy to learn.
 
-This article first gives an overview of the differences between PureScript and
-Haskell, and then dives into things specific to PureScript like the build
-systems and DOM manipulation libraries.
+This article gives an overview of the differences between PureScript and
+Haskell, and then dives into things specific to PureScript like build systems
+and DOM manipulation libraries.
 
 ## Differences Between Haskell and PureScript
 
@@ -22,7 +22,7 @@ There are only a few key differences between Haskell and PureScript.  Here is a
 list](https://github.com/purescript/purescript/wiki/Differences-from-Haskell).
 You should read this first.
 
-Here are a couple things that often came up in the code I was writing:
+Here are a couple things that often came up when I was writing code:
 
 - [`forall`](https://github.com/purescript/purescript/wiki/Differences-from-Haskell#explicit-forall)
   is explicit in PureScript.  This is somewhat annoying, but easy to get used
@@ -424,8 +424,8 @@ $ gulp server
 ### Grunt
 
 Grunt is a build tool similar to Gulp.  At one point, Grunt was the common
-build tool for PureScript, but it has since became Pulp and Gulp.  Grunt is no
-longer used to build PureScript code.
+build tool for PureScript, but it has since given way to Pulp and Gulp.  Grunt
+is no longer used to build PureScript code.
 
 If you are interested, here is an
 [article](https://medium.com/@preslavrachev/gulp-vs-grunt-why-one-why-the-other-f5d3b398edc4#.p71z2qybh)
@@ -471,11 +471,11 @@ started with languages like PureScript or Haskell.
 The [purescript-dom](https://github.com/purescript-contrib/purescript-dom)
 library is similar to purescript-simple-dom.  It provides a low-level interface
 for working with the browser DOM.  It was created by [Gary
-Burgess](#gary-burgess) because of sporadic activity and opinionated design in
-purescript-simple-dom.  It is intended to be the low-level base for all future
-libraries that provide interfaces to the DOM.  Ideally, purescript-simple-dom
-could just be a wrapper around purescript-dom, but that hasn't happened yet.
-purescript-dom is used heavily in Halogen.
+Burgess](#gary-burgess-garyb) because of sporadic activity and the opinionated
+design of purescript-simple-dom.  It is intended to be the low-level base for
+all future libraries that provide interfaces to the DOM.  Ideally,
+purescript-simple-dom could be implemented as a wrapper around purescript-dom,
+but it hasn't happened yet.  purescript-dom is used heavily in Halogen.
 
 There is no sample code or examples for purescript-dom.  However, it is a
 straight wrapper around the DOM, so it shouldn't be _too_ hard to figure out.
@@ -490,8 +490,7 @@ don't want to pull in a big library like Thermite or Halogen.
 
 [purescript-react](https://github.com/purescript-contrib/purescript-react) is a
 set of low-level bindings to [React](https://facebook.github.io/react/) for
-PureScript.  React is a library that abstracts updating the UI from an
-application.  From the [Why
+PureScript.  React is a library that abstracts updating a UI.  From the [Why
 React?](https://facebook.github.io/react/docs/why-react.html) page:
 
 > Many people choose to think of React as the V in MVC.  We built React to
