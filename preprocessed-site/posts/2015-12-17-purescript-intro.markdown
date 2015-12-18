@@ -1,6 +1,5 @@
 ---
 title: ARoW.info Blog -- PureScript for the Haskeller
-draft: yes
 headingBackgroundImage: ../img/post-bg.jpg
 headingDivClass: post-heading
 heading: PureScript for the Haskeller
