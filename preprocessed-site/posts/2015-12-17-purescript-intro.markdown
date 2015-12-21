@@ -165,8 +165,8 @@ are often named the same as their counterparts in Haskell.
 
 The PureScript/JavaScript ecosystem is much more complex than the Haskell
 ecosystem.  In Haskell, when building a project, the normal advice is to "just
-use `stack`"[^1].  In PureScript, you have to deal with `node`, `npm`, `bower`,
-`pulp`, and `gulp`.  It may be second-nature for someone familiar with
+use `stack`".[^1]  In PureScript, you have to deal with `node`, `npm`, `bower`,
+`pulp`, and `gulp`.[^4]  It may be second-nature for someone familiar with
 JavaScript, but it can be intimidating to a Haskeller.
 
 The following sections explain the relationship between Node.js, npm, Bower,
@@ -621,8 +621,10 @@ article](http://gofore.com/ohjelmistokehitys/stop-using-bower/) or [this
 issue](https://github.com/purescript/purescript/issues/631) for more
 discussion.
 
-
 [^3]: Pulp was originally written in JavaScript, which may be why it does not
 have the features one would expect from something like `stack`.  However, it is
 [currently](https://github.com/bodil/pulp/issues/119) being rewritten in
 PureScript, so maybe there is hope that it will be more flexible in the future.
+
+[^4]: This is not strictly true.  Phil explains [on
+reddit](https://www.reddit.com/r/haskell/comments/3xclas/intro_purescript_for_a_haskeller/cy3kvab).
