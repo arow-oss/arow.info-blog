@@ -152,7 +152,7 @@
 <h2 id="pursuit">Pursuit</h2>
 <p><a href="http://pursuit.purescript.org/">Pursuit</a> is like a combination of Hackage and Hoogle/Hayoo. It should be your first stop when looking for a function/type/class that you are used to from Haskell. Things in PureScript are often named the same as their counterparts in Haskell.</p>
 <h2 id="compiler-and-build-tools">Compiler and Build Tools</h2>
-<p>The PureScript/JavaScript ecosystem is much more complex than the Haskell ecosystem. In Haskell, when building a project, the normal advice is to “just use <code>stack</code>”<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. In PureScript, you have to deal with <code>node</code>, <code>npm</code>, <code>bower</code>, <code>pulp</code>, and <code>gulp</code>. It may be second-nature for someone familiar with JavaScript, but it can be intimidating to a Haskeller.</p>
+<p>The PureScript/JavaScript ecosystem is much more complex than the Haskell ecosystem. In Haskell, when building a project, the normal advice is to “just use <code>stack</code>”.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> In PureScript, you have to deal with <code>node</code>, <code>npm</code>, <code>bower</code>, <code>pulp</code>, and <code>gulp</code>.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> It may be second-nature for someone familiar with JavaScript, but it can be intimidating to a Haskeller.</p>
 <p>The following sections explain the relationship between Node.js, npm, Bower, Pulp, Gulp, and Grunt.</p>
 <p>I have created two example projects that you can use to play around with the following tools. One <a href="https://github.com/cdepillabout/purescript-example-project-using-pulp">project</a> is using Node.js, npm, Bower, and Pulp, and the other <a href="https://github.com/cdepillabout/purescript-example-project-using-gulp">project</a> is using Node.js, npm, Bower, and Gulp. You can use either project to follow long.</p>
 <h3 id="node.js">Node.js</h3>
@@ -219,9 +219,9 @@
 <p>In order to update libraries to newer versions, the <code>update</code> command is used:</p>
 <pre class="sh"><code>$ bower update</code></pre>
 <p>Check out the <code>bower.json</code> file in the example projects. Try running <code>bower install</code> and <code>bower update</code> and see what happens.</p>
-<p>Some people in the JavaScript community are “anti-Bower”, but it is still heavily used in the PureScript community.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<p>Some people in the JavaScript community are “anti-Bower”, but it is still heavily used in the PureScript community.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
 <h3 id="pulp">Pulp</h3>
-<p>Pulp is a build tool specific to PureScript. It is similar to <code>stack</code> or <code>cabal</code> for Haskell. It works well for libraries and simple projects, but it does not have enough flexibility for larger projects. It seems like the general recommendation from the PureScript community is to use Pulp for simple libraries, and gulp for any non-trivial application.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<p>Pulp is a build tool specific to PureScript. It is similar to <code>stack</code> or <code>cabal</code> for Haskell. It works well for libraries and simple projects, but it does not have enough flexibility for larger projects. It seems like the general recommendation from the PureScript community is to use Pulp for simple libraries, and gulp for any non-trivial application.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
 <p>Pulp can be installed with <code>npm</code>:</p>
 <pre class="sh"><code>$ npm install pulp</code></pre>
 <p>You can access <code>pulp</code> in <code>node_modules/.bin/</code>.</p>
@@ -311,8 +311,9 @@ $ gulp test
 <hr />
 <ol>
 <li id="fn1"><p>It used to be, “Just use <code>cabal</code> and sandboxes. For multi-project builds… maybe try a small shell script?”<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>Check out <a href="http://gofore.com/ohjelmistokehitys/stop-using-bower/">this article</a> or <a href="https://github.com/purescript/purescript/issues/631">this issue</a> for more discussion.<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>Pulp was originally written in JavaScript, which may be why it does not have the features one would expect from something like <code>stack</code>. However, it is <a href="https://github.com/bodil/pulp/issues/119">currently</a> being rewritten in PureScript, so maybe there is hope that it will be more flexible in the future.<a href="#fnref3">↩</a></p></li>
+<li id="fn2"><p>This is not strictly true. Phil explains <a href="https://www.reddit.com/r/haskell/comments/3xclas/intro_purescript_for_a_haskeller/cy3kvab">on reddit</a>.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Check out <a href="http://gofore.com/ohjelmistokehitys/stop-using-bower/">this article</a> or <a href="https://github.com/purescript/purescript/issues/631">this issue</a> for more discussion.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Pulp was originally written in JavaScript, which may be why it does not have the features one would expect from something like <code>stack</code>. However, it is <a href="https://github.com/bodil/pulp/issues/119">currently</a> being rewritten in PureScript, so maybe there is hope that it will be more flexible in the future.<a href="#fnref4">↩</a></p></li>
 </ol>
 </div>
             </div>
