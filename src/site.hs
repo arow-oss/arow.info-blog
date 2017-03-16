@@ -1,17 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.Default (def)
-import qualified Data.Map as Map
 import Data.Maybe (fromMaybe)
 import Hakyll
-    ( Compiler, Configuration(..), Context, Identifier, Item
-    , Routes, applyAsTemplate, compile, composeRoutes, compressCssCompiler
-    , copyFileCompiler , dateField, defaultContext, field, getMetadataField
-    , getResourceBody , gsubRoute, hakyllWith , idRoute, itemIdentifier
-    , listField, loadAll , loadAndApplyTemplate , match, metadataRoute
-    , pandocCompiler , recentFirst, relativizeUrls, route , setExtension
-    , templateCompiler
-    )
+       (Compiler, Configuration(..), Context, Identifier, Item, Routes,
+        applyAsTemplate, compile, composeRoutes, compressCssCompiler,
+        copyFileCompiler, dateField, defaultContext, field,
+        getMetadataField, getResourceBody, gsubRoute, hakyllWith, idRoute,
+        itemIdentifier, listField, loadAll, loadAndApplyTemplate,
+        lookupString, match, metadataRoute, pandocCompiler, recentFirst,
+        relativizeUrls, route, setExtension, templateCompiler)
 
 
 -- | Change some of the default configuration variables.  This makes our
@@ -121,9 +119,8 @@ createSubHeadingContentForPost item = do
 -- location from "posts/" to "drafts/".
 postsAndDraftsRoutes :: Routes
 postsAndDraftsRoutes = metadataRoute $ \metadata ->
-    case Map.lookup "draft" metadata of
+    case lookupString "draft" metadata of
         Just _ ->
             gsubRoute "posts/" (const "drafts/") `composeRoutes`
             setExtension "html"
         Nothing -> setExtension "html"
-
