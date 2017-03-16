@@ -1,6 +1,9 @@
 
 # Blog for [ARoW.info](http://arow.info)
 
+[![Build Status](https://secure.travis-ci.org/arow-oss/blog.svg)](http://travis-ci.org/arow-oss/blog)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 This is the blog for [ARoW.info](http://arow.info).  It is built with
 [Hakyll](http://jaspervdj.be/hakyll/index.html).  The `Makefile` contains some
 simple targets for building the site.  In order to use the targets in the
