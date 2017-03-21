@@ -218,7 +218,8 @@ application's `.cabal` file. `docker build` does not have to re-run (1), (2), or
 This means that if all you change is the application source code under `src/`
 and re-run `docker build`, all `docker build` has to do is re-run (5), (6), and
 (7). It doesn't have to install GHC or the application's Haskell dependencies.
-This reduces a large part of the build-time.  Future builds will take just a few minutes, instead of tens of minutes.
+This reduces a large part of the build-time. Future builds will take just a few
+minutes, instead of tens of minutes.
 
 ### Testing the API with Docker
 
@@ -244,6 +245,45 @@ Oh no!  It looks like our PostgreSQL problem is back:
 ```
 ```
 
+What's happening here? Well, since the `servant-on-heroku` container is running
+as a Docker container, by default it can't see our local network. It can't see
+that PostgreSQL is running on `localhost:5432`.
+
+Here's a small trick we can use. When we run the `servant-on-heroku` container,
+we can tell Docker to just let it use our local network. That way, it can see
+PostgreSQL:
+
+```sh
+$ docker --interactive --tty --rm --network host servant-on-heroku
+```
+
+With the `servant-on-heroku` container running, you can try the `curl` commands
+from the previous section:
+
+```sh
+$ curl --request POST \
+    --header 'Content-Type: application/json' \
+    --data '{"author": "DG", "text": "Pretty good"}' \
+    'http://localhost:8080/add-comment'
+{ "text": "Not enough CT", "author": "EK" }
+$ curl --request GET \
+    --header 'Content-Type: application/json' \
+    'http://localhost:8080/get-comments'
+[ { "text": "Pretty good", "author": "DG" }, { "text": "Not enough CT", "author": "EK" } ]
+```
+
+Now that you know our application works in Docker, it's time for Heroku.
+
+## Heroku
+
+## Future Work
+
+- base the image on something with `stack`, `ghc`, and popular Haskell libraries
+  already installed
+- remove stack, ghc, and all haskell libraries from the docker image to reduce
+  the size
+
+## Conclusion
 
 
 
