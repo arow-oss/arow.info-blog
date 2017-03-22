@@ -175,6 +175,12 @@ Docker can be installed differently on different platforms. Check your platform
 documentation for more advice. For instance, here are the instructions for
 installing on [Arch Linux]() and [Ubuntu]().
 
+After installing Docker, you can make sure it is functioning with the following command:
+
+```sh
+$ docker info
+```
+
 ### Building with Docker
 
 We will build our application inside of Docker and create a docker image for our
@@ -237,12 +243,19 @@ You can see the `servant-on-heroku` image.
 Let's try running the `servant-on-heroku` image.  This will run the application in Docker:
 
 ```sh
-$ docker --interactive --tty --rm servant-on-heroku
+$ docker run --interactive --tty --rm servant-on-heroku
 ```
 
 Oh no!  It looks like our PostgreSQL problem is back:
 
 ```
+servant-on-heroku-api: libpq: failed (could not connect to server: Connection refused
+        Is the server running on host "localhost" (::1) and accepting
+        TCP/IP connections on port 5432?
+could not connect to server: Connection refused
+        Is the server running on host "localhost" (127.0.0.1) and accepting
+        TCP/IP connections on port 5432?
+)
 ```
 
 What's happening here? Well, since the `servant-on-heroku` container is running
@@ -254,7 +267,8 @@ we can tell Docker to just let it use our local network. That way, it can see
 PostgreSQL:
 
 ```sh
-$ docker --interactive --tty --rm --network host servant-on-heroku
+$ docker run --interactive --tty --rm --network host servant-on-heroku
+running servant-on-heroku on port 8080...
 ```
 
 With the `servant-on-heroku` container running, you can try the `curl` commands
@@ -272,16 +286,78 @@ $ curl --request GET \
 [ { "text": "Pretty good", "author": "DG" }, { "text": "Not enough CT", "author": "EK" } ]
 ```
 
-Now that you know our application works in Docker, it's time for Heroku.
+By the way, if you just want to open a shell and inspect our container, you can use a command like this:
+
+```sh
+$ docker run --interactive --tty --rm --network host servant-on-heroku /bin/bash
+```
+
+Now that we know our application works in Docker, it's time for Heroku.
 
 ## Heroku
 
+Once we have the application building successfully in Docker, it's easy to move to Heroku.  The first step is creating a Heroku account.
+
+### Creating an Account
+
+Go [here](https://signup.heroku.com) to sign up for a Heroku account. If you
+already have a Heroku account, you can skip this step.
+
+We will deploy out application using Heroku's "Free" tier, so you don't need to
+worry about registering a credit card.
+
+The majority of the instructions in this section are condensed from Heroku's [own documentation](https://devcenter.heroku.com/articles/container-registry-and-runtime) on integrating with Docker.  Checkout their documentation is anything is unclear.
+
+### Install the Heroku CLI Application
+
+Heroku provides a CLI application to make it easy to work with their service.
+This is similar to [AWS's CLI](https://aws.amazon.com/cli)
+or [Digital Ocean's CLI](https://github.com/digitalocean/doctl).
+
+On Arch Linux Heroku's CLI application can be installed with the following
+command:
+
+```sh
+$ yaort -S heroku-toolbelt
+```
+
+Instructions for other platforms can be found
+on [Heroku's site](https://devcenter.heroku.com/articles/heroku-cli).
+
+Once you're downloaded the CLI, you can use it login and authenticate with
+Heroku's API:
+
+```sh
+$ heroku login
+```
+
+You will be asked for the username and password of the account you just created.
+
+### Create an app in Heroku
+
+The first step of releasing our Servant API to Heroku is to create a Heroku
+Application.
+
+The following command will create a new Heroku application called `servant-on-heroku`:
+
+```sh
+$ heroku apps:create servant-on-heroku
+```
+
+We can list information about the app we just created (although it won't be too
+interesting yet):
+
+```sh
+$ heroku apps:info servant-on-heroku
+```
+
 ## Future Work
 
+- Use a slimmer image as the base for Dockerfile.  Maybe alpine linux?
 - base the image on something with `stack`, `ghc`, and popular Haskell libraries
-  already installed
+  already installed.
 - remove stack, ghc, and all haskell libraries from the docker image to reduce
-  the size
+  the size.
 
 ## Conclusion
 
@@ -292,25 +368,7 @@ Now that you know our application works in Docker, it's time for Heroku.
 
     https://www.reddit.com/r/haskell/comments/3iql3f/heroku_buildpack_using_stack/
 
-**** signup for heroku
-     - Create a new heroku account:
-       https://signup.heroku.com/
-     - install the heroku-toolbelt app.
-       - on arch linux:
-         ```bash
-         $ yaort -S heroku-toolbelt
-         ```
-       - on ubuntu:
-         - https://devcenter.heroku.com/articles/heroku-cli#download-and-install
-**** create app in heroku
-     https://devcenter.heroku.com/articles/container-registry-and-runtime
-     - login to heroku on command line
-       $ heroku login
-     - create the app in heroku
-       $ heroku create
 **** docker
-     - test that you have docker installed
-       $ docker info
      - Install the container-registry plugin by running:
        $ heroku plugins:install heroku-container-registry
      - Log in to the Heroku container registry:
