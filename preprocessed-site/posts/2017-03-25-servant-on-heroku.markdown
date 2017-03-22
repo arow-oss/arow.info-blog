@@ -351,6 +351,166 @@ interesting yet):
 $ heroku apps:info servant-on-heroku
 ```
 
+### Install Heroku Docker Plugin
+
+The Heroku CLI app has a plugin architecture.  It allows you to install plugins that can be used to access different parts of Heroku's API.
+
+There is a plugin for using Heroku's [container registry](https://devcenter.heroku.com/articles/container-registry-and-runtime).
+
+You can use the following command to intall the plugin:
+
+```sh
+$ heroku plugins:install heroku-container-registry
+```
+
+After installing the plugin, you can make sure it works by using the following command:
+
+```sh
+$ heroku container
+```
+
+It should return the version string for the plugin.
+
+In order to actually use the plugin, you also must login to Heroku's container registery.  That can be accomplished with the following command:
+
+```sh
+$ heroku container:login
+```
+
+This adds login information to Heroku's container registery to the file `~/.docker/config.json`:
+
+```sh
+$ cat ~/.docker/config.json
+{
+  "auths": {
+    "registry.heroku.com": {
+      "auth": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx="
+    }
+  }
+}
+```
+
+### Get the Application Running on Heroku
+
+In order to get your application actually running on Heroku, you need to send the Docker image built in a previous step to Heroku's container registery:
+
+```sh
+$ heroku container:push web
+```
+
+Now lets check `heroku apps:info` again:
+
+```sh
+$ heroku apps:info servant-on-heroku
+=== servant-on-heroku
+Auto Cert Mgmt: false
+Dynos:
+Git URL:        https://git.heroku.com/servant-on-heroku.git
+Owner:          me@gmail.com
+Region:         us
+Repo Size:      0 B
+Slug Size:      0 B
+Stack:          cedar-14
+Web URL:        https://servant-on-heroku.herokuapp.com/
+```
+
+Hmm, that's not right.  See where it says `Dynos:   `?  A "dyno" is Heroku-lingo for a server that runs your web application.  This line means that you don't have any servers running your application.
+
+In order to fix that we can use the `heroku ps:scale` command to give you one dyno:
+
+```sh
+$ heroku ps:scale web=1
+```
+
+This gives us one "web" dyno, which works as a web api.  There are multiple different kinds of dynos, but we don't need to worry about that here.
+
+Now run the following command to make sure your dyno is actually running:
+
+```sh
+$ heroku ps
+Free dyno hours quota remaining this month: 549h 2m (99%)
+For more information on dyno sleeping and how to upgrade, see:
+https://devcenter.heroku.com/articles/dyno-sleeping
+
+=== web (Free): /bin/sh -c /opt/servant-on-heroku/bin/servant-on-heroku-api (1)
+web.1: starting 2017/03/22 19:05:04 +0900 (~ 8s ago)
+```
+
+The output is somewhat noisy, but you can tell that we have one web dyno running.
+
+Now we are ready to go back to our app URL (that you can find in the output of
+`heroku apps:info`) and try accessing it with curl:
+
+```sh
+$ curl --request POST \
+    --header 'Content-Type: application/json' \
+    --data '{"author": "MS", "text": "Gotta make it professional"}' \
+    'https://servant-on-heroku.herokuapp.com/add-comment'
+```
+
+That's strange, there appears to be an error.  Let's see how to check application errors.
+
+### Debugging Application Errors
+
+Heroku has a really nice log system. We can check the application's log with the
+following command and try to figure out why our app doesn't appear to be
+working:
+
+```sh
+$ heroku logs
+2017-03-22T10:05:49 heroku[web.1]: proc start `/opt/servant-on-heroku/bin/servant-on-heroku-api`
+2017-03-22T10:05:52 app[web.1]: servant-on-heroku-api: libpq: failed (could not connect to server: Connection refused
+2017-03-22T10:05:52 app[web.1]:    Is the server running on host "localhost" (127.0.0.1) and accepting
+2017-03-22T10:05:52 app[web.1]:    TCP/IP connections on port 5432?
+2017-03-22T10:05:52 app[web.1]: )
+2017-03-22T10:05:52 heroku[web.1]: State changed from starting to crashed
+```
+
+Oh no!  It's the same error that has been plaguing us this whole time.  Why is it occuring again?  Well, it's because we haven't setup a PostgreSQL database!
+
+### PostgreSQL on Heroku
+
+Heroku has [nice support](https://devcenter.heroku.com/articles/heroku-postgresql) for PostgreSQL.  Heroku provides a PostgreSQL database that can be used free-of-charge.
+
+The following command can be used enable the PostgreSQL database addon for our app:
+
+```sh
+$ heroku addons:create heroku-postgresql:hobby-dev
+```
+
+This enables the `heroku-postgresql` addon in the `hobby-dev` tier (which is free).
+
+After enabling it, we can make sure it has been successfully created:
+
+```sh
+$ heroku addons:info heroku-postgresql
+=== postgresql-tetrahedral-44549
+Attachments:  servant-on-heroku::DATABASE
+Installed at: Wed Mar 22 2017 19:22:14 GMT+0900 (JST)
+Owning app:   servant-on-heroku
+Plan:         heroku-postgresql:hobby-dev
+Price:        free
+State:        created
+```
+
+We can also check the database info with the `pg:info` command:
+
+```sh
+$ heroku pg:info
+=== DATABASE_URL
+Plan:        Hobby-dev
+Status:      Available
+Connections: 0/20
+PG Version:  9.6.1
+Created:     2017-03-22 10:22 UTC
+Data Size:   7.2 MB
+Tables:      1
+Rows:        0/10000 (In compliance)
+Fork/Follow: Unsupported
+Rollback:    Unsupported
+Add-on:      postgresql-tetrahedral-44549
+```
+
 ## Future Work
 
 - Use a slimmer image as the base for Dockerfile.  Maybe alpine linux?
@@ -368,33 +528,7 @@ $ heroku apps:info servant-on-heroku
 
     https://www.reddit.com/r/haskell/comments/3iql3f/heroku_buildpack_using_stack/
 
-**** docker
-     - Install the container-registry plugin by running:
-       $ heroku plugins:install heroku-container-registry
-     - Log in to the Heroku container registry:
-       $ heroku container:login
-     - Build the app locally to make sure it works
-       $ docker build -t goatass .
-     - Run the app locally to make sure it works.
-       $ docker run --tty --interactive --rm --env PORT=5000 --network host goatass
-     - Build and push the app to heroku
-       $ heroku container:push web
-     - Add an additional dyno to actually run the web app
-       $ heroku ps:scale web=1
-     - Check to make sure your app is running.
-       $ heroku ps
-     - Find out the app URL
-       $ heroku apps:info
-     - Check the logs in case your app is not running.
-       $ heroku logs
 **** add database
-     https://devcenter.heroku.com/articles/heroku-postgresql
-     - create a database to use
-       $ heroku addons:create heroku-postgresql:hobby-dev
-     - make sure the database has successfully be created
-       $ heroku addons:info heroku-postgresql
-     - after the database has been created, check its info
-       $ heroku pg:info
      - If you want to connect to the database remotely.
        $ heroku config
        $ heroku config:get DATABASE_URL
