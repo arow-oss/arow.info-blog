@@ -106,9 +106,9 @@ $ <span class="ex">stack</span> setup  # install the required version of ghc on 
 $ <span class="ex">stack</span> build  # install all dependencies and build the application</code></pre></div>
 <p>An error may occur when building the application because of missing PostgreSQL libraries.</p>
 <p>On Arch Linux, install these missing PostgreSQL libraries can be installed with the following command:</p>
-<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">pacman</span> -Ss postgresql-libs</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="fu">sudo</span> pacman -Ss postgresql-libs</code></pre></div>
 <p>On Ubuntu, the following command can be used:</p>
-<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">apt-get</span> install libpq-dev</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="fu">sudo</span> apt-get install libpq-dev</code></pre></div>
 <p>Other platforms may use a different command to install these libraries.</p>
 <p>Once the required PostgreSQL libraries have been installed, try running <code>stack build</code> again. It should succeed this time.</p>
 <p>Now try running the application:</p>
@@ -226,7 +226,7 @@ could not connect to server: Connection refused
 <h3 id="install-the-heroku-cli-application">Install the Heroku CLI Application</h3>
 <p>Heroku provides a CLI application to make it easy to work with their service. This is similar to <a href="https://aws.amazon.com/cli">AWS’s CLI</a> or <a href="https://github.com/digitalocean/doctl">Digital Ocean’s CLI</a>.</p>
 <p>On Arch Linux, Heroku’s CLI application can be installed with the following command:</p>
-<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">yaort</span> -S heroku-toolbelt</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">yaourt</span> -S heroku-toolbelt</code></pre></div>
 <p>This installs the <code>heroku</code> binary to the system.</p>
 <p>Instructions for other platforms can be found on <a href="https://devcenter.heroku.com/articles/heroku-cli">Heroku’s site</a>.</p>
 <p>Once the CLI application has been downloaded, it can be used to login and authenticate with Heroku’s API:</p>
@@ -273,7 +273,7 @@ could not connect to server: Connection refused
 <p>In order to get the application actually running on Heroku, the following command is used:</p>
 <div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">heroku</span> container:push web</code></pre></div>
 <p>This builds a Docker image for the application based on the <code>Dockerfile</code> in the current directory. Internally, <code>docker build</code> is used to do this. If the image was already built in the previous step (when running <code>docker build</code> from the command line), then this <code>heroku container:push</code> command will just use the previously built image. The image is sent to Docker’s Container Registry.</p>
-<p>Now lets check <code>heroku apps:info</code> again:</p>
+<p>Now let’s check <code>heroku apps:info</code> again:</p>
 <div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">heroku</span> apps:info servant-on-heroku
 === <span class="ex">servant-on-heroku</span>
 <span class="ex">Auto</span> Cert Mgmt: false
