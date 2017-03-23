@@ -8,14 +8,17 @@ postedBy: <a href="http://functor.tokyo">Dennis Gosnell</a>
 draft: true
 ---
 
-Releasing Haskell web applications on Heroku has become much easier with Heroku's Docker support.  This article explains how to deploy a Servant application on Heroku using Docker.
+Releasing Haskell web applications on Heroku has become much easier with
+Heroku's Docker support. This article explains how to deploy a Servant
+application on Heroku using Docker.
 
 I've prepared
 an [example application](https://github.com/cdepillabout/servant-on-heroku) you
 can use to try deploying to Heroku. The first section explains how to run the
-application locally. The second section explains how to run the application locally in Docker.  The third section talks about how to deploy this application
-to Heroku. If you just want to deploy to Heroku without running locally first,
-feel free to just skim through the first and second sections.
+application locally. The second section explains how to run the application
+locally using Docker. The third section talks about how to deploy this
+application to Heroku. If you just want to deploy to Heroku without running
+locally first, feel free to just skim through the first and second sections.
 
 ## Running the application locally WITHOUT Docker
 
@@ -511,35 +514,123 @@ Rollback:    Unsupported
 Add-on:      postgresql-tetrahedral-44549
 ```
 
+### Restart the App
+
+Now that the PostgreSQL database is up and running, let's try restarting our application:
+
+```sh
+$ heroku ps:restart
+```
+
+Now that it has been restarted, let's take a look at the application logs again:
+
+```sh
+$ heroku logs
+2017-03-22T10:22:15 heroku[web.1]: State changed from crashed to starting
+2017-03-22T10:22:54 heroku[web.1]: proc start `/opt/servant-on-heroku/bin/servant-on-heroku-api`
+2017-03-22T10:22:56 app[web.1]: Migrating: CREATe TABLE "comment"("id" SERIAL8  PRIMARY KEY UNIQUE,"author" VARCHAR NOT NULL,"text" VARCHAR NOT NULL)
+2017-03-22T10:22:57 heroku[web.1]: State changed from starting to up
+```
+
+Looks like it worked this time!  Finally!
+
+Let's try accessing the app from `curl` again:
+
+```sh
+$ curl --request POST \
+    --header 'Content-Type: application/json' \
+    --data '{"author": "SPJ", "text": "Avoid Heroku at all costs"}' \
+    'https://servant-on-heroku.herokuapp.com/add-comment'
+{"text":"Avoid heroku-at-all-costs","author":"SPJ"}
+```
+
+And once more:
+
+```sh
+$ curl --request GET \
+    --header 'Content-Type: application/json' \
+    'https://servant-on-heroku.herokuapp.com/get-comments'
+[{"text":"Avoid heroku-at-all-costs","author":"SPJ"}]
+```
+
+Looks like everything is working well!
+
+### How does the app on Heroku know how to connect to the database?
+
+You may be wondering how the application running on on Heroku knows how to connect to the database.  Well, Heroku has an idea of configuration variables that it passes to your application as environment variables.
+
+You can see these configuration variables with the following command:
+
+```sh
+$ heroku config
+=== servant-on-heroku Config Vars
+DATABASE_URL: postgres://someusername:somepassword@ec2-12-12-234-123.compute-1.amazonaws.com:5432/databasename
+```
+
+You can see that Heroku has a configuration variable called `DATABASE_URL`. It
+passes this to your application when it starts up. As discussed in a previous
+section, your application uses `DATABASE_URL` to connect to the correct
+database[^2].
+
+You can also use Heroku's `DATABASE_URL` if you just want to connect to the
+database on the command line:
+
+```sh
+$ psql "$(heroku config:get DATABASE_URL)"
+psql (9.6.1)
+SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
+
+databasename=> select * from comment;
+ id | author |           text
+----|--------|---------------------------
+  1 | SPJ    | Avoid Heroku at all costs
+(1 row)
+```
+
+### Future (Normal) Releases
+
+Performing future releases of your application is extrememly easy.  Just run the following command:
+
+```sh
+$ heroku container:push web
+```
+
+This rebuilds the docker image for your application and pushes it to Heroku's
+container repository. It then restarts the dynos so they are running with your
+new code.
+
 ## Future Work
 
-- Use a slimmer image as the base for Dockerfile.  Maybe alpine linux?
-- base the image on something with `stack`, `ghc`, and popular Haskell libraries
-  already installed.
-- remove stack, ghc, and all haskell libraries from the docker image to reduce
-  the size.
+This application works pretty well, but there are a couple places for
+improvements. The lowest hanging fruit would probably be the `Dockerfile`.
+Here are a couple ideas that would make the `Dockerfile` a little better:
+
+- Use a slimmer image as the base image for the `Dockerfile`. Right now it is
+  using [Heroku's images](), but I don't think there is any reason that
+  something like [alpine linux]() couldn't be used.
+- Base the image on something with `stack`, `ghc`, and popular Haskell libraries
+  already installed. This would greatly reduce the time it takes to do the very
+  initial `docker build`.
+- At the very end of the `Dockerfile`, remove `stack`, `ghc`, and all haskell
+  libraries. This would hopefully make the docker image a little smaller. It
+  would take less bandwidth to send the image to Heroku's container repository.
+
+It would also be nice to use something like `docker-compose` to setup the
+PostgreSQL database using Docker when running locally.
 
 ## Conclusion
 
+As long as you have Docker running on your local machine (and maybe PostgreSQL
+for testing), it's pretty easy to get your Haskell code on Heroku. Heroku's free
+plan is nice for testing application ideas and showing them to others. It may
+not work for any sort of business application, but as a proof-of-concept it's
+great!
 
-
-*** TODO 新規にHerokuにデプロイする場合の手順もドキュメントにまとめてください
-    https://devcenter.heroku.com/articles/container-registry-and-runtime
-
-    https://www.reddit.com/r/haskell/comments/3iql3f/heroku_buildpack_using_stack/
-
-**** add database
-     - If you want to connect to the database remotely.
-       $ heroku config
-       $ heroku config:get DATABASE_URL
-**** subsequent releases
-     - All you need to do is push the app to heroku
-       $ heroku container:push web
-
-In Haskell, when building a project, the normal advice is to "just
-use `stack`".[^1] 
+If you decide your proof-of-concept works well and you want to release it, it's
+easy to add a credit card to Heroku and start running on their cheapest paid
+tier.  It is a very easy upgrade path.
 
 ## Footnotes
 
-[^1]: It used to be, "Just use `cabal` and sandboxes.  For multi-project
-builds... maybe try a small shell script?"
+[^2]: Heroku also makes use of the `PORT` environment variable for telling your
+application which port to listen on.
