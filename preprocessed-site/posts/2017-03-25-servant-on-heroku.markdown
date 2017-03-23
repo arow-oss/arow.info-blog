@@ -188,14 +188,15 @@ Looks like it's working.  Now let's try with Docker!
 
 ## Running the application locally WITH Docker
 
-[Docker]() is used to build and run the application inside a container. The
+[Docker](https://www.docker.com/) is used to build and run the application inside a container. The
 following section assumes basic familiarity with Docker.
 
 ### Installing Docker
 
 Docker is installed differently on different platforms. Check your platform
 documentation for more advice. For instance, here are the instructions for
-installing on [Arch Linux]() and [Ubuntu]().
+installing on [Arch Linux](https://wiki.archlinux.org/index.php/Docker#Installation)
+and [Ubuntu](https://docs.docker.com/engine/installation/linux/ubuntu/).
 
 After installing Docker, make sure it is running with the following command:
 
@@ -214,9 +215,9 @@ Use `docker build` to build the application:
 $ docker build -t servant-on-heroku .
 ```
 
-This uses the [`Dockerfile`]() in the current directory to build the
-application. The `Dockerfile` lists all the steps to build the application and
-create a reusable image.
+This uses the [`Dockerfile`](https://github.com/cdepillabout/servant-on-heroku/blob/master/Dockerfile)
+in the current directory to build the application. The `Dockerfile` lists all
+the steps to build the application and create a reusable image.
 
 If you take a look at the `Dockerfile`, you can see that it is performing the
 following steps:
@@ -670,8 +671,9 @@ improvements. The lowest hanging fruit would probably be the `Dockerfile`.
 Here are a couple ideas that would make the `Dockerfile` a little better:
 
 - Use a slimmer image as the base image for the `Dockerfile`. Right now it is
-  using [Heroku's images](), but I don't think there is any reason that
-  something like [Alpine Linux]() couldn't be used.
+  using [Heroku's images](https://hub.docker.com/r/heroku/heroku/), but I don't
+  think there is any reason that something like
+  [Alpine Linux](https://hub.docker.com/_/alpine/) couldn't be used.
 - Base the image on something with `stack`, GHC, and popular Haskell libraries
   already installed. This would greatly reduce the time it takes to do the very
   initial `docker build`.
