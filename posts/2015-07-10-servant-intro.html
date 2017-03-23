@@ -110,7 +110,7 @@
     ( (<span class="fu">:&gt;</span>), (<span class="fu">:&lt;|&gt;</span>)((<span class="fu">:&lt;|&gt;</span>)), <span class="dt">Get</span>, <span class="dt">JSON</span>, <span class="dt">Proxy</span>(<span class="fu">..</span>), <span class="dt">ServantErr</span>, <span class="dt">ServerT</span>, serve )
 
 <span class="co">-- | A representation of our REST API at the type level.</span>
-<span class="fu">--</span>
+<span class="co">--</span>
 <span class="co">-- This defines two routes:</span>
 <span class="co">--   * /dogs -- Responds to HTTP GET with a list of integers in JSON format.</span>
 <span class="co">--   * /cats -- Responds to HTTP GET with a list of Strings in JSON format.</span>
@@ -140,14 +140,14 @@ cats <span class="fu">=</span> return [<span class="st">&quot;long-haired&quot;<
 main <span class="fu">=</span> run <span class="dv">32323</span> <span class="fu">$</span> logStdoutDev app</code></pre></div>
 <p>The example project can be found <a href="https://github.com/cdepillabout/servant-example/commits/master">on Github</a>. The comments in the code should give a good idea as to what is going on, but if you would like a better introduction, the <a href="http://haskell-servant.github.io/tutorial/">Servant tutorial</a> is very good.</p>
 <p>The following steps can be used to download and run the code. The <a href="https://github.com/commercialhaskell/stack">stack</a> build tool is used.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">git</span> clone git@github.com:cdepillabout/servant-example.git
-$ <span class="kw">cd</span> servant-example
-$ <span class="kw">stack</span> build
-$ <span class="kw">stack</span> exec servant-notes</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">git</span> clone git@github.com:cdepillabout/servant-example.git
+$ <span class="bu">cd</span> servant-example
+$ <span class="ex">stack</span> build
+$ <span class="ex">stack</span> exec servant-notes</code></pre></div>
 <p>This runs a Warp server on port 32323. With the server running, <code>curl</code> can be used to test the API.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">curl</span> http://localhost:32323/dogs
-[<span class="kw">1</span>,2,3,4]
-$ <span class="kw">curl</span> http://localhost:32323/cats
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">curl</span> http://localhost:32323/dogs
+[<span class="ex">1</span>,2,3,4]
+$ <span class="ex">curl</span> http://localhost:32323/cats
 [<span class="st">&quot;long-haired&quot;</span>,<span class="st">&quot;short-haired&quot;</span>]
 $</code></pre></div>
 <p>The code can also be opened in <code>ghci</code>.</p>

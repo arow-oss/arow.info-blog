@@ -192,16 +192,16 @@
 <h3 id="purescript-compiler">PureScript Compiler</h3>
 <p>The PureScript compiler provides the executables <code>psc</code> and <code>psci</code>. These correspond to <code>ghc</code> and <code>ghci</code>, respectively.</p>
 <p>The PureScript compiler can be installed <a href="http://www.purescript.org/download/">multiple ways</a>. Since we are using <code>npm</code> to install <code>bower</code>, <code>gulp</code>, etc., the easiest way is just to install it with <code>npm</code>:</p>
-<pre class="sh"><code>$ npm install purescript</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">npm</span> install purescript</code></pre></div>
 <p>You can access <code>psc</code> and <code>psci</code> in <code>node_modules/.bin/</code>.</p>
 <h3 id="bower">Bower</h3>
 <p>Bower is a <em>separate</em> package manager from npm. npm is often used for managing Node.js modules (for example, build tools, the PureScript compiler, gulp, etc). Bower is used to manage packages related to the front-end, like PureScript libraries. Here is an answer on stackoverflow <a href="http://stackoverflow.com/a/18652918">explaining the difference</a> between npm and Bower.</p>
 <p>Here is Bower’s <a href="http://bower.io/search/">package repository</a>. If you search for “purescript”, you should find many packages. PureScript packages are almost all uploaded to Bower. Pursuit even <a href="http://pursuit.purescript.org/help">requires</a> that new packages are uploaded to Bower’s repository.</p>
 <p>Bower can be installed with <code>npm</code>:</p>
-<pre class="sh"><code>$ npm install bower</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">npm</span> install bower</code></pre></div>
 <p>You can access <code>bower</code> in <code>node_modules/.bin/</code>.</p>
 <p>Once you have installed Bower, you can use Bower to install PureScript packages. This is how you would install the <code>purescript-prelude</code> package:</p>
-<pre class="sh"><code>$ bower install purescript-prelude</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">bower</span> install purescript-prelude</code></pre></div>
 <p><code>bower</code> installs packages to the <code>bower_components/</code> directory in the current working directory. After installing <code>purescript-prelude</code> you should be able to find PureScript source files under <code>bower_components/purescript-prelude/</code>.</p>
 <p>Just like npm can use a <code>package.json</code> file, Bower can use a <code>bower.json</code> file to specify multiple packages. Here is an example <code>bower.json</code> file. It specifies that we are using the <code>purescript-prelude</code> and <code>purescript-console</code> libraries in the current project:</p>
 <div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">{</span>
@@ -215,25 +215,25 @@
   <span class="op">}</span>
 <span class="op">}</span></code></pre></div>
 <p>To install all the files listed in <code>bower.json</code>, the <code>install</code> command is used:</p>
-<pre class="sh"><code>$ bower install</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">bower</span> install</code></pre></div>
 <p>In order to update libraries to newer versions, the <code>update</code> command is used:</p>
-<pre class="sh"><code>$ bower update</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">bower</span> update</code></pre></div>
 <p>Check out the <code>bower.json</code> file in the example projects. Try running <code>bower install</code> and <code>bower update</code> and see what happens.</p>
 <p>Some people in the JavaScript community are “anti-Bower”, but it is still heavily used in the PureScript community.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
 <h3 id="pulp">Pulp</h3>
 <p>Pulp is a build tool specific to PureScript. It is similar to <code>stack</code> or <code>cabal</code> for Haskell. It works well for libraries and simple projects, but it does not have enough flexibility for larger projects. It seems like the general recommendation from the PureScript community is to use Pulp for simple libraries, and gulp for any non-trivial application.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
 <p>Pulp can be installed with <code>npm</code>:</p>
-<pre class="sh"><code>$ npm install pulp</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">npm</span> install pulp</code></pre></div>
 <p>You can access <code>pulp</code> in <code>node_modules/.bin/</code>.</p>
 <p>Pulp can be used to build and test your project:</p>
-<pre class="sh"><code>$ pulp build
-...
-$ pulp test
-...</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">pulp</span> build
+<span class="ex">...</span>
+$ <span class="ex">pulp</span> test
+<span class="ex">...</span></code></pre></div>
 <p>Pulp can also act as a frontend for Bower. This is how we update library dependencies with Bower:</p>
-<pre class="sh"><code>$ bower update</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">bower</span> update</code></pre></div>
 <p>This uses Pulp to do the exact same thing. It uses Bower behind the scenes:</p>
-<pre class="sh"><code>$ pulp dep update</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">pulp</span> dep update</code></pre></div>
 <p>You can find other functions in the Pulp <a href="https://github.com/bodil/pulp">README</a>.</p>
 <p>Try running <code>pulp build</code> and <code>pulp test</code> in the example project for Pulp. Try running <code>pulp server</code> and opening up the <code>index.html</code> file in your browser.</p>
 <h3 id="gulp">Gulp</h3>
@@ -241,17 +241,17 @@ $ pulp test
 <p>Gulp is used instead of Pulp in a couple different cases. The most common is when building a project that produces multiple JavaScript files as output. It is also used when you need to change build settings that Pulp does not provide access to. It is also helpful when you are adding PureScript code to an existing project or workflow.</p>
 <p>It seems like people using PureScript in production (<a href="#slamdata">SlamData</a>) use Gulp almost exclusively.</p>
 <p>Gulp can be installed with <code>npm</code>:</p>
-<pre class="sh"><code>$ npm install gulp</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">npm</span> install gulp</code></pre></div>
 <p>You can access <code>gulp</code> in <code>node_modules/.bin/</code>.</p>
 <p>Just like <code>make</code> uses a <code>Makefile</code>, <code>gulp</code> uses a <code>gulpfile.js</code>. This file lists the different targets available, and what should happen when they are run.</p>
 <p>Take a look at the <code>gulpfile.js</code> from the example project. Try running the <code>build</code> and <code>test</code> targets:</p>
-<pre class="sh"><code>$ gulp build
-...
-$ gulp test
-...</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">gulp</span> build
+<span class="ex">...</span>
+$ <span class="ex">gulp</span> test
+<span class="ex">...</span></code></pre></div>
 <p>Try running the <code>server</code> target and opening up <code>site/index.html</code> in a browser.</p>
-<pre class="sh"><code>$ gulp server
-...</code></pre>
+<div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">gulp</span> server
+<span class="ex">...</span></code></pre></div>
 <h3 id="grunt">Grunt</h3>
 <p>Grunt is a build tool similar to Gulp. At one point, Grunt was the common build tool for PureScript, but it has since given way to Pulp and Gulp. Grunt is no longer used to build PureScript code.</p>
 <p>If you are interested, here is an <a href="https://medium.com/@preslavrachev/gulp-vs-grunt-why-one-why-the-other-f5d3b398edc4#.p71z2qybh">article</a> describing the differences between Grunt and Gulp.</p>
