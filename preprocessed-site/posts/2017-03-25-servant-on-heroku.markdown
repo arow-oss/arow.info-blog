@@ -49,13 +49,13 @@ On Arch Linux, install these missing PostgreSQL libraries can be installed with
 the following command:
 
 ```sh
-$ pacman -Ss postgresql-libs
+$ sudo pacman -Ss postgresql-libs
 ```
 
 On Ubuntu, the following command can be used:
 
 ```sh
-$ apt-get install libpq-dev
+$ sudo apt-get install libpq-dev
 ```
 
 Other platforms may use a different command to install these libraries.
@@ -337,7 +337,7 @@ On Arch Linux, Heroku's CLI application can be installed with the following
 command:
 
 ```sh
-$ yaort -S heroku-toolbelt
+$ yaourt -S heroku-toolbelt
 ```
 
 This installs the `heroku` binary to the system.
@@ -447,7 +447,7 @@ was already built in the previous step (when running `docker build` from the
 command line), then this `heroku container:push` command will just use the
 previously built image. The image is sent to Docker's Container Registry.
 
-Now lets check `heroku apps:info` again:
+Now let's check `heroku apps:info` again:
 
 ```sh
 $ heroku apps:info servant-on-heroku
