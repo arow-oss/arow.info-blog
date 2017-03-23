@@ -24,9 +24,9 @@ just skim through the first and second sections.
 
 ## Running the application locally WITHOUT Docker
 
-The example application is a simple application. It gives you the ability to
-submit comments and read back past submitted comments. The comments are saved to
-a PostgreSQL database.
+The example application is a simple application. It provides two APIs. One is to
+submit simple comments. The other is to display all comments that have been
+submitted. The comments are saved to a PostgreSQL database.
 
 The following will walk through how to build and run the application locally,
 without involving Docker or Heroku.
@@ -42,16 +42,17 @@ $ stack setup  # install the required version of ghc on your system
 $ stack build  # install all dependencies and build the application
 ```
 
-You may get an error when building the application because of missing PostgreSQL
+An error may occur when building the application because of missing PostgreSQL
 libraries.
 
-On Arch Linux you can install these libraries with the following command:
+On Arch Linux, install these missing PostgreSQL libraries can be installed with
+the following command:
 
 ```sh
 $ pacman -Ss postgresql-libs
 ```
 
-On Ubuntu, you can use the following command:
+On Ubuntu, the following command can be used:
 
 ```sh
 $ apt-get install libpq-dev
@@ -59,7 +60,7 @@ $ apt-get install libpq-dev
 
 Other platforms may use a different command to install these libraries.
 
-Once you've installed the required PostgreSQL libraries, try running `stack
+Once the required PostgreSQL libraries have been installed, try running `stack
 build` again. It should succeed this time.
 
 Now try running the application:
@@ -80,12 +81,12 @@ servant-on-heroku-api: libpq: failed (could not connect to server: Connection re
 )
 ```
 
-The example application is trying to connec to PostgreSQL. Comments are stored
-in PostgreSQL, so we need PostgreSQL running locally.
+The example application is trying to connect to PostgreSQL. Comments are stored
+in PostgreSQL, so you need PostgreSQL running locally.
 
 ### Setup PostgreSQL
 
-Most OSs and distrobutions will have a different way of installing PostgreSQL.
+Most OSs and distrobutions will have different ways of installing PostgreSQL.
 Check with your platform documentation on how to install PostgreSQL.
 
 For example, [here](https://wiki.archlinux.org/index.php/PostgreSQL#Installing_PostgreSQL) is the Arch Linux documentation for installing
@@ -104,10 +105,10 @@ servant-on-heroku-api: libpq: failed (FATAL:  role "mydbuser" does not exist
 )
 ```
 
-Looks like we need to setup a PostgreSQL user and database for our application.
-If you check out the application source, you can see that it is reading in the
-`DATABASE_URL` environment variable and using it to connect to the PostgreSQL
-server.
+Looks like a PostgreSQL user and database need to be setup for our application.
+If you check out the application source code (`src/Lib.hs`), you can see that it
+is reading in the `DATABASE_URL` environment variable and using it to connect to
+the PostgreSQL server.
 
 If the `DATABASE_URL` environment variable is not specified, the application
 defaults to using:
@@ -140,13 +141,13 @@ Make sure that `mydbuser` can access the `mydb` database:
 $ sudo -u postgres -- psql --command "GRANT ALL PRIVILEGES ON DATABASE mydb TO mydbuser"
 ```
 
-Now you might need to restart PostgreSQL:
+PostgreSQL might need to be restarted:
 
 ```sh
 $ sudo systemctl restart postgresql
 ```
 
-You should now be able to connect to the `mydb` database locally as the
+It should now be possible to connect to the `mydb` database locally as the
 `mydbuser` user:
 
 ```sh
@@ -155,8 +156,8 @@ $ psql -U mydbuser -d mydb -h 127.0.0.1
 
 ### Testing the API
 
-Now that PostgreSQL is setup correctly, you should be able to run the
-application:
+Now that PostgreSQL is setup correctly, the application can be run with the
+following command:
 
 ```sh
 $ stack exec -- servant-on-heroku-api
@@ -180,7 +181,7 @@ Now let's list all the comments:
 $ curl --request GET \
     --header 'Content-Type: application/json' \
     'http://localhost:8080/get-comments'
-[ { "text": "Pretty good", "author": "DG" } ]
+[{"text":"Pretty good","author":"DG"} ]
 ```
 
 Looks like it's working.  Now let's try with Docker!
@@ -192,7 +193,7 @@ following section assumes basic familiarity with Docker.
 
 ### Installing Docker
 
-Docker can be installed differently on different platforms. Check your platform
+Docker is installed differently on different platforms. Check your platform
 documentation for more advice. For instance, here are the instructions for
 installing on [Arch Linux]() and [Ubuntu]().
 
@@ -204,7 +205,7 @@ $ docker info
 
 ### Building with Docker
 
-We will build our application inside of Docker and create a docker image for our
+We will build the application inside of Docker and create a docker image for the
 application.
 
 Use `docker build` to build the application:
@@ -223,7 +224,8 @@ following steps:
 1.  Install required packages with `apt-get`.
 2.  Install `stack`.
 3.  Install GHC using `stack` based on the application's `stack.yaml` file.
-4.  Install dependencies for the application using the `.cabal` file.
+4.  Install Haskell dependencies for the application using the application's
+    `.cabal` file.
 5.  Building the application with `stack`.
 6.  Create a non-root user to use to run the application.
 7.  Run the application.
@@ -231,27 +233,28 @@ following steps:
 `docker build` can take up to one hour to finish creating the
 `servant-on-heroku` image.[^1]
 
-
 ### Testing the API with Docker
 
-Once `docker build` finishes, you can use `docker images` to list all local images:
+Once `docker build` finishes, `docker images` can be used to list all local
+images:
 
 ```sh
 $ docker images
-REPOSITORY           TAG       IMAGE ID       CREATED        SIZE
-servant-on-heroku    latest    ff591d372461   6 days ago     3.92 GB
-heroku/heroku        16        cc0caac6a5c5   2 weeks ago    464.7 MB
+REPOSITORY           TAG       IMAGE ID       CREATED         SIZE
+servant-on-heroku    latest    ff591d372461   30 seconds ago  3.92 GB
+...
 ```
 
-You can see the `servant-on-heroku` image.
+You can see the `servant-on-heroku` image that was just created.
 
-Let's try running the `servant-on-heroku` image.  This will run the application in Docker:
+Let's try running the `servant-on-heroku` image. This will run the application
+in Docker:
 
 ```sh
 $ docker run --interactive --tty --rm servant-on-heroku
 ```
 
-Oh no!  It looks like our PostgreSQL problem is back:
+Oh no!  It looks like the PostgreSQL problem is back:
 
 ```
 servant-on-heroku-api: libpq: failed (could not connect to server: Connection refused
@@ -267,17 +270,17 @@ What's happening here? Well, since the `servant-on-heroku` container is running
 as a Docker container, by default it can't see our local network. It can't see
 that PostgreSQL is running on `localhost:5432`.
 
-Here's a small trick we can use. When we run the `servant-on-heroku` container,
-we can tell Docker to just let it use our local network. That way, it can see
-PostgreSQL:
+Here's a small trick we can use. When running the `servant-on-heroku` container,
+we can tell Docker to just let the container use our local network interface.
+That way, it can see PostgreSQL:
 
 ```sh
 $ docker run --interactive --tty --rm --network host servant-on-heroku
 running servant-on-heroku on port 8080...
 ```
 
-With the `servant-on-heroku` container running, you can try the `curl` commands
-from the previous section:
+With the `servant-on-heroku` container running, let's try the `curl` commands
+from the previous section.  Posting a comment:
 
 ```sh
 $ curl --request POST \
@@ -285,23 +288,30 @@ $ curl --request POST \
     --data '{"author": "EK", "text": "Not enough CT"}' \
     'http://localhost:8080/add-comment'
 { "text": "Not enough CT", "author": "EK" }
+```
+
+Getting the comments:
+
+```sh
 $ curl --request GET \
     --header 'Content-Type: application/json' \
     'http://localhost:8080/get-comments'
-[ { "text": "Pretty good", "author": "DG" }, { "text": "Not enough CT", "author": "EK" } ]
+[{"text":"Pretty good","author": "DG"},{"text":"Not enough CT","author":"EK"}]
 ```
 
-By the way, if you just want to open a shell and inspect our container, you can use a command like this:
+By the way, in order to open a shell and inspect the image by hand, the
+following command can be used:
 
 ```sh
 $ docker run --interactive --tty --rm --network host servant-on-heroku /bin/bash
 ```
 
-Now that we know our application works in Docker, it's time for Heroku.
+Now that we are confident our application works in Docker, it's time for Heroku.
 
 ## Heroku
 
-Once we have the application building successfully in Docker, it's easy to move to Heroku.  The first step is creating a Heroku account.
+Once we have the application building and running successfully in Docker, it's
+easy to move to Heroku. The first step is creating a Heroku account.
 
 ### Creating an Account
 
@@ -311,7 +321,10 @@ already have a Heroku account, you can skip this step.
 We will deploy out application using Heroku's "Free" tier, so you don't need to
 worry about registering a credit card.
 
-The majority of the instructions in this section are condensed from Heroku's [own documentation](https://devcenter.heroku.com/articles/container-registry-and-runtime) on integrating with Docker.  Checkout their documentation is anything is unclear.
+The majority of the instructions in this section are condensed from
+Heroku's
+[own documentation](https://devcenter.heroku.com/articles/container-registry-and-runtime) on
+integrating with Docker. Check out their documentation is anything is unclear.
 
 ### Install the Heroku CLI Application
 
@@ -319,18 +332,20 @@ Heroku provides a CLI application to make it easy to work with their service.
 This is similar to [AWS's CLI](https://aws.amazon.com/cli)
 or [Digital Ocean's CLI](https://github.com/digitalocean/doctl).
 
-On Arch Linux Heroku's CLI application can be installed with the following
+On Arch Linux, Heroku's CLI application can be installed with the following
 command:
 
 ```sh
 $ yaort -S heroku-toolbelt
 ```
 
+This installs the `heroku` binary to the system.
+
 Instructions for other platforms can be found
 on [Heroku's site](https://devcenter.heroku.com/articles/heroku-cli).
 
-Once you're downloaded the CLI, you can use it login and authenticate with
-Heroku's API:
+Once the CLI application has been downloaded, it can be used to login and
+authenticate with Heroku's API:
 
 ```sh
 $ heroku login
@@ -338,51 +353,72 @@ $ heroku login
 
 You will be asked for the username and password of the account you just created.
 
-### Create an app in Heroku
+### Create an Application on Heroku
 
 The first step of releasing our Servant API to Heroku is to create a Heroku
 Application.
 
-The following command will create a new Heroku application called `servant-on-heroku`:
+The following command will create a new Heroku application called
+`servant-on-heroku`. You may need to use a different name for your own
+application:
 
 ```sh
 $ heroku apps:create servant-on-heroku
 ```
 
-We can list information about the app we just created (although it won't be too
-interesting yet):
+The following command lists information about the application just created
+(although it won't be too interesting yet):
 
 ```sh
 $ heroku apps:info servant-on-heroku
+=== servant-on-heroku
+Auto Cert Mgmt: false
+Dynos:
+Git URL:        https://git.heroku.com/servant-on-heroku.git
+Owner:          me@gmail.com
+Region:         us
+Repo Size:      0 B
+Slug Size:      0 B
+Stack:          cedar-14
+Web URL:        https://servant-on-heroku.herokuapp.com/
 ```
+
+Make sure to take note of the `Web URL`. It will come in handy later.
 
 ### Install Heroku Docker Plugin
 
-The Heroku CLI app has a plugin architecture.  It allows you to install plugins that can be used to access different parts of Heroku's API.
+The Heroku CLI application has a plugin architecture. This allows the user to
+install plugins that can be used to access different parts of Heroku's API.
 
-There is a plugin for using Heroku's [container registry](https://devcenter.heroku.com/articles/container-registry-and-runtime).
+There is a plugin for using
+Heroku's
+[Docker Container Registry](https://devcenter.heroku.com/articles/container-registry-and-runtime).
 
-You can use the following command to intall the plugin:
+The following command can be used to install the plugin:
 
 ```sh
 $ heroku plugins:install heroku-container-registry
 ```
 
-After installing the plugin, you can make sure it works by using the following command:
+After installing the plugin, the following command can be used to make sure it
+works:
 
 ```sh
 $ heroku container
+4.1.1
 ```
 
 It should return the version string for the plugin.
 
-In order to actually use the plugin, you also must login to Heroku's container registery.  That can be accomplished with the following command:
+In order to actually use the plugin, the following command can be used to login
+to Heroku's container registery.
 
 ```sh
 $ heroku container:login
 ```
 
-This adds login information to Heroku's container registery to the file `~/.docker/config.json`:
+This adds login information for Heroku's container registery to the file
+`~/.docker/config.json`:
 
 ```sh
 $ cat ~/.docker/config.json
@@ -397,11 +433,18 @@ $ cat ~/.docker/config.json
 
 ### Get the Application Running on Heroku
 
-In order to get your application actually running on Heroku, you need to send the Docker image built in a previous step to Heroku's container registery:
+In order to get the application actually running on Heroku, the following
+command is used:
 
 ```sh
 $ heroku container:push web
 ```
+
+This builds a Docker image for the application based on the `Dockerfile` in the
+current directory. Internally, `docker build` is used to do this. If the image
+was already built in the previous step (when running `docker build` from the
+command line), then this `heroku container:push` command will just use the
+previously built image. The image is sent to Docker's Container Registry.
 
 Now lets check `heroku apps:info` again:
 
@@ -419,17 +462,20 @@ Stack:          cedar-14
 Web URL:        https://servant-on-heroku.herokuapp.com/
 ```
 
-Hmm, that's not right.  See where it says `Dynos:   `?  A "dyno" is Heroku-lingo for a server that runs your web application.  This line means that you don't have any servers running your application.
+Hmm, that's not right. See where it says `Dynos: `? A "dyno" is Heroku-lingo for
+a server that runs the web application. This line means that there aren't any
+servers running the application.
 
-In order to fix that we can use the `heroku ps:scale` command to give you one dyno:
+In order to fix this, the `heroku ps:scale` command can be used to spin up one
+dyno to run the application:
 
 ```sh
 $ heroku ps:scale web=1
 ```
 
-This gives us one "web" dyno, which works as a web api.  There are multiple different kinds of dynos, but we don't need to worry about that here.
+This creates one "web" dyno, which will run the Servant API.[^3]
 
-Now run the following command to make sure your dyno is actually running:
+Now run the following command to make sure the dyno is actually running:
 
 ```sh
 $ heroku ps
@@ -441,10 +487,12 @@ https://devcenter.heroku.com/articles/dyno-sleeping
 web.1: starting 2017/03/22 19:05:04 +0900 (~ 8s ago)
 ```
 
-The output is somewhat noisy, but you can tell that we have one web dyno running.
+The output is somewhat noisy, but you can tell that there is now one web dyno
+running.
 
-Now we are ready to go back to our app URL (that you can find in the output of
-`heroku apps:info`) and try accessing it with curl:
+Now that the application is running, the following command can be used to access
+the application's `Web URL` with curl. (The application `Web URL` can be found in
+the output of `heroku apps:info`.)
 
 ```sh
 $ curl --request POST \
@@ -453,13 +501,13 @@ $ curl --request POST \
     'https://servant-on-heroku.herokuapp.com/add-comment'
 ```
 
-That's strange, there appears to be an error.  Let's see how to check application errors.
+That's strange, there appears to be another error. Let's see how to investigate
+application errors on Heroku.
 
 ### Debugging Application Errors
 
-Heroku has a really nice log system. We can check the application's log with the
-following command and try to figure out why our app doesn't appear to be
-working:
+Heroku has a really nice log system. The application's `stdout` and `stderr`
+logs can be inspected with the following command:
 
 ```sh
 $ heroku logs
@@ -471,21 +519,30 @@ $ heroku logs
 2017-03-22T10:05:52 heroku[web.1]: State changed from starting to crashed
 ```
 
-Oh no!  It's the same error that has been plaguing us this whole time.  Why is it occuring again?  Well, it's because we haven't setup a PostgreSQL database!
+Oh no! It's the same error that has been plaguing us this whole time. Why is it
+occuring again?
+
+Well, it's because we haven't setup a PostgreSQL database on Heroku!
 
 ### PostgreSQL on Heroku
 
-Heroku has [nice support](https://devcenter.heroku.com/articles/heroku-postgresql) for PostgreSQL.  Heroku provides a PostgreSQL database that can be used free-of-charge.
+Heroku
+has [nice support](https://devcenter.heroku.com/articles/heroku-postgresql) for
+PostgreSQL. Heroku provides a PostgreSQL database that can be used
+free-of-charge.
 
-The following command can be used enable the PostgreSQL database addon for our app:
+The following command can be used enable the PostgreSQL database addon for the
+application:
 
 ```sh
 $ heroku addons:create heroku-postgresql:hobby-dev
 ```
 
-This enables the `heroku-postgresql` addon in the `hobby-dev` tier (which is free).
+This enables the `heroku-postgresql` addon in the `hobby-dev` tier (which is
+free).
 
-After enabling it, we can make sure it has been successfully created:
+After enabling it, the following command can be used to make sure the PostgreSQL
+database has been successfully created:
 
 ```sh
 $ heroku addons:info heroku-postgresql
@@ -498,7 +555,7 @@ Price:        free
 State:        created
 ```
 
-We can also check the database info with the `pg:info` command:
+The database info can be checked with the `pg:info` command:
 
 ```sh
 $ heroku pg:info
@@ -518,13 +575,14 @@ Add-on:      postgresql-tetrahedral-44549
 
 ### Restart the App
 
-Now that the PostgreSQL database is up and running, let's try restarting our application:
+Now that the PostgreSQL database is up and running, let's try restarting the
+application:
 
 ```sh
 $ heroku ps:restart
 ```
 
-Now that it has been restarted, let's take a look at the application logs again:
+Let's take a look at the application logs again:
 
 ```sh
 $ heroku logs
@@ -536,12 +594,12 @@ $ heroku logs
 
 Looks like it worked this time!  Finally!
 
-Let's try accessing the app from `curl` again:
+Let's try accessing the app using `curl` again:
 
 ```sh
 $ curl --request POST \
     --header 'Content-Type: application/json' \
-    --data '{"author": "SPJ", "text": "Avoid Heroku at all costs"}' \
+    --data '{"author": "SPJ", "text": "Avoid heroku-at-all-costs"}' \
     'https://servant-on-heroku.herokuapp.com/add-comment'
 {"text":"Avoid heroku-at-all-costs","author":"SPJ"}
 ```
@@ -555,13 +613,15 @@ $ curl --request GET \
 [{"text":"Avoid heroku-at-all-costs","author":"SPJ"}]
 ```
 
-Looks like everything is working well!
+Success! Looks like everything is working well!
 
 ### How does the app on Heroku know how to connect to the database?
 
-You may be wondering how the application running on on Heroku knows how to connect to the database.  Well, Heroku has an idea of configuration variables that it passes to your application as environment variables.
+You may be wondering how the application running on on Heroku knows how to
+connect to the database. Well, Heroku has configuration variables that it passes
+to the application as environment variables.
 
-You can see these configuration variables with the following command:
+These configuration variables can be inspected with the following command:
 
 ```sh
 $ heroku config
@@ -569,13 +629,14 @@ $ heroku config
 DATABASE_URL: postgres://someusername:somepassword@ec2-12-12-234-123.compute-1.amazonaws.com:5432/databasename
 ```
 
-You can see that Heroku has a configuration variable called `DATABASE_URL`. It
-passes this to your application when it starts up. As discussed in a previous
-section, your application uses `DATABASE_URL` to connect to the correct
+Setting up the PostgreSQL database creates a configuration variable
+called `DATABASE_URL`. Heroku passes this configuration variable to the
+application on startup as an environment variable. As discussed in a previous
+section, the application uses `DATABASE_URL` to connect to the correct
 database[^2].
 
-You can also use Heroku's `DATABASE_URL` if you just want to connect to the
-database on the command line:
+Heroku's `DATABASE_URL` can also be used to connect to the database on the
+command line:
 
 ```sh
 $ psql "$(heroku config:get DATABASE_URL)"
@@ -591,15 +652,16 @@ databasename=> select * from comment;
 
 ### Future (Normal) Releases
 
-Performing future releases of your application is extrememly easy.  Just run the following command:
+Performing future releases of the application is extrememly easy. Just run the
+following command:
 
 ```sh
 $ heroku container:push web
 ```
 
-This rebuilds the docker image for your application and pushes it to Heroku's
-container repository. It then restarts the dynos so they are running with your
-new code.
+This rebuilds the docker image for the application and pushes it to Heroku's
+container repository. It then restarts the dynos so they are running with the
+new code for the application.
 
 ## Future Work
 
@@ -625,7 +687,7 @@ PostgreSQL database using Docker when running locally.
 As long as you have Docker running on your local machine (and maybe PostgreSQL
 for testing), it's pretty easy to get your Haskell code on Heroku. Heroku's free
 plan is nice for testing application ideas and showing them to others. It may
-not work for any sort of business application, but as a proof-of-concept it's
+not work for any sort of business application, but as a proof-of-concept, it's
 great!
 
 If you decide your proof-of-concept works well and you want to release it, it's
@@ -653,3 +715,8 @@ tier.  It is a very easy upgrade path.
 
 [^2]: Heroku also makes use of the `PORT` environment variable for telling your
     application which port to listen on.
+
+[^3]: There are
+    [multiple kinds](https://devcenter.heroku.com/articles/dynos#dyno-configurations)
+    of dynos. However, it's not something that we need to worry about for our
+    simple web api.
