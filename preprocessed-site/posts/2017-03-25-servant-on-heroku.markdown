@@ -14,19 +14,22 @@ application on Heroku using Docker.
 
 I've prepared
 an [example application](https://github.com/cdepillabout/servant-on-heroku) you
-can use to try deploying to Heroku. The first section explains how to run the
-application locally. The second section explains how to run the application
-locally using Docker. The third section talks about how to deploy this
-application to Heroku. If you just want to deploy to Heroku without running
-locally first, feel free to just skim through the first and second sections.
+can use to try deploying to Heroku. The first section of this article explains
+how to run the example application locally. The second section explains how to
+run the example application locally using Docker. The third section explains how
+to deploy this application to Heroku.
+
+If you just want to deploy to Heroku without running locally first, feel free to
+just skim through the first and second sections.
 
 ## Running the application locally WITHOUT Docker
 
-The example application is a simple application. You are able to submit comments
-and read back past submitted comments. The comments are saved to a PostgreSQL
-database.  This is similar to an anonymized Twitter.
+The example application is a simple application. It gives you the ability to
+submit comments and read back past submitted comments. The comments are saved to
+a PostgreSQL database.
 
-The following will walk through how to build and run the application locally, without involving Docker or Heroku.
+The following will walk through how to build and run the application locally,
+without involving Docker or Heroku.
 
 ### Build the application locally
 
@@ -39,7 +42,8 @@ $ stack setup  # install the required version of ghc on your system
 $ stack build  # install all dependencies and build the application
 ```
 
-You may get an error when building the application because of missing PostgreSQL libraries.
+You may get an error when building the application because of missing PostgreSQL
+libraries.
 
 On Arch Linux you can install these libraries with the following command:
 
@@ -53,7 +57,10 @@ On Ubuntu, you can use the following command:
 $ apt-get install libpq-dev
 ```
 
-Once you've installed the required PostgreSQL libraries, try running `stack build` again.  It should succeed this time.
+Other platforms may use a different command to install these libraries.
+
+Once you've installed the required PostgreSQL libraries, try running `stack
+build` again. It should succeed this time.
 
 Now try running the application:
 
@@ -73,15 +80,18 @@ servant-on-heroku-api: libpq: failed (could not connect to server: Connection re
 )
 ```
 
-The example application stores comments in PostgreSQL, so we need PostgreSQL running locally.
+The example application is trying to connec to PostgreSQL. Comments are stored
+in PostgreSQL, so we need PostgreSQL running locally.
 
 ### Setup PostgreSQL
 
-Most OSs and distrobutions will have a different way of installing PostgreSQL.  Check with your platform documentation on how to install PostgreSQL.
+Most OSs and distrobutions will have a different way of installing PostgreSQL.
+Check with your platform documentation on how to install PostgreSQL.
 
-For example, [here]() is the Arch Linux documentation for installing PostgreSQL.  [Here]() is the Ubuntu documentation.
+For example, [here](https://wiki.archlinux.org/index.php/PostgreSQL#Installing_PostgreSQL) is the Arch Linux documentation for installing
+PostgreSQL. [Here](https://help.ubuntu.com/community/PostgreSQL#Installation) is the Ubuntu documentation.
 
-Once you have PostgreSQL installed and running, you can try running our application again:
+Once PostgreSQL is installed and running, try running our application again:
 
 ```sh
 $ stack exec -- servant-on-heroku-api
@@ -94,9 +104,13 @@ servant-on-heroku-api: libpq: failed (FATAL:  role "mydbuser" does not exist
 )
 ```
 
-Looks like we need to setup a PostgreSQL user and database for our application.  If you checkout the application source, you can see that it is reading in the `DATABASE_URL` environment variable and using it to connect to the PostgreSQL server.
+Looks like we need to setup a PostgreSQL user and database for our application.
+If you check out the application source, you can see that it is reading in the
+`DATABASE_URL` environment variable and using it to connect to the PostgreSQL
+server.
 
-If the `DATABASE_URL` environment variable is not specified, the application defaults to using:
+If the `DATABASE_URL` environment variable is not specified, the application
+defaults to using:
 
 ```
 postgres://mydbuser:mydbpass@localhost:5432/mydb
@@ -132,7 +146,8 @@ Now you might need to restart PostgreSQL:
 $ sudo systemctl restart postgresql
 ```
 
-You should now be able to connect to the `mydb` database locally as the `mydbuser` user:
+You should now be able to connect to the `mydb` database locally as the
+`mydbuser` user:
 
 ```sh
 $ psql -U mydbuser -d mydb -h 127.0.0.1
@@ -140,14 +155,16 @@ $ psql -U mydbuser -d mydb -h 127.0.0.1
 
 ### Testing the API
 
-Now that PostgreSQL is setup correctly, you should be able to run the application:
+Now that PostgreSQL is setup correctly, you should be able to run the
+application:
 
 ```sh
 $ stack exec -- servant-on-heroku-api
 running servant-on-heroku on port 8080...
 ```
 
-Let's try sending a comment.  With the application still running, try the following command:
+Let's try sending a comment. With the application still running, try the
+following command:
 
 ```sh
 $ curl --request POST \
@@ -157,7 +174,7 @@ $ curl --request POST \
 { "text": "Pretty good", "author": "DG" }
 ```
 
-Now let's list all comments:
+Now let's list all the comments:
 
 ```sh
 $ curl --request GET \
@@ -170,7 +187,8 @@ Looks like it's working.  Now let's try with Docker!
 
 ## Running the application locally WITH Docker
 
-Docker is used to build and run the application inside a container.
+[Docker]() is used to build and run the application inside a container. The
+following section assumes basic familiarity with Docker.
 
 ### Installing Docker
 
@@ -178,7 +196,7 @@ Docker can be installed differently on different platforms. Check your platform
 documentation for more advice. For instance, here are the instructions for
 installing on [Arch Linux]() and [Ubuntu]().
 
-After installing Docker, you can make sure it is functioning with the following command:
+After installing Docker, make sure it is running with the following command:
 
 ```sh
 $ docker info
@@ -199,7 +217,7 @@ This uses the [`Dockerfile`]() in the current directory to build the
 application. The `Dockerfile` lists all the steps to build the application and
 create a reusable image.
 
-If you take a look at the `Dockerfile` you can see that it is performing the
+If you take a look at the `Dockerfile`, you can see that it is performing the
 following steps:
 
 1.  Install required packages with `apt-get`.
@@ -211,24 +229,8 @@ following steps:
 7.  Run the application.
 
 `docker build` can take up to one hour to finish creating the
-`servant-on-heroku` image.
+`servant-on-heroku` image.[^1]
 
-These seven steps are slightly complicated. Ideally, it should be possible to
-install GHC, install all the application dependencies, and build the application
-in just one command. However, I have separated it into multiple commands to take
-advantage of Docker's caching ability. When re-running `docker build`, only
-commands where the input has changed will be re-run.
-
-For example, if you change the `servant-on-heroku.cabal` file and re-run `docker
-build`, it will rebuild the image from (4) with installing dependencies from the
-application's `.cabal` file. `docker build` does not have to re-run (1), (2), or
-(3). It uses cached versions of the image.
-
-This means that if all you change is the application source code under `src/`
-and re-run `docker build`, all `docker build` has to do is re-run (5), (6), and
-(7). It doesn't have to install GHC or the application's Haskell dependencies.
-This reduces a large part of the build-time. Future builds will take just a few
-minutes, instead of tens of minutes.
 
 ### Testing the API with Docker
 
@@ -280,7 +282,7 @@ from the previous section:
 ```sh
 $ curl --request POST \
     --header 'Content-Type: application/json' \
-    --data '{"author": "DG", "text": "Pretty good"}' \
+    --data '{"author": "EK", "text": "Not enough CT"}' \
     'http://localhost:8080/add-comment'
 { "text": "Not enough CT", "author": "EK" }
 $ curl --request GET \
@@ -632,5 +634,22 @@ tier.  It is a very easy upgrade path.
 
 ## Footnotes
 
+[^1]: These seven steps are slightly complicated. Ideally, it should be possible
+    to install GHC, install all the application dependencies, and build the
+    application in just one command. However, I have separated it into multiple
+    commands to take advantage of Docker's caching ability. When re-running
+    `docker build`, only commands where the input has changed will be re-run.
+
+    For example, if you change the `servant-on-heroku.cabal` file and re-run
+    `docker build`, it will rebuild the image from (4), starting with installing
+    dependencies from the application's `.cabal` file. `docker build` does not
+    have to re-run (1), (2), or (3). It uses cached versions of the image.
+
+    This means that if all you change is the application source code under
+    `src/` and re-run `docker build`, all `docker build` has to do is re-run
+    (5), (6), and (7). It doesn't have to install GHC or the application's
+    Haskell dependencies. This reduces a large part of the build-time. Future
+    builds will take just a few minutes, instead of one hour.
+
 [^2]: Heroku also makes use of the `PORT` environment variable for telling your
-application which port to listen on.
+    application which port to listen on.
