@@ -33,7 +33,7 @@ without involving Docker or Heroku.
 
 ### Build the application locally
 
-First, clone the repo and build the application.
+First, clone the repository and build the application.
 
 ```sh
 $ git clone https://github.com/cdepillabout/servant-on-heroku
@@ -86,7 +86,7 @@ in PostgreSQL, so you need PostgreSQL running locally.
 
 ### Setup PostgreSQL
 
-Most OSs and distrobutions will have different ways of installing PostgreSQL.
+Most OSs and distributions will have different ways of installing PostgreSQL.
 Check with your platform documentation on how to install PostgreSQL.
 
 For example, [here](https://wiki.archlinux.org/index.php/PostgreSQL#Installing_PostgreSQL) is the Arch Linux documentation for installing
@@ -411,13 +411,13 @@ $ heroku container
 It should return the version string for the plugin.
 
 In order to actually use the plugin, the following command can be used to login
-to Heroku's container registery.
+to Heroku's container registry.
 
 ```sh
 $ heroku container:login
 ```
 
-This adds login information for Heroku's container registery to the file
+This adds login information for Heroku's container registry to the file
 `~/.docker/config.json`:
 
 ```sh
@@ -520,7 +520,7 @@ $ heroku logs
 ```
 
 Oh no! It's the same error that has been plaguing us this whole time. Why is it
-occuring again?
+occurring again?
 
 Well, it's because we haven't setup a PostgreSQL database on Heroku!
 
@@ -531,14 +531,14 @@ has [nice support](https://devcenter.heroku.com/articles/heroku-postgresql) for
 PostgreSQL. Heroku provides a PostgreSQL database that can be used
 free-of-charge.
 
-The following command can be used enable the PostgreSQL database addon for the
+The following command can be used enable the PostgreSQL database add-on for the
 application:
 
 ```sh
 $ heroku addons:create heroku-postgresql:hobby-dev
 ```
 
-This enables the `heroku-postgresql` addon in the `hobby-dev` tier (which is
+This enables the `heroku-postgresql` add-on in the `hobby-dev` tier (which is
 free).
 
 After enabling it, the following command can be used to make sure the PostgreSQL
@@ -617,7 +617,7 @@ Success! Looks like everything is working well!
 
 ### How does the app on Heroku know how to connect to the database?
 
-You may be wondering how the application running on on Heroku knows how to
+You may be wondering how the application running on Heroku knows how to
 connect to the database. Well, Heroku has configuration variables that it passes
 to the application as environment variables.
 
@@ -652,7 +652,7 @@ databasename=> select * from comment;
 
 ### Future (Normal) Releases
 
-Performing future releases of the application is extrememly easy. Just run the
+Performing future releases of the application is extremely easy. Just run the
 following command:
 
 ```sh
@@ -671,11 +671,11 @@ Here are a couple ideas that would make the `Dockerfile` a little better:
 
 - Use a slimmer image as the base image for the `Dockerfile`. Right now it is
   using [Heroku's images](), but I don't think there is any reason that
-  something like [alpine linux]() couldn't be used.
-- Base the image on something with `stack`, `ghc`, and popular Haskell libraries
+  something like [Alpine Linux]() couldn't be used.
+- Base the image on something with `stack`, GHC, and popular Haskell libraries
   already installed. This would greatly reduce the time it takes to do the very
   initial `docker build`.
-- At the very end of the `Dockerfile`, remove `stack`, `ghc`, and all haskell
+- At the very end of the `Dockerfile`, remove `stack`, GHC, and all Haskell
   libraries. This would hopefully make the docker image a little smaller. It
   would take less bandwidth to send the image to Heroku's container repository.
 
@@ -719,4 +719,4 @@ tier.  It is a very easy upgrade path.
 [^3]: There are
     [multiple kinds](https://devcenter.heroku.com/articles/dynos#dyno-configurations)
     of dynos. However, it's not something that we need to worry about for our
-    simple web api.
+    simple web API.
