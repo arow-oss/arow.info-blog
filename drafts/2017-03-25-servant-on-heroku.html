@@ -9,7 +9,7 @@
     <meta name="description" content>
     <meta name="author" content>
 
-    <title>ARoW.info Blog -- Releasing a Servant App on Heroku</title>
+    <title>ARoW.info Blog -- Releasing a Haskell Web App on Heroku</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="../css/bootstrap.css" rel="stylesheet">
@@ -394,6 +394,18 @@ could not connect to server: Connection refused
 <li>At the very end of the <code>Dockerfile</code>, remove <code>stack</code>, GHC, and all Haskell libraries. This would hopefully make the docker image a little smaller. It would take less bandwidth to send the image to Heroku’s container repository.</li>
 </ul>
 <p>It would also be nice to use something like <code>docker-compose</code> to setup the PostgreSQL database using Docker when running locally.</p>
+<h2 id="alternatives-to-docker-for-deploying-on-heroku">Alternatives to Docker for Deploying on Heroku</h2>
+<p>The only strong alternative to using Docker for deploying Haskell code to Heroku is <a href="https://haskellonheroku.com/">haskellonheroku</a>. This is a normal Heroku <a href="https://devcenter.heroku.com/articles/buildpacks">buildpack</a> for Haskell. With this buildpack, you are able to use Heroku like you would with dynamic languages. All you need to do is <code>git push</code> your code to Heroku’s remote git repository. The new code is automatically compiled and deployed.</p>
+<p>This sounds really good in theory, but in pracitce haskellonheroku has two big drawbacks:</p>
+<ol style="list-style-type: decimal">
+<li>Heroku build times are limited to 15 minutes. haskellonheroku gets around this in a complicated way, <a href="https://haskellonheroku.com/tutorial/#build-the-sandbox">requiring use</a> of Amazon S3 to upload prebuilt libraries before doing a <code>git push</code>.</li>
+<li>haskellonheroku uses <a href="https://halcyon.sh/"><code>halcyon</code></a> internally to accomplish most build steps. <code>halcyon</code> is a tool similar to <code>stack</code>/<code>docker</code> or <code>nix</code>. However, it appears that development has stopped 2 years ago. <code>halcyon</code> does not support any of the latest GHC versions.</li>
+</ol>
+<p><code>halcyon</code> might have been nice a few years ago before <code>stack</code> existed. But now that <code>stack</code> is regularly used for Haskell development, moving to an alternative build tool doesn’t seem like a good decision.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
+<h2 id="related-works">Related Works</h2>
+<ul>
+<li><a href="https://www.reddit.com/r/haskell/comments/3iql3f/heroku_buildpack_using_stack/cujd263/">Alternative Dockerfile</a> for deploying with Docker</li>
+</ul>
 <h2 id="conclusion">Conclusion</h2>
 <p>As long as you have Docker running on your local machine (and maybe PostgreSQL for testing), it’s pretty easy to get your Haskell code on Heroku. Heroku’s free plan is nice for testing application ideas and showing them to others. It may not work for any sort of business application, but as a proof-of-concept, it’s great!</p>
 <p>If you decide your proof-of-concept works well and you want to release it, it’s easy to add a credit card to Heroku and start running on their cheapest paid tier. It is a very easy upgrade path.</p>
@@ -406,6 +418,7 @@ could not connect to server: Connection refused
 <p>This means that if all you change is the application source code under <code>src/</code> and re-run <code>docker build</code>, all <code>docker build</code> has to do is re-run (5), (6), and (7). It doesn’t have to install GHC or the application’s Haskell dependencies. This reduces a large part of the build-time. Future builds will take just a few minutes, instead of one hour.<a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>There are <a href="https://devcenter.heroku.com/articles/dynos#dyno-configurations">multiple kinds</a> of dynos. However, it’s not something that we need to worry about for our simple web API.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>Heroku also makes use of the <code>PORT</code> environment variable for telling your application which port to listen on.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Unless it is a tool that gives substantial extra power, like <code>nix</code>.<a href="#fnref4">↩</a></p></li>
 </ol>
 </div>
             </div>
