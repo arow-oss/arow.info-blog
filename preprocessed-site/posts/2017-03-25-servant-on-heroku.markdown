@@ -2,7 +2,7 @@
 title: ARoW.info Blog -- Releasing a Haskell Web App on Heroku
 headingBackgroundImage: ../img/post-bg.jpg
 headingDivClass: post-heading
-heading: Releasing a Servant App on Heroku
+heading: Releasing a Haskell Web App on Heroku
 subHeading: Using Heroku to serve a Servant App with Docker
 postedBy: <a href="http://functor.tokyo">Dennis Gosnell</a>
 draft: true
