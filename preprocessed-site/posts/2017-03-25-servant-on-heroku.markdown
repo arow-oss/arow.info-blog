@@ -1,5 +1,5 @@
 ---
-title: ARoW.info Blog -- Releasing a Servant App on Heroku
+title: ARoW.info Blog -- Releasing a Haskell Web App on Heroku
 headingBackgroundImage: ../img/post-bg.jpg
 headingDivClass: post-heading
 heading: Releasing a Servant App on Heroku
@@ -684,6 +684,31 @@ Here are a couple ideas that would make the `Dockerfile` a little better:
 It would also be nice to use something like `docker-compose` to setup the
 PostgreSQL database using Docker when running locally.
 
+## Alternatives to Docker for Deploying on Heroku
+
+The only strong alternative to using Docker for deploying Haskell code to Heroku
+is [haskellonheroku](https://haskellonheroku.com/). This is a normal
+Heroku [buildpack](https://devcenter.heroku.com/articles/buildpacks) for
+Haskell. With this buildpack, you are able to use Heroku like you would with
+dynamic languages. All you need to do is `git push` your code to Heroku's remote
+git repository. The new code is automatically compiled and deployed.
+
+This sounds really good in theory, but in pracitce haskellonheroku has two big
+drawbacks:
+
+1.  Heroku build times are limited to 15 minutes. haskellonheroku gets around
+    this in a complicated way,
+    [requiring use](https://haskellonheroku.com/tutorial/#build-the-sandbox) of
+    Amazon S3 to upload prebuilt libraries before doing a `git push`.
+2.  haskellonheroku uses [`halcyon`](https://halcyon.sh/) internally to
+    accomplish most build steps. `halcyon` is a tool similar to `stack`/`docker`
+    or `nix`. However, it appears that development has stopped 2 years ago.
+    `halcyon` does not support any of the latest GHC versions.
+
+`halcyon` might have been nice a few years ago before `stack` existed. But now
+that `stack` is regularly used for Haskell development, moving to an alternative
+build tool doesn't seem like a good decision.[^4]
+
 ## Conclusion
 
 As long as you have Docker running on your local machine (and maybe PostgreSQL
@@ -722,3 +747,5 @@ tier.  It is a very easy upgrade path.
     [multiple kinds](https://devcenter.heroku.com/articles/dynos#dyno-configurations)
     of dynos. However, it's not something that we need to worry about for our
     simple web API.
+
+[^4]: Unless it is a tool that gives substantial extra power, like `nix`.
