@@ -709,6 +709,11 @@ drawbacks:
 that `stack` is regularly used for Haskell development, moving to an alternative
 build tool doesn't seem like a good decision.[^4]
 
+## Related Works
+
+-   [Alternative Dockerfile](https://www.reddit.com/r/haskell/comments/3iql3f/heroku_buildpack_using_stack/cujd263/)
+    for deploying with Docker
+
 ## Conclusion
 
 As long as you have Docker running on your local machine (and maybe PostgreSQL
