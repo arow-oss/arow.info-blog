@@ -12,19 +12,20 @@ Releasing Haskell web applications on Heroku has become much easier with
 Heroku's Docker support. This article explains how to deploy a Servant
 application on Heroku using Docker.
 
-I've prepared
-an [example application](https://github.com/cdepillabout/servant-on-heroku) you
-can use to try deploying to Heroku. The first section of this article explains
-how to run the example application locally. The second section explains how to
-run the example application locally using Docker. The third section explains how
-to deploy this application to Heroku.
+I've prepared an [example
+application](https://github.com/cdepillabout/servant-on-heroku) you can use to
+try deploying to Heroku. This article is divided into three sections. The first
+section explains how to run the example application locally. The second section
+explains how to run the example application locally using Docker. The third
+section explains how to deploy this application to Heroku.
 
-If you just want to deploy to Heroku without running locally first, feel free to
-just skim through the first and second sections.
+If you want to deploy to Heroku without running locally first, feel free to
+skim through the first and second sections.  However, if you're new to Haskell
+development, I recommend going through all three sections.
 
 ## Running the application locally WITHOUT Docker
 
-The example application is a simple application. It provides two APIs. One is to
+The example application is a small JSON API. It provides two APIs. One is to
 submit simple comments. The other is to display all comments that have been
 submitted. The comments are saved to a PostgreSQL database.
 
@@ -45,8 +46,8 @@ $ stack build  # install all dependencies and build the application
 An error may occur when building the application because of missing PostgreSQL
 libraries.
 
-On Arch Linux, install these missing PostgreSQL libraries can be installed with
-the following command:
+On Arch Linux, these missing PostgreSQL libraries can be installed with the
+following command:
 
 ```sh
 $ sudo pacman -Ss postgresql-libs
@@ -92,7 +93,7 @@ Check with your platform documentation on how to install PostgreSQL.
 For example, [here](https://wiki.archlinux.org/index.php/PostgreSQL#Installing_PostgreSQL) is the Arch Linux documentation for installing
 PostgreSQL. [Here](https://help.ubuntu.com/community/PostgreSQL#Installation) is the Ubuntu documentation.
 
-Once PostgreSQL is installed and running, try running our application again:
+Once PostgreSQL is installed and running, try running the application again:
 
 ```sh
 $ stack exec -- servant-on-heroku-api
@@ -209,7 +210,7 @@ $ docker info
 We will build the application inside of Docker and create a docker image for the
 application.
 
-Use `docker build` to build the application:
+Use `docker build` to build a Docker image for the application:
 
 ```sh
 $ docker build -t servant-on-heroku .
@@ -319,13 +320,13 @@ easy to move to Heroku. The first step is creating a Heroku account.
 Go [here](https://signup.heroku.com) to sign up for a Heroku account. If you
 already have a Heroku account, you can skip this step.
 
-We will deploy out application using Heroku's "Free" tier, so you don't need to
+We will deploy the application using Heroku's "Free" tier, so you don't need to
 worry about registering a credit card.
 
 The majority of the instructions in this section are condensed from
 Heroku's
 [own documentation](https://devcenter.heroku.com/articles/container-registry-and-runtime) on
-integrating with Docker. Check out their documentation is anything is unclear.
+integrating with Docker. Check out their documentation if anything is unclear.
 
 ### Install the Heroku CLI Application
 
@@ -647,7 +648,7 @@ SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 25
 databasename=> select * from comment;
  id | author |           text
 ----|--------|---------------------------
-  1 | SPJ    | Avoid Heroku at all costs
+  1 | SPJ    | Avoid heroku-at-all-costs
 (1 row)
 ```
 
@@ -701,30 +702,29 @@ drawbacks:
     [requiring use](https://haskellonheroku.com/tutorial/#build-the-sandbox) of
     Amazon S3 to upload prebuilt libraries before doing a `git push`.
 2.  haskellonheroku uses [`halcyon`](https://halcyon.sh/) internally to
-    accomplish most build steps. `halcyon` is a tool similar to `stack`/`docker`
-    or `nix`. However, it appears that development has stopped 2 years ago.
+    accomplish most build steps. `halcyon` is a tool similar to `stack` and
+    `nix`. However, it appears that development has stopped 2 years ago.
     `halcyon` does not support any of the latest GHC versions.
 
 `halcyon` might have been nice a few years ago before `stack` existed. But now
 that `stack` is regularly used for Haskell development, moving to an alternative
 build tool doesn't seem like a good decision.[^4]
 
-## Related Works
+## Related Work
 
 -   [Alternative Dockerfile](https://www.reddit.com/r/haskell/comments/3iql3f/heroku_buildpack_using_stack/cujd263/)
     for deploying with Docker
 
 ## Conclusion
 
-As long as you have Docker running on your local machine (and maybe PostgreSQL
-for testing), it's pretty easy to get your Haskell code on Heroku. Heroku's free
-plan is nice for testing application ideas and showing them to others. It may
-not work for any sort of business application, but as a proof-of-concept, it's
-great!
+As long as you have Docker running on your local machine, it's pretty easy to
+get your Haskell code on Heroku. Heroku's free plan is nice for testing
+application ideas and showing them to others. It may not work for any sort of
+business application, but as a proof-of-concept, it's great!
 
 If you decide your proof-of-concept works well and you want to release it, it's
 easy to add a credit card to Heroku and start running on their cheapest paid
-tier.  It is a very easy upgrade path.
+tier.  Heroku has a very nice upgrade path.
 
 ## Footnotes
 
