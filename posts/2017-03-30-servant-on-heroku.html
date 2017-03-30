@@ -93,10 +93,10 @@
         <div class="row">
             <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
               <p>Releasing Haskell web applications on Heroku has become much easier with Heroku’s Docker support. This article explains how to deploy a Servant application on Heroku using Docker.</p>
-<p>I’ve prepared an <a href="https://github.com/cdepillabout/servant-on-heroku">example application</a> you can use to try deploying to Heroku. The first section of this article explains how to run the example application locally. The second section explains how to run the example application locally using Docker. The third section explains how to deploy this application to Heroku.</p>
-<p>If you just want to deploy to Heroku without running locally first, feel free to just skim through the first and second sections.</p>
+<p>I’ve prepared an <a href="https://github.com/cdepillabout/servant-on-heroku">example application</a> you can use to try deploying to Heroku. This article is divided into three sections. The first section explains how to run the example application locally. The second section explains how to run the example application locally using Docker. The third section explains how to deploy this application to Heroku.</p>
+<p>If you want to deploy to Heroku without running locally first, feel free to skim through the first and second sections. However, if you’re new to Haskell development, I recommend going through all three sections.</p>
 <h2 id="running-the-application-locally-without-docker">Running the application locally WITHOUT Docker</h2>
-<p>The example application is a simple application. It provides two APIs. One is to submit simple comments. The other is to display all comments that have been submitted. The comments are saved to a PostgreSQL database.</p>
+<p>The example application is a small JSON API. It provides two APIs. One is to submit simple comments. The other is to display all comments that have been submitted. The comments are saved to a PostgreSQL database.</p>
 <p>The following will walk through how to build and run the application locally, without involving Docker or Heroku.</p>
 <h3 id="build-the-application-locally">Build the application locally</h3>
 <p>First, clone the repository and build the application.</p>
@@ -105,7 +105,7 @@ $ <span class="bu">cd</span> servant-on-heroku/
 $ <span class="ex">stack</span> setup  # install the required version of ghc on your system
 $ <span class="ex">stack</span> build  # install all dependencies and build the application</code></pre></div>
 <p>An error may occur when building the application because of missing PostgreSQL libraries.</p>
-<p>On Arch Linux, install these missing PostgreSQL libraries can be installed with the following command:</p>
+<p>On Arch Linux, these missing PostgreSQL libraries can be installed with the following command:</p>
 <div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="fu">sudo</span> pacman -Ss postgresql-libs</code></pre></div>
 <p>On Ubuntu, the following command can be used:</p>
 <div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="fu">sudo</span> apt-get install libpq-dev</code></pre></div>
@@ -125,7 +125,7 @@ $ <span class="ex">stack</span> build  # install all dependencies and build the 
 <h3 id="setup-postgresql">Setup PostgreSQL</h3>
 <p>Most OSs and distributions will have different ways of installing PostgreSQL. Check with your platform documentation on how to install PostgreSQL.</p>
 <p>For example, <a href="https://wiki.archlinux.org/index.php/PostgreSQL#Installing_PostgreSQL">here</a> is the Arch Linux documentation for installing PostgreSQL. <a href="https://help.ubuntu.com/community/PostgreSQL#Installation">Here</a> is the Ubuntu documentation.</p>
-<p>Once PostgreSQL is installed and running, try running our application again:</p>
+<p>Once PostgreSQL is installed and running, try running the application again:</p>
 <div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">stack</span> exec -- servant-on-heroku-api</code></pre></div>
 <p>Another oops! It should fail with the following error:</p>
 <pre><code>servant-on-heroku-api: libpq: failed (FATAL:  role &quot;mydbuser&quot; does not exist
@@ -168,7 +168,7 @@ $ <span class="ex">stack</span> build  # install all dependencies and build the 
 <div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">docker</span> info</code></pre></div>
 <h3 id="building-with-docker">Building with Docker</h3>
 <p>We will build the application inside of Docker and create a docker image for the application.</p>
-<p>Use <code>docker build</code> to build the application:</p>
+<p>Use <code>docker build</code> to build a Docker image for the application:</p>
 <div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">docker</span> build -t servant-on-heroku .</code></pre></div>
 <p>This uses the <a href="https://github.com/cdepillabout/servant-on-heroku/blob/master/Dockerfile"><code>Dockerfile</code></a> in the current directory to build the application. The <code>Dockerfile</code> lists all the steps to build the application and create a reusable image.</p>
 <p>If you take a look at the <code>Dockerfile</code>, you can see that it is performing the following steps:</p>
@@ -221,8 +221,8 @@ could not connect to server: Connection refused
 <p>Once we have the application building and running successfully in Docker, it’s easy to move to Heroku. The first step is creating a Heroku account.</p>
 <h3 id="creating-an-account">Creating an Account</h3>
 <p>Go <a href="https://signup.heroku.com">here</a> to sign up for a Heroku account. If you already have a Heroku account, you can skip this step.</p>
-<p>We will deploy out application using Heroku’s “Free” tier, so you don’t need to worry about registering a credit card.</p>
-<p>The majority of the instructions in this section are condensed from Heroku’s <a href="https://devcenter.heroku.com/articles/container-registry-and-runtime">own documentation</a> on integrating with Docker. Check out their documentation is anything is unclear.</p>
+<p>We will deploy the application using Heroku’s “Free” tier, so you don’t need to worry about registering a credit card.</p>
+<p>The majority of the instructions in this section are condensed from Heroku’s <a href="https://devcenter.heroku.com/articles/container-registry-and-runtime">own documentation</a> on integrating with Docker. Check out their documentation if anything is unclear.</p>
 <h3 id="install-the-heroku-cli-application">Install the Heroku CLI Application</h3>
 <p>Heroku provides a CLI application to make it easy to work with their service. This is similar to <a href="https://aws.amazon.com/cli">AWS’s CLI</a> or <a href="https://github.com/digitalocean/doctl">Digital Ocean’s CLI</a>.</p>
 <p>On Arch Linux, Heroku’s CLI application can be installed with the following command:</p>
@@ -380,7 +380,7 @@ could not connect to server: Connection refused
 <span class="va">databasename=</span><span class="op">&gt;</span> <span class="kw">select</span> <span class="ex">*</span> from comment<span class="kw">;</span>
  <span class="fu">id</span> <span class="kw">|</span> <span class="ex">author</span> <span class="kw">|</span>           <span class="ex">text</span>
 <span class="ex">----</span><span class="kw">|</span><span class="ex">--------</span><span class="kw">|</span><span class="ex">---------------------------</span>
-  <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SPJ</span>    <span class="kw">|</span> <span class="ex">Avoid</span> Heroku at all costs
+  <span class="ex">1</span> <span class="kw">|</span> <span class="ex">SPJ</span>    <span class="kw">|</span> <span class="ex">Avoid</span> heroku-at-all-costs
 <span class="kw">(</span><span class="ex">1</span> row<span class="kw">)</span></code></pre></div>
 <h3 id="future-normal-releases">Future (Normal) Releases</h3>
 <p>Performing future releases of the application is extremely easy. Just run the following command:</p>
@@ -399,16 +399,16 @@ could not connect to server: Connection refused
 <p>This sounds really good in theory, but in pracitce haskellonheroku has two big drawbacks:</p>
 <ol style="list-style-type: decimal">
 <li>Heroku build times are limited to 15 minutes. haskellonheroku gets around this in a complicated way, <a href="https://haskellonheroku.com/tutorial/#build-the-sandbox">requiring use</a> of Amazon S3 to upload prebuilt libraries before doing a <code>git push</code>.</li>
-<li>haskellonheroku uses <a href="https://halcyon.sh/"><code>halcyon</code></a> internally to accomplish most build steps. <code>halcyon</code> is a tool similar to <code>stack</code>/<code>docker</code> or <code>nix</code>. However, it appears that development has stopped 2 years ago. <code>halcyon</code> does not support any of the latest GHC versions.</li>
+<li>haskellonheroku uses <a href="https://halcyon.sh/"><code>halcyon</code></a> internally to accomplish most build steps. <code>halcyon</code> is a tool similar to <code>stack</code> and <code>nix</code>. However, it appears that development has stopped 2 years ago. <code>halcyon</code> does not support any of the latest GHC versions.</li>
 </ol>
 <p><code>halcyon</code> might have been nice a few years ago before <code>stack</code> existed. But now that <code>stack</code> is regularly used for Haskell development, moving to an alternative build tool doesn’t seem like a good decision.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
-<h2 id="related-works">Related Works</h2>
+<h2 id="related-work">Related Work</h2>
 <ul>
 <li><a href="https://www.reddit.com/r/haskell/comments/3iql3f/heroku_buildpack_using_stack/cujd263/">Alternative Dockerfile</a> for deploying with Docker</li>
 </ul>
 <h2 id="conclusion">Conclusion</h2>
-<p>As long as you have Docker running on your local machine (and maybe PostgreSQL for testing), it’s pretty easy to get your Haskell code on Heroku. Heroku’s free plan is nice for testing application ideas and showing them to others. It may not work for any sort of business application, but as a proof-of-concept, it’s great!</p>
-<p>If you decide your proof-of-concept works well and you want to release it, it’s easy to add a credit card to Heroku and start running on their cheapest paid tier. It is a very easy upgrade path.</p>
+<p>As long as you have Docker running on your local machine, it’s pretty easy to get your Haskell code on Heroku. Heroku’s free plan is nice for testing application ideas and showing them to others. It may not work for any sort of business application, but as a proof-of-concept, it’s great!</p>
+<p>If you decide your proof-of-concept works well and you want to release it, it’s easy to add a credit card to Heroku and start running on their cheapest paid tier. Heroku has a very nice upgrade path.</p>
 <h2 id="footnotes">Footnotes</h2>
 <div class="footnotes">
 <hr />
