@@ -5,7 +5,6 @@ headingDivClass: post-heading
 heading: Releasing a Haskell Web App on Heroku
 subHeading: Using Heroku to serve a Servant App with Docker
 postedBy: <a href="http://functor.tokyo">Dennis Gosnell</a>
-draft: true
 ---
 
 Releasing Haskell web applications on Heroku has become much easier with
