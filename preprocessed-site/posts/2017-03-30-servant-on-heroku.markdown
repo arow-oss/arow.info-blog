@@ -532,7 +532,7 @@ has [nice support](https://devcenter.heroku.com/articles/heroku-postgresql) for
 PostgreSQL. Heroku provides a PostgreSQL database that can be used
 free-of-charge.
 
-The following command can be used enable the PostgreSQL database add-on for the
+The following command can be used to enable the PostgreSQL database add-on for the
 application:
 
 ```sh
