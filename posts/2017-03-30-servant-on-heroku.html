@@ -9,6 +9,8 @@
     <meta name="description" content>
     <meta name="author" content>
 
+    
+
     <title>ARoW.info Blog -- Releasing a Haskell Web App on Heroku with Docker</title>
 
     <!-- Bootstrap Core CSS -->
@@ -317,7 +319,7 @@ could not connect to server: Connection refused
 <p>Well, it’s because we haven’t setup a PostgreSQL database on Heroku!</p>
 <h3 id="postgresql-on-heroku">PostgreSQL on Heroku</h3>
 <p>Heroku has <a href="https://devcenter.heroku.com/articles/heroku-postgresql">nice support</a> for PostgreSQL. Heroku provides a PostgreSQL database that can be used free-of-charge.</p>
-<p>The following command can be used enable the PostgreSQL database add-on for the application:</p>
+<p>The following command can be used to enable the PostgreSQL database add-on for the application:</p>
 <div class="sourceCode"><pre class="sourceCode sh"><code class="sourceCode bash">$ <span class="ex">heroku</span> addons:create heroku-postgresql:hobby-dev</code></pre></div>
 <p>This enables the <code>heroku-postgresql</code> add-on in the <code>hobby-dev</code> tier (which is free).</p>
 <p>After enabling it, the following command can be used to make sure the PostgreSQL database has been successfully created:</p>
